@@ -88,7 +88,7 @@ public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<
 
 	protected void readSupportVectors(BufferedReader reader) throws IOException
 		{
-		//throw new NotImplementedException();
+
 		List<Double> alphaList = new ArrayList<Double>();
 		List<SparseVector> svList = new ArrayList<SparseVector>();
 
