@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.qmatrix;
 
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
-
 import java.util.Collection;
 
 
@@ -18,8 +17,7 @@ import java.util.Collection;
  * @version $Id$
  */
 
-public interface QMatrix<P>
-	{
+public interface QMatrix<P> {
 // -------------------------- OTHER METHODS --------------------------
 
 //	float[] getQ(int column, int len);
@@ -28,19 +26,20 @@ public interface QMatrix<P>
 
 //	List<P> getVectors();
 
-	//float evaluate(SolutionVector<P> a, SolutionVector<P> b);
+  //float evaluate(SolutionVector<P> a, SolutionVector<P> b);
 
-	float evaluateDiagonal(SolutionVector<P> a);
+  float evaluateDiagonal(SolutionVector<P> a);
 
-	void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, float[] buf);
+  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, float[] buf);
 
-	void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, SolutionVector<P>[] inactive, float[] buf);
+  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, SolutionVector<P>[] inactive,
+      float[] buf);
 
 //	void storeRanks(Collection<SolutionVector<P>> allExamples);
 
-	void initRanks(Collection<SolutionVector<P>> allExamples);
+  void initRanks(Collection<SolutionVector<P>> allExamples);
 
-	void maintainCache(SolutionVector<P>[] active, SolutionVector<P>[] newlyInactive);
+  void maintainCache(SolutionVector<P>[] active, SolutionVector<P>[] newlyInactive);
 
-	public String perfString();
-	}
+  public String perfString();
+}

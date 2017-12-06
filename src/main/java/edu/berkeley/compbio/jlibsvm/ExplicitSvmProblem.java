@@ -10,21 +10,19 @@ import java.util.Map;
  * @version $Id$
  */
 @Deprecated
-public interface ExplicitSvmProblem<L extends Comparable, P, R extends SvmProblem<L, P, R>> extends SvmProblem<L, P, R>
-	{
+public interface ExplicitSvmProblem<L extends Comparable, P, R extends SvmProblem<L, P, R>> extends
+    SvmProblem<L, P, R> {
 // ------------------------ INTERFACE METHODS ------------------------
-
 
 // --------------------- Interface SvmProblem ---------------------
 
-	Map<P, L> getExamples();
+  Map<P, L> getExamples();
 
-	List<L> getLabels();
+  List<L> getLabels();
 
-	L getTargetValue(P point);
-
+  L getTargetValue(P point);
 
 // -------------------------- OTHER METHODS --------------------------
 
-	//Set<Fold<L, P,R>> makeFolds(int numberOfFolds);
-	}
+  //Set<Fold<L, P,R>> makeFolds(int numberOfFolds);
+}

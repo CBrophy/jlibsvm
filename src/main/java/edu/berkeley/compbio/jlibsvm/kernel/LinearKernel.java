@@ -7,24 +7,20 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class LinearKernel implements KernelFunction<SparseVector>
-	{
+public class LinearKernel implements KernelFunction<SparseVector> {
 // ------------------------ CANONICAL METHODS ------------------------
 
-	public String toString()
-		{
-		StringBuilder sb = new StringBuilder();
-		sb.append("kernel_type linear\n");
-		return sb.toString();
-		}
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("kernel_type linear\n");
+    return sb.toString();
+  }
 
 // ------------------------ INTERFACE METHODS ------------------------
 
-
 // --------------------- Interface KernelFunction ---------------------
 
-	public double evaluate(SparseVector x, SparseVector y)
-		{
-		return MathSupport.dot(x, y);
-		}
-	}
+  public double evaluate(SparseVector x, SparseVector y) {
+    return MathSupport.dot(x, y);
+  }
+}

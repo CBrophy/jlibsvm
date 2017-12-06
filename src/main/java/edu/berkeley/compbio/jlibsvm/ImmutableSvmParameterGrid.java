@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -11,107 +10,95 @@ import java.util.HashSet;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class ImmutableSvmParameterGrid<L extends Comparable, P> extends ImmutableSvmParameter<L, P>
-	{
-	private final Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
+public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
+    ImmutableSvmParameter<L, P> {
 
-	public ImmutableSvmParameterGrid(Builder<L, P> copyFrom)
-		{
-		super(copyFrom);
-		gridParams = copyFrom.gridParams;
-		}
+  private final Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
 
-	public Collection<ImmutableSvmParameterPoint<L, P>> getGridParams()
-		{
-		return gridParams;
-		}
+  public ImmutableSvmParameterGrid(Builder<L, P> copyFrom) {
+    super(copyFrom);
+    gridParams = copyFrom.gridParams;
+  }
 
-	public static <L extends Comparable, P> Builder<L, P> builder()
-		{
-		return new Builder<L, P>();
-		}
+  public Collection<ImmutableSvmParameterPoint<L, P>> getGridParams() {
+    return gridParams;
+  }
 
-	public static class Builder<L extends Comparable, P> extends ImmutableSvmParameter.Builder
-		{
-		public Collection<Float> Cset;
-		public Collection<KernelFunction<P>> kernelSet;
-		private Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
+  public static <L extends Comparable, P> Builder<L, P> builder() {
+    return new Builder<L, P>();
+  }
 
-		public Builder(ImmutableSvmParameter.Builder copyFrom)
-			{
-			super(copyFrom);
+  public static class Builder<L extends Comparable, P> extends ImmutableSvmParameter.Builder {
 
-			//default
-			Cset = new HashSet<Float>();
-			Cset.add(1f);
-			}
+    public Collection<Float> Cset;
+    public Collection<KernelFunction<P>> kernelSet;
+    private Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
 
-		public Builder(ImmutableSvmParameterGrid<L, P> copyFrom)
-			{
-			super(copyFrom);
+    public Builder(ImmutableSvmParameter.Builder copyFrom) {
+      super(copyFrom);
 
-			//default
-			//Cset = new HashSet<Float>();
-			//Cset.add(1f);
+      //default
+      Cset = new HashSet<Float>();
+      Cset.add(1f);
+    }
 
-			//Cset = copyFrom.Cset;
-			//kernelSet = copyFrom.kernelSet;
-			gridParams = copyFrom.gridParams;
-			}
+    public Builder(ImmutableSvmParameterGrid<L, P> copyFrom) {
+      super(copyFrom);
 
-		public Builder()
-			{
-			super();
+      //default
+      //Cset = new HashSet<Float>();
+      //Cset.add(1f);
 
-			//default
-			Cset = new HashSet<Float>();
-			Cset.add(1f);
-			}
+      //Cset = copyFrom.Cset;
+      //kernelSet = copyFrom.kernelSet;
+      gridParams = copyFrom.gridParams;
+    }
 
-		public ImmutableSvmParameter<L, P> build()
-			{
-			ImmutableSvmParameterPoint.Builder<L, P> builder = ImmutableSvmParameterPoint.asBuilder(this);
+    public Builder() {
+      super();
 
-			if (Cset == null || Cset.isEmpty())
-				{
-				throw new SvmException("Can't build a grid with no C values");
-				}
+      //default
+      Cset = new HashSet<Float>();
+      Cset.add(1f);
+    }
 
-			if (kernelSet == null || kernelSet.isEmpty())
-				{
-				throw new SvmException("Can't build a grid with no kernels");
-				}
+    public ImmutableSvmParameter<L, P> build() {
+      ImmutableSvmParameterPoint.Builder<L, P> builder = ImmutableSvmParameterPoint.asBuilder(this);
 
-			if (Cset.size() == 1 && kernelSet.size() == 1)
-				{
-				builder.C = Cset.iterator().next();
-				builder.kernel = kernelSet.iterator().next();
-				return builder.build();
-				//	return new ImmutableSvmParameterPoint<L,P>(this);
-				}
-			gridParams = new HashSet<ImmutableSvmParameterPoint<L, P>>();
+      if (Cset == null || Cset.isEmpty()) {
+        throw new SvmException("Can't build a grid with no C values");
+      }
 
-			// the C and kernel set here are ignored; we just overwrite them with the grid points
+      if (kernelSet == null || kernelSet.isEmpty()) {
+        throw new SvmException("Can't build a grid with no kernels");
+      }
 
-			for (Float gridC : Cset)
-				{
-				for (KernelFunction<P> gridKernel : kernelSet)
-					{
-					builder.C = gridC;
-					builder.kernel = gridKernel;
-					builder.gridsearchBinaryMachinesIndependently = false;
+      if (Cset.size() == 1 && kernelSet.size() == 1) {
+        builder.C = Cset.iterator().next();
+        builder.kernel = kernelSet.iterator().next();
+        return builder.build();
+        //	return new ImmutableSvmParameterPoint<L,P>(this);
+      }
+      gridParams = new HashSet<ImmutableSvmParameterPoint<L, P>>();
 
-					// this copies all the params so we can safely continue modifying the builder
-					gridParams.add(builder.build());
-					}
-				}
+      // the C and kernel set here are ignored; we just overwrite them with the grid points
 
-			return new ImmutableSvmParameterGrid<L, P>(this);
-			}
-		}
+      for (Float gridC : Cset) {
+        for (KernelFunction<P> gridKernel : kernelSet) {
+          builder.C = gridC;
+          builder.kernel = gridKernel;
+          builder.gridsearchBinaryMachinesIndependently = false;
 
-	public Builder<L, P> asBuilder()
-		{
-		return new Builder<L, P>(this);
-		}
-	}
+          // this copies all the params so we can safely continue modifying the builder
+          gridParams.add(builder.build());
+        }
+      }
+
+      return new ImmutableSvmParameterGrid<L, P>(this);
+    }
+  }
+
+  public Builder<L, P> asBuilder() {
+    return new Builder<L, P>(this);
+  }
+}

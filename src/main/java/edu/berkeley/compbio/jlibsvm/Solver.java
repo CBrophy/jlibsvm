@@ -2,14 +2,13 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
-import org.apache.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -30,32 +29,30 @@ import java.util.List;
  * @version $Id$
  */
 
-public abstract class Solver<L extends Comparable, P>
-	{
+public abstract class Solver<L extends Comparable, P> {
 // ------------------------------ FIELDS ------------------------------
 
-	private static final Logger logger = Logger.getLogger(Solver.class);
+  private static final Logger logger = Logger.getLogger(Solver.class);
 
-	private static final int MAXITER = 50000;
+  private static final int MAXITER = 50000;
 
-	protected final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
+  protected final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
 
 
-	QMatrix<P> Q;
-	float[] Q_svA;
-	float[] Q_svB;
-	float[] Q_all;
+  QMatrix<P> Q;
+  float[] Q_svA;
+  float[] Q_svB;
+  float[] Q_all;
 
-	float eps;
-	boolean unshrink = false;
-	boolean shrinking;
+  float eps;
+  boolean unshrink = false;
+  boolean shrinking;
 
-	protected final List<SolutionVector<P>> allExamples;
-	protected SolutionVector<P>[] active;
-	protected SolutionVector<P>[] inactive;
-	protected final float Cp, Cn;
-	protected final int numExamples;
-
+  protected final List<SolutionVector<P>> allExamples;
+  protected SolutionVector<P>[] active;
+  protected SolutionVector<P>[] inactive;
+  protected final float Cp, Cn;
+  protected final int numExamples;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -73,345 +70,284 @@ public abstract class Solver<L extends Comparable, P>
 		this.shrinking = shrinking;
 		}*/
 
-	public Solver(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q, float Cp, float Cn, float eps,
-	              boolean shrinking)
-		{
-		//this(Q, Cp, Cn, eps, shrinking);
+  public Solver(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q, float Cp,
+      float Cn, float eps,
+      boolean shrinking) {
+    //this(Q, Cp, Cn, eps, shrinking);
 
-		if (eps <= 0)
-			{
-			throw new SvmException("eps <= 0");
-			}
+    if (eps <= 0) {
+      throw new SvmException("eps <= 0");
+    }
 
-		this.Q = Q;
-		this.Cp = Cp;
-		this.Cn = Cn;
-		this.eps = eps;
-		this.shrinking = shrinking;
+    this.Q = Q;
+    this.Cp = Cp;
+    this.Cn = Cn;
+    this.eps = eps;
+    this.shrinking = shrinking;
 
+    this.allExamples = solutionVectors;
 
-
-		this.allExamples = solutionVectors;
-
-		this.numExamples = allExamples.size();
-		Q_all = new float[numExamples];
-		}
+    this.numExamples = allExamples.size();
+    Q_all = new float[numExamples];
+  }
 
 // -------------------------- OTHER METHODS --------------------------
 
-	protected void calculate_rho(AlphaModel<L, P> si)
-		{
-		double r;
-		int nr_free = 0;
-		double ub = Double.POSITIVE_INFINITY, lb = Double.NEGATIVE_INFINITY, sum_free = 0;
+  protected void calculate_rho(AlphaModel<L, P> si) {
+    double r;
+    int nr_free = 0;
+    double ub = Double.POSITIVE_INFINITY, lb = Double.NEGATIVE_INFINITY, sum_free = 0;
 
-		for (SolutionVector<P> sv : active)
-			{
-			double yG = (sv.targetValue ? 1f : -1f) * sv.G;
+    for (SolutionVector<P> sv : active) {
+      double yG = (sv.targetValue ? 1f : -1f) * sv.G;
 
-			if (sv.isLowerBound())
-				{
-				if (sv.targetValue)
-					{
-					ub = Math.min(ub, yG);
-					}
-				else
-					{
-					lb = Math.max(lb, yG);
-					}
-				}
-			else if (sv.isUpperBound())
-				{
-				if (!sv.targetValue)
-					{
-					ub = Math.min(ub, yG);
-					}
-				else
-					{
-					lb = Math.max(lb, yG);
-					}
-				}
-			else
-				{
-				++nr_free;
-				sum_free += yG;
-				}
-			}
+      if (sv.isLowerBound()) {
+        if (sv.targetValue) {
+          ub = Math.min(ub, yG);
+        } else {
+          lb = Math.max(lb, yG);
+        }
+      } else if (sv.isUpperBound()) {
+        if (!sv.targetValue) {
+          ub = Math.min(ub, yG);
+        } else {
+          lb = Math.max(lb, yG);
+        }
+      } else {
+        ++nr_free;
+        sum_free += yG;
+      }
+    }
 
-		if (nr_free > 0)
-			{
-			r = sum_free / nr_free;
-			}
-		else
-			{
-			r = (ub + lb) / 2;
-			}
+    if (nr_free > 0) {
+      r = sum_free / nr_free;
+    } else {
+      r = (ub + lb) / 2;
+    }
 
-		si.rho = (float) r;
-		}
+    si.rho = (float) r;
+  }
 
-	protected int optimize()
-		{
-		Q.initRanks(allExamples);
+  protected int optimize() {
+    Q.initRanks(allExamples);
 
-		for (SolutionVector svA : allExamples)			//	for (int i = 0; i < numExamples; i++)
-			{
-			svA.updateAlphaStatus(Cp, Cn);			//update_alpha_status(i);
-			}
+    for (SolutionVector svA : allExamples)      //	for (int i = 0; i < numExamples; i++)
+    {
+      svA.updateAlphaStatus(Cp, Cn);      //update_alpha_status(i);
+    }
 
+    // initialize active set (for shrinking)
 
-		// initialize active set (for shrinking)
+    initActiveSet();
 
-		initActiveSet();
+    // initialize gradient
 
-		// initialize gradient
+    //	G = new float[numExamples];
+    //	G_bar = new float[numExamples];
+    for (SolutionVector svA : allExamples) {
+      svA.G = svA.linearTerm;
+      svA.G_bar = 0;
+    }
+    for (SolutionVector svA : allExamples) {
+      if (!svA.isLowerBound()) //is_lower_bound(i))
+      {
+        //	float[] Q_i = Q.getQ(i, numExamples);
+        // //	float alpha_i = shuffledAlpha[i];
 
-		//	G = new float[numExamples];
-		//	G_bar = new float[numExamples];
-		for (SolutionVector svA : allExamples)
-			{
-			svA.G = svA.linearTerm;
-			svA.G_bar = 0;
-			}
-		for (SolutionVector svA : allExamples)
-			{
-			if (!svA.isLowerBound()) //is_lower_bound(i))
-				{
-				//	float[] Q_i = Q.getQ(i, numExamples);
-				// //	float alpha_i = shuffledAlpha[i];
+        //float[] Q_svA =
+        Q.getQ(svA, active, Q_svA);
+        for (SolutionVector svB : allExamples) {
+          //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+          svB.G += svA.alpha * Q_svA[svB.rank];
+          //Q.evaluate(svA, svB);
+          //	svA.wasEvaluated = true;
+          //	svB.wasEvaluated = true;
+        }
+        if (svA.isUpperBound()) //is_upper_bound(i))
+        {
+          for (SolutionVector svB : allExamples) {
+            //		assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+            svB.G_bar += svA.getC(Cp, Cn) * Q_svA[svB.rank];
+            //Q.evaluate(svA, svB);
+            //	svA.wasEvaluated = true;
+            //	svB.wasEvaluated = true;
+          }
+        }
+      }
+    }
 
-				//float[] Q_svA =
-				Q.getQ(svA, active, Q_svA);
-				for (SolutionVector svB : allExamples)
-					{
-					//	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-					svB.G += svA.alpha * Q_svA[svB.rank];
-					//Q.evaluate(svA, svB);
-					//	svA.wasEvaluated = true;
-					//	svB.wasEvaluated = true;
-					}
-				if (svA.isUpperBound()) //is_upper_bound(i))
-					{
-					for (SolutionVector svB : allExamples)
-						{
-						//		assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-						svB.G_bar += svA.getC(Cp, Cn) * Q_svA[svB.rank];
-						//Q.evaluate(svA, svB);
-						//	svA.wasEvaluated = true;
-						//	svB.wasEvaluated = true;
-						}
-					}
-				}
-			}
+    // optimization step
 
+    int iter = 0;
+    int counter = Math.min(numExamples, 1000) + 1;    //int[] working_set = new int[2];
 
-		// optimization step
+    SolutionVector<P> svA;
+    SolutionVector<P> svB;
 
-		int iter = 0;
-		int counter = Math.min(numExamples, 1000) + 1;		//int[] working_set = new int[2];
+    //SolutionVectorPair pair, oldPair;
 
-		SolutionVector<P> svA;
-		SolutionVector<P> svB;
+    while (true) {
+      // show progress and do shrinking
 
-		//SolutionVectorPair pair, oldPair;
+      if (--counter == 0) {
+        counter = Math.min(numExamples, 1000);
+        if (shrinking) {
+          do_shrinking();
+        }
 
-		while (true)
-			{
-			// show progress and do shrinking
+        // ** logging output disabled for now
+        //logger.debug(".");
+      }
+      //oldPair = pair;
+      SolutionVectorPair pair = selectWorkingPair();
 
-			if (--counter == 0)
-				{
-				counter = Math.min(numExamples, 1000);
-				if (shrinking)
-					{
-					do_shrinking();
-					}
+      if (pair.isOptimal) // pair already optimal
+      {
+        // reconstruct the whole gradient
+        reconstruct_gradient();
 
-				// ** logging output disabled for now
-				//logger.debug(".");
-				}
-			//oldPair = pair;
-			SolutionVectorPair pair = selectWorkingPair();
+        // reset active set size and check
+        resetActiveSet();
 
-			if (pair.isOptimal) // pair already optimal
-				{
-				// reconstruct the whole gradient
-				reconstruct_gradient();
+        // ** logging output disabled for now
+        //logger.debug("*");
+        // 			//svA = pair.svA;
+        // 		//svB = pair.svB;
 
-				// reset active set size and check
-				resetActiveSet();
+        pair = selectWorkingPair();
+        if (pair.isOptimal) // pair already optimal
+        {
+          //svA = oldPair.svA;
+          //svB = oldPair.svB;
+          break;
+        } else {
+          counter = 1;
+          // do shrinking next iteration
+          // leave the working pair the same as before
+          // pair = oldPair;
+        }
+      }
+      svA = pair.svA;
+      svB = pair.svB;
+      // int i = working_set[0];
+      // int j = working_set[1];
 
+      ++iter;
 
-				// ** logging output disabled for now
-				//logger.debug("*");
-				// 			//svA = pair.svA;
-				// 		//svB = pair.svB;
+      if (iter > MAXITER) {
+        logger.error("Solver reached maximum iterations, aborting");
+        break;
+      }
 
-				pair = selectWorkingPair();
-				if (pair.isOptimal) // pair already optimal
-					{
-					//svA = oldPair.svA;
-					//svB = oldPair.svB;
-					break;
-					}
-				else
-					{
-					counter = 1;
-					// do shrinking next iteration
-					// leave the working pair the same as before
-					// pair = oldPair;
-					}
-				}
-			svA = pair.svA;
-			svB = pair.svB;
-			// int i = working_set[0];
-			// int j = working_set[1];
+      // update alpha[i] and alpha[j], handle bounds carefully
 
-			++iter;
+      //float[] Q_svA =
+      Q.getQ(svA, active, Q_svA);
+      //float[] Q_svB =
+      Q.getQ(svB, active, Q_svB);
 
-			if (iter > MAXITER)
-				{
-				logger.error("Solver reached maximum iterations, aborting");
-				break;
-				}
+      float C_i = svA.getC(Cp, Cn); //getC(i);
+      float C_j = svB.getC(Cp, Cn); //getC(j);
 
-			// update alpha[i] and alpha[j], handle bounds carefully
+      double old_alpha_i = svA.alpha;
+      double old_alpha_j = svB.alpha;
 
+      if (svA.targetValue != svB.targetValue) {
+        //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+        float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
+            + 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
+        //	svA.wasEvaluated = true;
+        //	svB.wasEvaluated = true;
 
-			//float[] Q_svA =
-			Q.getQ(svA, active, Q_svA);
-			//float[] Q_svB =
-			Q.getQ(svB, active, Q_svB);
+        if (quad_coef <= 0) {
+          quad_coef = 1e-12f;
+        }
+        double delta = (-svA.G - svB.G) / quad_coef;
+        double diff = svA.alpha - svB.alpha;
+        svA.alpha += delta;
+        svB.alpha += delta;
 
-			float C_i = svA.getC(Cp, Cn); //getC(i);
-			float C_j = svB.getC(Cp, Cn); //getC(j);
+        if (diff > 0) {
+          if (svB.alpha < 0) {
+            svB.alpha = 0;
+            svA.alpha = diff;
+          }
+        } else {
+          if (svA.alpha < 0) {
+            svA.alpha = 0;
+            svB.alpha = -diff;
+          }
+        }
+        if (diff > C_i - C_j) {
+          if (svA.alpha > C_i) {
+            svA.alpha = C_i;
+            svB.alpha = C_i - diff;
+          }
+        } else {
+          if (svB.alpha > C_j) {
+            svB.alpha = C_j;
+            svA.alpha = C_j + diff;
+          }
+        }
+      } else {
+        //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+        float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
+            - 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
+        //	svA.wasEvaluated = true;
+        //	svB.wasEvaluated = true;
 
-			double old_alpha_i = svA.alpha;
-			double old_alpha_j = svB.alpha;
+        if (quad_coef <= 0) {
+          quad_coef = 1e-12f;
+        }
+        double delta = (svA.G - svB.G) / quad_coef;
+        double sum = svA.alpha + svB.alpha;
+        svA.alpha -= delta;
+        svB.alpha += delta;
 
-			if (svA.targetValue != svB.targetValue)
-				{
-				//	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-				float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
-						+ 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
-				//	svA.wasEvaluated = true;
-				//	svB.wasEvaluated = true;
+        if (sum > C_i) {
+          if (svA.alpha > C_i) {
+            svA.alpha = C_i;
+            svB.alpha = sum - C_i;
+          }
+        } else {
+          if (svB.alpha < 0) {
+            svB.alpha = 0;
+            svA.alpha = sum;
+          }
+        }
+        if (sum > C_j) {
+          if (svB.alpha > C_j) {
+            svB.alpha = C_j;
+            svA.alpha = sum - C_j;
+          }
+        } else {
+          if (svA.alpha < 0) {
+            svA.alpha = 0;
+            svB.alpha = sum;
+          }
+        }
+      }
 
-				if (quad_coef <= 0)
-					{
-					quad_coef = 1e-12f;
-					}
-				double delta = (-svA.G - svB.G) / quad_coef;
-				double diff = svA.alpha - svB.alpha;
-				svA.alpha += delta;
-				svB.alpha += delta;
+      // update G
 
-				if (diff > 0)
-					{
-					if (svB.alpha < 0)
-						{
-						svB.alpha = 0;
-						svA.alpha = diff;
-						}
-					}
-				else
-					{
-					if (svA.alpha < 0)
-						{
-						svA.alpha = 0;
-						svB.alpha = -diff;
-						}
-					}
-				if (diff > C_i - C_j)
-					{
-					if (svA.alpha > C_i)
-						{
-						svA.alpha = C_i;
-						svB.alpha = C_i - diff;
-						}
-					}
-				else
-					{
-					if (svB.alpha > C_j)
-						{
-						svB.alpha = C_j;
-						svA.alpha = C_j + diff;
-						}
-					}
-				}
-			else
-				{
-				//	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-				float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
-						- 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
-				//	svA.wasEvaluated = true;
-				//	svB.wasEvaluated = true;
+      double delta_alpha_i = svA.alpha - old_alpha_i;
+      double delta_alpha_j = svB.alpha - old_alpha_j;
 
-				if (quad_coef <= 0)
-					{
-					quad_coef = 1e-12f;
-					}
-				double delta = (svA.G - svB.G) / quad_coef;
-				double sum = svA.alpha + svB.alpha;
-				svA.alpha -= delta;
-				svB.alpha += delta;
+      if (delta_alpha_i == 0 && delta_alpha_j == 0) {
+        // pair was already optimal, but selectWorkingPair() didn't realize it because the numeric precision of float is insufficient with respect to eps
+        logger.error(
+            "Pair is optimal within available numeric precision, but this is still larger than requested eps = "
+                + eps + ".");
+        break;
+      }
 
-				if (sum > C_i)
-					{
-					if (svA.alpha > C_i)
-						{
-						svA.alpha = C_i;
-						svB.alpha = sum - C_i;
-						}
-					}
-				else
-					{
-					if (svB.alpha < 0)
-						{
-						svB.alpha = 0;
-						svA.alpha = sum;
-						}
-					}
-				if (sum > C_j)
-					{
-					if (svB.alpha > C_j)
-						{
-						svB.alpha = C_j;
-						svA.alpha = sum - C_j;
-						}
-					}
-				else
-					{
-					if (svA.alpha < 0)
-						{
-						svA.alpha = 0;
-						svB.alpha = sum;
-						}
-					}
-				}
-
-			// update G
-
-			double delta_alpha_i = svA.alpha - old_alpha_i;
-			double delta_alpha_j = svB.alpha - old_alpha_j;
-
-			if (delta_alpha_i == 0 && delta_alpha_j == 0)
-				{
-				// pair was already optimal, but selectWorkingPair() didn't realize it because the numeric precision of float is insufficient with respect to eps
-				logger.error(
-						"Pair is optimal within available numeric precision, but this is still larger than requested eps = "
-								+ eps + ".");
-				break;
-				}
-
-			// NO: loop over A first, then B (cache locality)
-			//for (SolutionVector<P> svC : active)
-			for (int i = 0; i < active.length; i++)
-				{
-				// i == svC.rank
-				active[i].G += Q_svA[i] * delta_alpha_i + Q_svB[i] * delta_alpha_j;
-				}
-	// PERF test tradeoff
+      // NO: loop over A first, then B (cache locality)
+      //for (SolutionVector<P> svC : active)
+      for (int i = 0; i < active.length; i++) {
+        // i == svC.rank
+        active[i].G += Q_svA[i] * delta_alpha_i + Q_svB[i] * delta_alpha_j;
+      }
+      // PERF test tradeoff
 
 			/*
 			for (SolutionVector<P> svC : active)
@@ -428,269 +364,223 @@ public abstract class Solver<L extends Comparable, P>
 				}
 				*/
 
-			// update alpha_status and G_bar
+      // update alpha_status and G_bar
 
+      boolean ui = svA.isUpperBound(); //is_upper_bound(i);
+      boolean uj = svB.isUpperBound(); //is_upper_bound(j);
+      svA.updateAlphaStatus(Cp, Cn); //update_alpha_status(i);
+      svB.updateAlphaStatus(Cp, Cn); //update_alpha_status(j);			//int k;
 
-			boolean ui = svA.isUpperBound(); //is_upper_bound(i);
-			boolean uj = svB.isUpperBound(); //is_upper_bound(j);
-			svA.updateAlphaStatus(Cp, Cn); //update_alpha_status(i);
-			svB.updateAlphaStatus(Cp, Cn); //update_alpha_status(j);			//int k;
+      if (ui != svA.isUpperBound()) //is_upper_bound(i))
+      {
+        //Q_i = Q.getQ(i, numExamples);
+        Q.getQ(svA, active, inactive, Q_all);
+        if (ui) {
+          for (SolutionVector<P> svC : allExamples) {
+            //		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
+            svC.G_bar -= C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
+            //		svA.wasEvaluated = true;
+            //		svC.wasEvaluated = true;
+          }
+        } else {
+          for (SolutionVector<P> svC : allExamples) {
+            //		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
+            svC.G_bar += C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
+            //		svA.wasEvaluated = true;
+            //		svC.wasEvaluated = true;
+          }
+        }
+      }
 
+      if (uj != svB.isUpperBound()) //is_upper_bound(j))
+      {        //Q_j = Q.getQ(j, numExamples);
+        Q.getQ(svB, active, inactive, Q_all);
+        if (uj) {
+          for (SolutionVector<P> svC : allExamples) {
+            //		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
+            svC.G_bar -= C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
+            //		svB.wasEvaluated = true;
+            //		svC.wasEvaluated = true;
+          }
+        } else {
+          for (SolutionVector<P> svC : allExamples) {
+            //		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
+            svC.G_bar += C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
+            //		svB.wasEvaluated = true;
+            //		svC.wasEvaluated = true;
+          }
+        }
+      }
+    }
 
-			if (ui != svA.isUpperBound()) //is_upper_bound(i))
-				{
-				//Q_i = Q.getQ(i, numExamples);
-				Q.getQ(svA, active, inactive, Q_all);
-				if (ui)
-					{
-					for (SolutionVector<P> svC : allExamples)
-						{
-						//		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
-						svC.G_bar -= C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
-						//		svA.wasEvaluated = true;
-						//		svC.wasEvaluated = true;
-						}
-					}
-				else
-					{
-					for (SolutionVector<P> svC : allExamples)
-						{
-						//		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
-						svC.G_bar += C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
-						//		svA.wasEvaluated = true;
-						//		svC.wasEvaluated = true;
-						}
-					}
-				}
+    logger.debug(Q.perfString());
 
-			if (uj != svB.isUpperBound()) //is_upper_bound(j))
-				{				//Q_j = Q.getQ(j, numExamples);
-				Q.getQ(svB, active, inactive, Q_all);
-				if (uj)
-					{
-					for (SolutionVector<P> svC : allExamples)
-						{
-						//		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
-						svC.G_bar -= C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
-						//		svB.wasEvaluated = true;
-						//		svC.wasEvaluated = true;
-						}
-					}
-				else
-					{
-					for (SolutionVector<P> svC : allExamples)
-						{
-						//		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
-						svC.G_bar += C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
-						//		svB.wasEvaluated = true;
-						//		svC.wasEvaluated = true;
-						}
-					}
-				}
-			}
+    logger.debug("optimization finished, #iter = " + iter);
+    return iter;    // activeSet;
+  }
 
-		logger.debug(Q.perfString());
+  protected void initActiveSet() {
+    // initial sort order was provided by allExamples.  This is why allExamples must be a List or array, not just a Collection
+    active = allExamples.toArray(EMPTY_SV_ARRAY);
+    inactive = EMPTY_SV_ARRAY;
+    Q_svA = new float[active.length];
+    Q_svB = new float[active.length];
+  }
 
-		logger.debug("optimization finished, #iter = " + iter);
-		return iter;		// activeSet;
-		}
+  void do_shrinking() {
+    int i;
+    double Gmax1 = Float.NEGATIVE_INFINITY;// max { -y_i * grad(f)_i | i in I_up(\alpha) }
+    double Gmax2 = Float.NEGATIVE_INFINITY;// max { y_i * grad(f)_i | i in I_low(\alpha) }
 
-	protected void initActiveSet()
-		{
-		// initial sort order was provided by allExamples.  This is why allExamples must be a List or array, not just a Collection
-		active = allExamples.toArray(EMPTY_SV_ARRAY);
-		inactive = EMPTY_SV_ARRAY;
-		Q_svA = new float[active.length];
-		Q_svB = new float[active.length];
-		}
+    // find maximal violating pair first
 
-	void do_shrinking()
-		{
-		int i;
-		double Gmax1 = Float.NEGATIVE_INFINITY;// max { -y_i * grad(f)_i | i in I_up(\alpha) }
-		double Gmax2 = Float.NEGATIVE_INFINITY;// max { y_i * grad(f)_i | i in I_low(\alpha) }
+    for (SolutionVector<P> sv : active) {
+      if (sv.targetValue) {
+        if (!sv.isUpperBound()) {
+          if (-sv.G >= Gmax1) {
+            Gmax1 = -sv.G;
+          }
+        }
+        if (!sv.isLowerBound()) {
+          if (sv.G >= Gmax2) {
+            Gmax2 = sv.G;
+          }
+        }
+      } else {
+        if (!sv.isUpperBound()) {
+          if (-sv.G >= Gmax2) {
+            Gmax2 = -sv.G;
+          }
+        }
+        if (!sv.isLowerBound()) {
+          if (sv.G >= Gmax1) {
+            Gmax1 = sv.G;
+          }
+        }
+      }
+    }
 
-		// find maximal violating pair first
+    if (!unshrink && Gmax1 + Gmax2 <= eps * 10) {
+      unshrink = true;
+      reconstruct_gradient();
+      resetActiveSet();      //activeSize = numExamples;
+    }
 
-		for (SolutionVector<P> sv : active)
-			{
-			if (sv.targetValue)
-				{
-				if (!sv.isUpperBound())
-					{
-					if (-sv.G >= Gmax1)
-						{
-						Gmax1 = -sv.G;
-						}
-					}
-				if (!sv.isLowerBound())
-					{
-					if (sv.G >= Gmax2)
-						{
-						Gmax2 = sv.G;
-						}
-					}
-				}
-			else
-				{
-				if (!sv.isUpperBound())
-					{
-					if (-sv.G >= Gmax2)
-						{
-						Gmax2 = -sv.G;
-						}
-					}
-				if (!sv.isLowerBound())
-					{
-					if (sv.G >= Gmax1)
-						{
-						Gmax1 = sv.G;
-						}
-					}
-				}
-			}
+    // There was an extremely messy iteration here before, but I think it served only to separate the shrinkable vectors from the unshrinkable ones.
 
-		if (!unshrink && Gmax1 + Gmax2 <= eps * 10)
-			{
-			unshrink = true;
-			reconstruct_gradient();
-			resetActiveSet();			//activeSize = numExamples;
-			}
+    // This class is unfortunately entangled with the cache, because we want Q_get to return the kernel values in buf[] in the cache-ranked order.
+    // Since we're going to be calling Q_get with the active and inactive arrays as arguments, we need to make sure to keep those in the cache-ranked order as well.
+    // An intuitive reordering upon partitioning is to "compress" into the order active - newlyInactive - previouslyInactive.
+    // However, that's not what Q.maintainCache does: it performs a minimal set of swaps to guarantee that all the active nodes are in the active range (the first n ranks)
+    // and all the inactive nodes are in the inactive range, but makes no guarantees about the ordering within each of those regions.
 
+    // Thus, we need to sort the arrays according to the ranks after Q.maintainCache is done with them.
 
-		// There was an extremely messy iteration here before, but I think it served only to separate the shrinkable vectors from the unshrinkable ones.
+    Collection<SolutionVector<P>> activeList = new ArrayList<SolutionVector<P>>(
+        Arrays.asList(active));
 
+    // start this off empty, knowing that it will eventually need to contain all the currently inactive elements
+    Collection<SolutionVector<P>> inactiveList = new ArrayList<SolutionVector<P>>(inactive.length);
 
-		// This class is unfortunately entangled with the cache, because we want Q_get to return the kernel values in buf[] in the cache-ranked order.
-		// Since we're going to be calling Q_get with the active and inactive arrays as arguments, we need to make sure to keep those in the cache-ranked order as well.
-		// An intuitive reordering upon partitioning is to "compress" into the order active - newlyInactive - previouslyInactive.
-		// However, that's not what Q.maintainCache does: it performs a minimal set of swaps to guarantee that all the active nodes are in the active range (the first n ranks)
-		// and all the inactive nodes are in the inactive range, but makes no guarantees about the ordering within each of those regions.
+    for (Iterator<SolutionVector<P>> iter = activeList.iterator(); iter.hasNext(); ) {
+      SolutionVector sv = iter.next();
 
-		// Thus, we need to sort the arrays according to the ranks after Q.maintainCache is done with them.
+      if (sv.isShrinkable(Gmax1, Gmax2)) {
+        iter.remove();
+        inactiveList.add(sv);
+      }
+    }
 
+    active = activeList.toArray(EMPTY_SV_ARRAY);
 
-		Collection<SolutionVector<P>> activeList = new ArrayList<SolutionVector<P>>(Arrays.asList(active));
+    Q_svA = new float[active.length];
+    Q_svB = new float[active.length];
 
-		// start this off empty, knowing that it will eventually need to contain all the currently inactive elements
-		Collection<SolutionVector<P>> inactiveList = new ArrayList<SolutionVector<P>>(inactive.length);
+    SolutionVector<P>[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
+    Q.maintainCache(active,
+        newlyInactive);  // note maintainCache doesn't need to know about the currently inactive elements
 
-		for (Iterator<SolutionVector<P>> iter = activeList.iterator(); iter.hasNext();)
-			{
-			SolutionVector sv = iter.next();
+    inactiveList
+        .addAll(Arrays.asList(inactive));  // but we do need them on the inactive list going forward
+    inactive = inactiveList.toArray(EMPTY_SV_ARRAY);
 
-			if (sv.isShrinkable(Gmax1, Gmax2))
-				{
-				iter.remove();
-				inactiveList.add(sv);
-				}
-			}
+    // these must happen after Q.maintainCache, since it modifies the ranks
+    Arrays.sort(active); // SolutionVector.compareTo is based on the ranks!
+    Arrays.sort(inactive); // SolutionVector.compareTo is based on the ranks!
+  }
 
-		active = activeList.toArray(EMPTY_SV_ARRAY);
+  /**
+   * reconstruct inactive elements of G from G_bar and free variables
+   */
+  void reconstruct_gradient() {
+    if (active.length == numExamples) {
+      return;
+    }
 
-		Q_svA = new float[active.length];
-		Q_svB = new float[active.length];
+    int nr_free = 0;
 
-		SolutionVector<P>[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
-		Q.maintainCache(active,
-		                newlyInactive);  // note maintainCache doesn't need to know about the currently inactive elements
+    for (SolutionVector sv : inactive) {
+      sv.G = sv.G_bar + sv.linearTerm;
+    }
 
-		inactiveList.addAll(Arrays.asList(inactive));  // but we do need them on the inactive list going forward
-		inactive = inactiveList.toArray(EMPTY_SV_ARRAY);
+    for (SolutionVector sv : active) {
+      if (sv.isFree()) {
+        nr_free++;
+      }
+    }
 
-		// these must happen after Q.maintainCache, since it modifies the ranks
-		Arrays.sort(active); // SolutionVector.compareTo is based on the ranks!
-		Arrays.sort(inactive); // SolutionVector.compareTo is based on the ranks!
-		}
+    int activeSize = active.length;
 
-	/**
-	 * reconstruct inactive elements of G from G_bar and free variables
-	 */
-	void reconstruct_gradient()
-		{
-		if (active.length == numExamples)
-			{
-			return;
-			}
-
-		int nr_free = 0;
-
-
-		for (SolutionVector sv : inactive)
-			{
-			sv.G = sv.G_bar + sv.linearTerm;
-			}
-
-		for (SolutionVector sv : active)
-			{
-			if (sv.isFree())
-				{
-				nr_free++;
-				}
-			}
-
-		int activeSize = active.length;
-
-
-		// ** logging output disabled for now
+    // ** logging output disabled for now
 		/*if (2 * nr_free < activeSize)
 			{
 			logger.info("using -h 0 may be faster");
 			}
 */
-		if (nr_free * numExamples > 2 * activeSize * (numExamples - activeSize))
-			{
-			for (SolutionVector svA : inactive)
-				{
-				//float[] Q_i = Q.getQ(i, activeSize);
-				Q.getQ(svA, active, Q_svA);
-				for (SolutionVector svB : active)
-					{
-					if (svB.isFree()) //is_free(j))
-						{
-						//assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-						svA.G += svB.alpha * Q_svA[svB.rank];
-						//[j];
-						//Q.evaluate(svA, svB);
-						//			svA.wasEvaluated = true;
-						//			svB.wasEvaluated = true;
-						}
-					}
-				}
-			}
-		else
-			{
-			for (SolutionVector svA : active)
-				{
-				if (svA.isFree()) //is_free(i))
-					{
-					//	float[] Q_i = Q.getQ(i, numExamples);
-					//	float alpha_i = shuffledAlpha[i];
-					Q.getQ(svA, active, inactive, Q_all);
-					for (SolutionVector svB : inactive)
-						{
-						//assert Q_all[svB.rank] == Q.evaluate(svA, svB);
-						svB.G += svA.alpha * Q_all[svB.rank];
-						//Q.evaluate(svA, svB);
-						//		svA.wasEvaluated = true;
-						//		svB.wasEvaluated = true;
-						}
-					}
-				}
-			}
-		}
+    if (nr_free * numExamples > 2 * activeSize * (numExamples - activeSize)) {
+      for (SolutionVector svA : inactive) {
+        //float[] Q_i = Q.getQ(i, activeSize);
+        Q.getQ(svA, active, Q_svA);
+        for (SolutionVector svB : active) {
+          if (svB.isFree()) //is_free(j))
+          {
+            //assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+            svA.G += svB.alpha * Q_svA[svB.rank];
+            //[j];
+            //Q.evaluate(svA, svB);
+            //			svA.wasEvaluated = true;
+            //			svB.wasEvaluated = true;
+          }
+        }
+      }
+    } else {
+      for (SolutionVector svA : active) {
+        if (svA.isFree()) //is_free(i))
+        {
+          //	float[] Q_i = Q.getQ(i, numExamples);
+          //	float alpha_i = shuffledAlpha[i];
+          Q.getQ(svA, active, inactive, Q_all);
+          for (SolutionVector svB : inactive) {
+            //assert Q_all[svB.rank] == Q.evaluate(svA, svB);
+            svB.G += svA.alpha * Q_all[svB.rank];
+            //Q.evaluate(svA, svB);
+            //		svA.wasEvaluated = true;
+            //		svB.wasEvaluated = true;
+          }
+        }
+      }
+    }
+  }
 
-	protected void resetActiveSet()
-		{
-		active = allExamples.toArray(EMPTY_SV_ARRAY);
-		Arrays.sort(active);
-		inactive = EMPTY_SV_ARRAY;
-		Q_svA = new float[active.length];
-		Q_svB = new float[active.length];
-		}
+  protected void resetActiveSet() {
+    active = allExamples.toArray(EMPTY_SV_ARRAY);
+    Arrays.sort(active);
+    inactive = EMPTY_SV_ARRAY;
+    Q_svA = new float[active.length];
+    Q_svB = new float[active.length];
+  }
 
-	protected SolutionVectorPair selectWorkingPair()
-		{
+  protected SolutionVectorPair selectWorkingPair() {
 		/*
 		  return i,j such that
 		  i: maximizes -y_i * grad(f)_i, i in I_up(\alpha)
@@ -699,141 +589,107 @@ public abstract class Solver<L extends Comparable, P>
 	      -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
 	    */
 
-		double Gmax = Double.NEGATIVE_INFINITY;
-		double Gmax2 = Double.NEGATIVE_INFINITY;
-		SolutionVector GmaxSV = null; //-1;
-		SolutionVector GminSV = null; //-1;
-		double obj_diff_min = Double.POSITIVE_INFINITY;
+    double Gmax = Double.NEGATIVE_INFINITY;
+    double Gmax2 = Double.NEGATIVE_INFINITY;
+    SolutionVector GmaxSV = null; //-1;
+    SolutionVector GminSV = null; //-1;
+    double obj_diff_min = Double.POSITIVE_INFINITY;
 
+    int l = active.length;
+    for (int i = 0; i < l; i++) {
+      SolutionVector<P> sv = active[i];
+      if (sv.targetValue) {
+        if (!sv.isUpperBound()) {
+          if (-sv.G >= Gmax) {
+            Gmax = -sv.G;
+            GmaxSV = sv;
+          }
+        }
+      } else {
+        if (!sv.isLowerBound()) {
+          if (sv.G >= Gmax) {
+            Gmax = sv.G;
+            GmaxSV = sv;
+          }
+        }
+      }
+    }
 
-		int l = active.length;
-		for (int i = 0; i < l; i++)
-			{
-			SolutionVector<P> sv = active[i];
-			if (sv.targetValue)
-				{
-				if (!sv.isUpperBound())
-					{
-					if (-sv.G >= Gmax)
-						{
-						Gmax = -sv.G;
-						GmaxSV = sv;
-						}
-					}
-				}
-			else
-				{
-				if (!sv.isLowerBound())
-					{
-					if (sv.G >= Gmax)
-						{
-						Gmax = sv.G;
-						GmaxSV = sv;
-						}
-					}
-				}
-			}
+    // PERF this is where cache locality issues kick in big time.
 
+    if (GmaxSV != null) {
+      Q.getQ(GmaxSV, active, Q_svA);
+    }
 
-		// PERF this is where cache locality issues kick in big time.
+    for (int i = 0; i < l; i++) {
+      SolutionVector<P> sv = active[i];
+      if (sv.targetValue) {
+        if (!sv.isLowerBound()) {
+          double grad_diff = Gmax + sv.G;
+          if (sv.G >= Gmax2) {
+            Gmax2 = sv.G;
+          }
+          if (grad_diff > 0) {
+            double obj_diff;
+            double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
+                - 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
 
+            if (quad_coef > 0) {
+              obj_diff = -(grad_diff * grad_diff) / quad_coef;
+            } else {
+              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+            }
 
-		if (GmaxSV != null)
-			{
-			Q.getQ(GmaxSV, active, Q_svA);
-			}
+            if (obj_diff <= obj_diff_min) {
+              GminSV = sv;
+              obj_diff_min = obj_diff;
+            }
+          }
+        }
+      } else {
+        if (!sv.isUpperBound()) {
+          double grad_diff = Gmax - sv.G;
+          if (-sv.G >= Gmax2) {
+            Gmax2 = -sv.G;
+          }
+          if (grad_diff > 0) {
+            double obj_diff;
+            double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
+                + 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
 
-		for (int i = 0; i < l; i++)
-			{
-			SolutionVector<P> sv = active[i];
-			if (sv.targetValue)
-				{
-				if (!sv.isLowerBound())
-					{
-					double grad_diff = Gmax + sv.G;
-					if (sv.G >= Gmax2)
-						{
-						Gmax2 = sv.G;
-						}
-					if (grad_diff > 0)
-						{
-						double obj_diff;
-						double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
-								- 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
+            if (quad_coef > 0) {
+              obj_diff = -(grad_diff * grad_diff) / quad_coef;
+            } else {
+              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+            }
 
-						if (quad_coef > 0)
-							{
-							obj_diff = -(grad_diff * grad_diff) / quad_coef;
-							}
-						else
-							{
-							obj_diff = -(grad_diff * grad_diff) / 1e-12f;
-							}
+            if (obj_diff <= obj_diff_min) {
+              GminSV = sv;
+              obj_diff_min = obj_diff;
+            }
+          }
+        }
+      }
+    }
 
-						if (obj_diff <= obj_diff_min)
-							{
-							GminSV = sv;
-							obj_diff_min = obj_diff;
-							}
-						}
-					}
-				}
-			else
-				{
-				if (!sv.isUpperBound())
-					{
-					double grad_diff = Gmax - sv.G;
-					if (-sv.G >= Gmax2)
-						{
-						Gmax2 = -sv.G;
-						}
-					if (grad_diff > 0)
-						{
-						double obj_diff;
-						double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
-								+ 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
-
-
-						if (quad_coef > 0)
-							{
-							obj_diff = -(grad_diff * grad_diff) / quad_coef;
-							}
-						else
-							{
-							obj_diff = -(grad_diff * grad_diff) / 1e-12f;
-							}
-
-						if (obj_diff <= obj_diff_min)
-							{
-							GminSV = sv;
-							obj_diff_min = obj_diff;
-							}
-						}
-					}
-				}
-			}
-
-		return new SolutionVectorPair(GmaxSV, GminSV, Gmax + Gmax2 < eps);
-		}
+    return new SolutionVectorPair(GmaxSV, GminSV, Gmax + Gmax2 < eps);
+  }
 
 // -------------------------- INNER CLASSES --------------------------
 
-	protected class SolutionVectorPair
-		{
+  protected class SolutionVectorPair {
 // ------------------------------ FIELDS ------------------------------
 
-		boolean isOptimal;
-		SolutionVector svA;
-		SolutionVector svB;
-
+    boolean isOptimal;
+    SolutionVector svA;
+    SolutionVector svB;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-		protected SolutionVectorPair(SolutionVector svA, SolutionVector svB, boolean isOptimal)
-			{
-			this.svA = svA;
-			this.svB = svB;
-			this.isOptimal = isOptimal;
-			}
-		}
-	}
+    protected SolutionVectorPair(SolutionVector svA, SolutionVector svB, boolean isOptimal) {
+      this.svA = svA;
+      this.svB = svB;
+      this.isOptimal = isOptimal;
+    }
+  }
+}

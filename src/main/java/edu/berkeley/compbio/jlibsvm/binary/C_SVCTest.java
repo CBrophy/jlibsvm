@@ -4,13 +4,11 @@ package edu.berkeley.compbio.jlibsvm.binary;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class C_SVCTest
-	{
+public class C_SVCTest {
 // -------------------------- OTHER METHODS --------------------------
 
-	public void basicTest()
-		{
-		// not implemented
+  public void basicTest() {
+    // not implemented
 
 /*		float gamma = .5f;
 		KernelFunction k = new RBFKernel(gamma);
@@ -28,5 +26,5 @@ public class C_SVCTest
 		SvmPoint testpoint = new SvmPoint(10);
 
 		assert m.predictLabel(testpoint).equals(Boolean.TRUE);*/
-		}
-	}
+  }
+}

@@ -7,11 +7,10 @@ package edu.berkeley.compbio.jlibsvm;
  * @version $Id$
  */
 public interface MutableSvmProblem<L extends Comparable, P, R extends SvmProblem<L, P, R>>
-		extends ExplicitSvmProblem<L, P, R>
-	{
+    extends ExplicitSvmProblem<L, P, R> {
 // -------------------------- OTHER METHODS --------------------------
 
-	void addExample(P point, L label);
+  void addExample(P point, L label);
 
-	void addExampleFloat(P point, Float x);
-	}
+  void addExampleFloat(P point, Float x);
+}
