@@ -49,6 +49,6 @@ public class PolynomialKernel extends GammaKernel<SparseVector> {
 // --------------------- Interface KernelFunction ---------------------
 
   public double evaluate(SparseVector x, SparseVector y) {
-    return MathSupport.powi(gamma * MathSupport.dot(x, y) + coef0, degree);
+    return MathSupport.powi(gamma * SparseVector.dot(x, y) + coef0, degree);
   }
 }

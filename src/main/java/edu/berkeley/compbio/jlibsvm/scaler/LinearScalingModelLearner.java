@@ -1,8 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.scaler;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Learn the minima and maxima of each dimension from the training data, so as to transform points into the [-1, 1]
@@ -31,29 +29,27 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModelLearner ---------------------
 
   public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
-    // PERF we don't know what the maximum index in the SparseVectors will be; just use HashMaps for now
-    Map<Integer, Float> minima = new HashMap<Integer, Float>();
-    //double[] maxima;
-    Map<Integer, Float> sizes = new HashMap<Integer, Float>();
+    float[] minima = null;
+    float[] sizes = null;
 
     int count = 0;
     for (SparseVector example : examples) {
+
+      if (minima == null) {
+        minima = new float[example.getMaxDimensions()];
+        sizes = new float[example.getMaxDimensions()];
+      }
+
       if (count >= maxExamples) {
         break;
       }
-      for (int index : example.indexes) {
+
+      for (int index : example.getIndexes()) {
         float v = example.get(index);
 
-        Float currentMin = minima.get(index);
+        minima[index] = Math.min(minima[index], v);
+        sizes[index] = Math.max(sizes[index], v - minima[index]);
 
-        if (currentMin == null) {
-          minima.put(index, v);
-          sizes.put(index, 0F);
-        } else {
-          minima.put(index, Math.min(minima.get(index), v));
-          //maxima[i] = Math.max(maxima[i], v);
-          sizes.put(index, Math.max(sizes.get(index), v - minima.get(index)));
-        }
       }
       count++;
     }
@@ -66,13 +62,13 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
   public class LinearScalingModel implements ScalingModel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
-    Map<Integer, Float> minima;
+    float[] minima;
     //double[] maxima;
-    Map<Integer, Float> sizes;
+    float[] sizes;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public LinearScalingModel(Map<Integer, Float> minima, Map<Integer, Float> sizes) {
+    public LinearScalingModel(float[] minima, float[] sizes) {
       this.minima = minima;
       this.sizes = sizes;
     }
@@ -82,19 +78,20 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModel ---------------------
 
     public SparseVector scaledCopy(SparseVector example) {
-      SparseVector result = new SparseVector(example.indexes.length);
+      SparseVector result = new SparseVector(example);
 
-      for (int i = 0; i < example.indexes.length; i++) {
-        int index = example.indexes[i];
-        float v = example.values[i];
+      for (int i = 0; i < example.getIndexes().length; i++) {
+        int index = example.getIndexes()[i];
+        float v = example.getValues()[i];
 
-        result.indexes[i] = index;
-        Float min = minima.get(index);
+        result.getIndexes()[i] = index;
+        float min = minima[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
-        if (min != null) {
-          result.values[i] = (2F * (v - min) / sizes.get(index)) - 1F;
+        if (sizes[index] > 0.0f) {
+          result.getValues()[i] = (2F * (v - min) / sizes[index]) - 1F;
         }
+
       }
 
       if (normalizeL2) {

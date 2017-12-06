@@ -121,6 +121,12 @@
       <artifactId>ml</artifactId>
       <version>0.921</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
     <!--<dependency>
           <groupId>org.javolution</groupId>
           <artifactId>javolution</artifactId>

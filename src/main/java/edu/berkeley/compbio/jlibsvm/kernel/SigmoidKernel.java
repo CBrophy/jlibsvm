@@ -40,6 +40,6 @@ public class SigmoidKernel extends GammaKernel<SparseVector> {
 // --------------------- Interface KernelFunction ---------------------
 
   public double evaluate(SparseVector x, SparseVector y) {
-    return Math.tanh(gamma * MathSupport.dot(x, y) + coef0);
+    return Math.tanh(gamma * SparseVector.dot(x, y) + coef0);
   }
 }

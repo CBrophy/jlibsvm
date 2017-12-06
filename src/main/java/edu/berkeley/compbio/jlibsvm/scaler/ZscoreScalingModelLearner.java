@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.scaler;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,12 +31,11 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
     return result;
   }
 
-  public static void runningStddevQtoStddevInPlace(Map<Integer, Float> stddevQ, int sampleCount) {
-    //Map<Integer, Float> result = new HashMap<Integer,Float>();
-    float d = sampleCount;  // cast only once
+  public static void runningStddevQtoStddevInPlace(float[] stddevQ, int sampleCount) {
 
-    for (Map.Entry<Integer, Float> entry : stddevQ.entrySet()) {
-      entry.setValue(new Float(Math.sqrt(entry.getValue() / d)));
+    float d = sampleCount;  // cast only once
+    for(int index = 0; index < stddevQ.length; index++){
+      stddevQ[index] = (float) Math.sqrt(stddevQ[index] / d);
     }
   }
 
@@ -53,28 +51,30 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModelLearner ---------------------
 
   public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
-    // PERF we don't know what the maximum index in the SparseVectors will be; just use HashMaps for now
-    Map<Integer, Float> mean = new HashMap<Integer, Float>();
-    Map<Integer, Float> stddevQ = new HashMap<Integer, Float>();
+    float[] mean = null;
+    float[] stddevQ = null;
 
     int sampleCount = 0;
     for (SparseVector example : examples) {
+
+      if (mean == null) {
+        mean = new float[example.getMaxDimensions()];
+        stddevQ = new float[example.getMaxDimensions()];
+      }
+
       if (sampleCount >= maxExamples) {
         break;
       }
+
       sampleCount++;  // runningMean etc. assume 1-based indexes
-      for (int index : example.indexes) {
+
+      for (int index : example.getIndexes()) {
         float v = example.get(index);
 
-        Float currentMean = mean.get(index);
+        float currentMean = mean[index];
 
-        if (currentMean == null) {
-          mean.put(index, v);
-          stddevQ.put(index, 0F);
-        } else {
-          mean.put(index, runningMean(sampleCount, currentMean, v));
-          stddevQ.put(index, runningStddevQ(sampleCount, currentMean, stddevQ.get(index), v));
-        }
+        mean[index] = runningMean(sampleCount, currentMean, v);
+        stddevQ[index] = runningStddevQ(sampleCount, currentMean, stddevQ[index], v);
       }
 
       // if an index is not seen, it's still counted as having a value of zero
@@ -89,12 +89,12 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
   public class ZscoreScalingModel implements ScalingModel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
-    private final Map<Integer, Float> mean;
-    private final Map<Integer, Float> stddev;
+    private final float[] mean;
+    private final float[] stddev;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public ZscoreScalingModel(Map<Integer, Float> mean, Map<Integer, Float> stddev) {
+    public ZscoreScalingModel(float[] mean, float[] stddev) {
       this.mean = mean;
       this.stddev = stddev;
     }
@@ -104,18 +104,18 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModel ---------------------
 
     public SparseVector scaledCopy(SparseVector example) {
-      SparseVector result = new SparseVector(example.indexes.length);
+      SparseVector result = new SparseVector(example);
 
-      for (int i = 0; i < example.indexes.length; i++) {
-        int index = example.indexes[i];
-        float v = example.values[i];
+      for (int i = 0; i < example.getIndexes().length; i++) {
+        int index = example.getIndexes()[i];
+        float v = example.getValues()[i];
 
-        result.indexes[i] = index;
-        Float theMean = mean.get(index);
+        result.getIndexes()[i] = index;
+        float theMean = mean[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
-        if (theMean != null) {
-          result.values[i] = (v - theMean) / stddev.get(index);
+        if (theMean > 0.0f) {
+          result.getValues()[i] = (v - theMean) / stddev[index];
         }
       }
       if (normalizeL2) {

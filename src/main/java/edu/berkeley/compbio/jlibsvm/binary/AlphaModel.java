@@ -85,21 +85,20 @@ public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<
     String line;
     //int lineNo = 0;
     while ((line = reader.readLine()) != null) {
-      StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
 
-      //alphas[lineNo] = Float.parseFloat(st.nextToken());
-      alphaList.add(Double.parseDouble(st.nextToken()));
+      final String trimmed = line.trim();
 
-      // ** Read directly into SparseVector instead of generic P... bah
+      int question = trimmed.indexOf('?');
 
-      int n = st.countTokens() / 2;
-      SparseVector p = new SparseVector(n);
-      //supportVectors[lineNo] = p;
-      for (int j = 0; j < n; j++) {
-        p.indexes[j] = Integer.parseInt(st.nextToken());
-        p.values[j] = Float.parseFloat(st.nextToken());
+      if(question < 0) continue;
+
+      alphaList.add(Double.parseDouble(trimmed.substring(0, question)));
+
+      SparseVector vector = SparseVector.fromString(trimmed.substring(question + 1));
+
+      if(vector != null) {
+        svList.add(vector);
       }
-      svList.add(p);
     }
 
     alphas = DSArrayUtils.toPrimitiveDoubleArray(alphaList);
@@ -114,23 +113,11 @@ public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<
     fp.writeBytes("SV\n");
 
     for (int i = 0; i < numSVs; i++) {
-      fp.writeBytes(alphas[i] + " ");
 
-      //	P p = supportVectors.get(i);
+      fp.writeBytes(alphas[i] + "?");
 
       fp.writeBytes(SVs[i].toString());
 
-			/*			if (kernel instanceof PrecomputedKernel)
-			   {
-			   fp.writeBytes("0:" + (int) (p.values[0]));
-			   }
-		   else
-			   {
-			   for (int j = 0; j < p.indexes.length; j++)
-				   {
-				   fp.writeBytes(p.indexes[j] + ":" + p.values[j] + " ");
-				   }
-			   }*/
       fp.writeBytes("\n");
     }
   }

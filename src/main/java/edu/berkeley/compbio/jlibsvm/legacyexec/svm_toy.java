@@ -431,8 +431,8 @@ public class svm_toy extends Applet {
         point p = point_list.elementAt(i);
 
         SparseVector v = new SparseVector(1);
-        v.indexes[0] = 1;
-        v.values[0] = p.x;
+        v.getIndexes()[0] = 1;
+        v.getValues()[0] = p.x;
 
         prob.addExampleFloat(v, p.y);
 
@@ -449,12 +449,12 @@ public class svm_toy extends Applet {
       //System.err.println(svm.qMatrix.perfString());
       SparseVector x = new SparseVector(1);
       //x[0] = new svm_node();
-      x.indexes[0] = 1;
+      x.getIndexes()[0] = 1;
       int[] j = new int[XLEN];
 
       Graphics window_gc = getGraphics();
       for (int i = 0; i < XLEN; i++) {
-        x.values[0] = (float) i / XLEN;
+        x.getValues()[0] = (float) i / XLEN;
         j[i] = (int) (YLEN * model.predictValue(x));
       }
 
@@ -498,10 +498,10 @@ public class svm_toy extends Applet {
         point p = point_list.elementAt(i);
 
         SparseVector v = new SparseVector(2);
-        v.indexes[0] = 1;
-        v.values[0] = p.x;
-        v.indexes[1] = 2;
-        v.values[1] = p.y;
+        v.getIndexes()[0] = 1;
+        v.getValues()[0] = p.x;
+        v.getIndexes()[1] = 2;
+        v.getValues()[1] = p.y;
 
         prob.addExample(v, p.value);
       }
@@ -516,14 +516,14 @@ public class svm_toy extends Applet {
       SparseVector x = new SparseVector(2);
       //x[0] = new svm_node();
       //x[1] = new svm_node();
-      x.indexes[0] = 1;
-      x.indexes[1] = 2;
+      x.getIndexes()[0] = 1;
+      x.getIndexes()[1] = 2;
 
       Graphics window_gc = getGraphics();
       for (int i = 0; i < XLEN; i++) {
         for (int j = 0; j < YLEN; j++) {
-          x.values[0] = (float) i / XLEN;
-          x.values[1] = (float) j / YLEN;
+          x.getValues()[0] = (float) i / XLEN;
+          x.getValues()[1] = (float) j / YLEN;
 
           int d;
           if (model instanceof DiscreteModel) {

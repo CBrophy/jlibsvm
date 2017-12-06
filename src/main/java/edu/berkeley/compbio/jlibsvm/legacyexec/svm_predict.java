@@ -126,8 +126,8 @@ public class svm_predict {
       SparseVector x = new SparseVector(m);
       for (int j = 0; j < m; j++) {
         //x[j] = new svm_node();
-        x.indexes[j] = Integer.parseInt(st.nextToken());
-        x.values[j] = Float.parseFloat(st.nextToken());
+        x.getIndexes()[j] = Integer.parseInt(st.nextToken());
+        x.getValues()[j] = Float.parseFloat(st.nextToken());
       }
 
       Object prediction;

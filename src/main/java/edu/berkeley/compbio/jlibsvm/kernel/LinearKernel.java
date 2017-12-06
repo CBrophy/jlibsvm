@@ -21,6 +21,6 @@ public class LinearKernel implements KernelFunction<SparseVector> {
 // --------------------- Interface KernelFunction ---------------------
 
   public double evaluate(SparseVector x, SparseVector y) {
-    return MathSupport.dot(x, y);
+    return SparseVector.dot(x, y);
   }
 }
