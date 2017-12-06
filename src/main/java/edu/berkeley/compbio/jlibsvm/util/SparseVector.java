@@ -30,7 +30,7 @@ public class SparseVector implements Serializable {
       final float[] values) {
     assert indexes != null;
     assert values != null;
-    assert maxDimensions > indexes.length;
+    assert maxDimensions >= indexes.length;
 
     this.maxDimensions = maxDimensions;
     this.indexes = Arrays.copyOf(indexes, indexes.length);
