@@ -235,7 +235,7 @@ public abstract class Solver<L extends Comparable, P> {
       ++iter;
 
       if (iter > MAXITER) {
-        logger.error("Solver reached maximum iterations, aborting");
+        logger.warn("Solver reached maximum iterations, aborting");
         break;
       }
 

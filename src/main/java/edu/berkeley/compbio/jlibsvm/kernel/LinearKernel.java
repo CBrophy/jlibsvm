@@ -12,7 +12,7 @@ public class LinearKernel implements KernelFunction<SparseVector> {
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("kernel_type linear\n");
+    sb.append("kernel_type " + this.getClass().getName() + "\n");
     return sb.toString();
   }
 
