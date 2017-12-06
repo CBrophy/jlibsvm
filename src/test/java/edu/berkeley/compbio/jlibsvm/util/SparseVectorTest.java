@@ -135,12 +135,12 @@ public class SparseVectorTest {
     Assert.assertEquals(3, dv.getIndexes().length);
     Assert.assertEquals(3, fv.getIndexes().length);
 
-    Assert.assertEquals(0.1, dv.getValues()[0],0.01);
-    Assert.assertEquals(-0.3, dv.getValues()[1],0.01);
-    Assert.assertEquals(10.0, dv.getValues()[2],0.01);
+    Assert.assertEquals(0.1, dv.getValues()[0], 0.01);
+    Assert.assertEquals(-0.3, dv.getValues()[1], 0.01);
+    Assert.assertEquals(10.0, dv.getValues()[2], 0.01);
 
-    Assert.assertEquals(0.1f, fv.getValues()[0],0.01);
-    Assert.assertEquals(-0.3f, fv.getValues()[1],0.01);
-    Assert.assertEquals(10.0f, fv.getValues()[2],0.01);
+    Assert.assertEquals(0.1f, fv.getValues()[0], 0.01);
+    Assert.assertEquals(-0.3f, fv.getValues()[1], 0.01);
+    Assert.assertEquals(10.0f, fv.getValues()[2], 0.01);
   }
 }

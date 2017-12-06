@@ -45,10 +45,6 @@ public class GaussianRBFKernel extends GammaKernel<SparseVector> {
   /**
    * Subtract one vector from the other and take the dot product of the difference with itself, to get the square of the
    * norm.
-   *
-   * @param x
-   * @param y
-   * @return
    */
 /*	private float explicitFloatSum(SvmPoint x, SvmPoint y)
 		{
@@ -94,7 +90,6 @@ public class GaussianRBFKernel extends GammaKernel<SparseVector> {
 		}*/
 
 // --------------------------- CONSTRUCTORS ---------------------------
-
   public GaussianRBFKernel(Properties props) {
     this(Float.parseFloat(props.getProperty("gamma")));
   }

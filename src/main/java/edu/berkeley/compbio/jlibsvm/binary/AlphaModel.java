@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -90,13 +89,15 @@ public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<
 
       int question = trimmed.indexOf('?');
 
-      if(question < 0) continue;
+      if (question < 0) {
+        continue;
+      }
 
       alphaList.add(Double.parseDouble(trimmed.substring(0, question)));
 
       SparseVector vector = SparseVector.fromString(trimmed.substring(question + 1));
 
-      if(vector != null) {
+      if (vector != null) {
         svList.add(vector);
       }
     }

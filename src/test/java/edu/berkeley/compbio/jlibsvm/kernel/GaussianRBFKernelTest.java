@@ -40,7 +40,7 @@ public class GaussianRBFKernelTest {
         final double explicitResult = explicit.evaluate(sv1, sv3);
         final double diff = Math.abs(explicitResult - compositeResult);
 
-        Assert.assertTrue(String.format("%s < %s", diff, 1e-8),diff < 1e-8);
+        Assert.assertTrue(String.format("%s < %s", diff, 1e-8), diff < 1e-8);
       }
     }
   }

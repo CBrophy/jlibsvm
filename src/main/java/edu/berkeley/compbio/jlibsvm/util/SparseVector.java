@@ -61,7 +61,9 @@ public class SparseVector implements Serializable {
   ) {
 
     // Using the ids should allow for dupes in a map/hash scenario
-    if(id != null) return id.hashCode();
+    if (id != null) {
+      return id.hashCode();
+    }
 
     return Objects.hash(
         maxDimensions,
@@ -196,6 +198,7 @@ public class SparseVector implements Serializable {
   public static SparseVector of(final double[] denseVector) {
     return of(null, denseVector);
   }
+
   public static SparseVector of(final Long id, final double[] denseVector) {
     List<Integer> indexList = new ArrayList<>(denseVector.length);
     List<Float> valueList = new ArrayList<>(denseVector.length);

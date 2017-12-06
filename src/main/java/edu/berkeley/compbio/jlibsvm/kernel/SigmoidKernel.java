@@ -1,6 +1,5 @@
 package edu.berkeley.compbio.jlibsvm.kernel;
 
-import edu.berkeley.compbio.jlibsvm.util.MathSupport;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Properties;
 

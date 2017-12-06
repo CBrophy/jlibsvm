@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.scaler;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -34,7 +33,7 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
   public static void runningStddevQtoStddevInPlace(float[] stddevQ, int sampleCount) {
 
     float d = sampleCount;  // cast only once
-    for(int index = 0; index < stddevQ.length; index++){
+    for (int index = 0; index < stddevQ.length; index++) {
       stddevQ[index] = (float) Math.sqrt(stddevQ[index] / d);
     }
   }
