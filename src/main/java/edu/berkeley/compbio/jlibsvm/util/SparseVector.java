@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 public class SparseVector implements Serializable {
 // ------------------------------ FIELDS ------------------------------
 
+  private final Long id;
   private final int maxDimensions;
   private final int[] indexes;
   private final float[] values;
@@ -28,14 +29,24 @@ public class SparseVector implements Serializable {
       final int maxDimensions,
       final int[] indexes,
       final float[] values) {
+    this(null, maxDimensions, indexes, values);
+  }
+
+  SparseVector(
+      final Long id,
+      final int maxDimensions,
+      final int[] indexes,
+      final float[] values) {
     assert indexes != null;
     assert values != null;
     assert maxDimensions >= indexes.length;
 
+    this.id = id;
     this.maxDimensions = maxDimensions;
-    this.indexes = Arrays.copyOf(indexes, indexes.length);
-    this.values = Arrays.copyOf(values, indexes.length);
+    this.indexes = indexes;
+    this.values = values;
     this.hashCode = calcHashCode(
+        id,
         maxDimensions,
         indexes,
         values
@@ -43,10 +54,15 @@ public class SparseVector implements Serializable {
   }
 
   private static int calcHashCode(
+      final Long id,
       final int maxDimensions,
       final int[] indexes,
       final float[] values
   ) {
+
+    // Using the ids should allow for dupes in a map/hash scenario
+    if(id != null) return id.hashCode();
+
     return Objects.hash(
         maxDimensions,
         Arrays.hashCode(indexes),
@@ -64,10 +80,15 @@ public class SparseVector implements Serializable {
 
   public SparseVector(SparseVector sparseVector) {
     this(
+        sparseVector.getId(),
         sparseVector.getMaxDimensions(),
         Arrays.copyOf(sparseVector.indexes, sparseVector.indexes.length),
         Arrays.copyOf(sparseVector.values, sparseVector.values.length)
     );
+  }
+
+  public long getId() {
+    return id;
   }
 
   public int getMaxDimensions() {
@@ -173,6 +194,9 @@ public class SparseVector implements Serializable {
   }
 
   public static SparseVector of(final double[] denseVector) {
+    return of(null, denseVector);
+  }
+  public static SparseVector of(final Long id, final double[] denseVector) {
     List<Integer> indexList = new ArrayList<>(denseVector.length);
     List<Float> valueList = new ArrayList<>(denseVector.length);
 
@@ -186,12 +210,13 @@ public class SparseVector implements Serializable {
     final int[] indexes = new int[indexList.size()];
     final float[] values = new float[valueList.size()];
 
-    for(int index = 0; index < indexList.size(); index++){
+    for (int index = 0; index < indexList.size(); index++) {
       indexes[index] = indexList.get(index);
       values[index] = valueList.get(index);
     }
 
     return new SparseVector(
+        id,
         denseVector.length,
         indexes,
         values);
@@ -199,6 +224,10 @@ public class SparseVector implements Serializable {
   }
 
   public static SparseVector of(final float[] denseVector) {
+    return of(null, denseVector);
+  }
+
+  public static SparseVector of(final Long id, final float[] denseVector) {
     List<Integer> indexList = new ArrayList<>(denseVector.length);
     List<Float> valueList = new ArrayList<>(denseVector.length);
 
@@ -212,12 +241,13 @@ public class SparseVector implements Serializable {
     final int[] indexes = new int[indexList.size()];
     final float[] values = new float[valueList.size()];
 
-    for(int index = 0; index < indexList.size(); index++){
+    for (int index = 0; index < indexList.size(); index++) {
       indexes[index] = indexList.get(index);
       values[index] = valueList.get(index);
     }
 
     return new SparseVector(
+        id,
         denseVector.length,
         indexes,
         values);
@@ -253,6 +283,7 @@ public class SparseVector implements Serializable {
   @Override
   public boolean equals(Object obj) {
     return obj instanceof SparseVector
+        && getId() == ((SparseVector) obj).getId()
         && getMaxDimensions() == ((SparseVector) obj).getMaxDimensions()
         && Arrays.equals(getIndexes(), ((SparseVector) obj).getIndexes())
         && Arrays.equals(getValues(), ((SparseVector) obj).getValues());

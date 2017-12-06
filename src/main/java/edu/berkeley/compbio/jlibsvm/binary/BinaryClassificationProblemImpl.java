@@ -4,6 +4,7 @@ import edu.berkeley.compbio.jlibsvm.ExplicitSvmProblemImpl;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
 import edu.berkeley.compbio.jlibsvm.util.SubtractionMap;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class BinaryClassificationProblemImpl<L extends Comparable, P>
     extends ExplicitSvmProblemImpl<L, P, BinaryClassificationProblem<L, P>>
-    implements BinaryClassificationProblem<L, P> {
+    implements BinaryClassificationProblem<L, P>, Serializable {
 // ------------------------------ FIELDS ------------------------------
 
   Class labelClass;
