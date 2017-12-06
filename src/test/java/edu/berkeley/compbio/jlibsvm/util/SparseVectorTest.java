@@ -7,7 +7,7 @@ import org.junit.Test;
 public class SparseVectorTest {
 
   @Test
-  public void testToString(){
+  public void testToString() {
     final SparseVector vector = new SparseVector(
         25,
         new int[]{4, 10, 19},
@@ -20,7 +20,7 @@ public class SparseVectorTest {
   }
 
   @Test
-  public void testFromString(){
+  public void testFromString() {
     SparseVector vector = SparseVector.fromString("25+4:4.5 10:3.4 19:9.0 ");
 
     Assert.assertNotNull(vector);
@@ -36,7 +36,7 @@ public class SparseVectorTest {
   }
 
   @Test
-  public void testToDenseVector(){
+  public void testToDenseVector() {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
@@ -54,8 +54,9 @@ public class SparseVectorTest {
     Assert.assertEquals(3.4f, dv[3], 0.01);
     Assert.assertEquals(9.0f, dv[4], 0.01);
   }
+
   @Test
-  public void testDot(){
+  public void testDot() {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
@@ -75,7 +76,7 @@ public class SparseVectorTest {
   }
 
   @Test
-  public void testDifference(){
+  public void testDifference() {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
@@ -100,7 +101,7 @@ public class SparseVectorTest {
   }
 
   @Test
-  public void testSquareNorm(){
+  public void testSquareNorm() {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
@@ -116,5 +117,30 @@ public class SparseVectorTest {
     final double val = SparseVector.squareNorm(vector1, vector2);
 
     Assert.assertEquals(51.02999965667732f, val, 0.01);
+  }
+
+  @Test
+  public void testOf() {
+    double[] d1 = new double[]{0.0, 0.1, -0.3, 0.0, 10.0};
+    float[] f1 = new float[]{0.0f, 0.1f, -0.3f, 0.0f, 10.0f};
+
+    final SparseVector dv = SparseVector.of(d1);
+    final SparseVector fv = SparseVector.of(f1);
+
+    Assert.assertNotNull(dv);
+    Assert.assertNotNull(fv);
+
+    Assert.assertEquals(5, dv.getMaxDimensions());
+    Assert.assertEquals(5, fv.getMaxDimensions());
+    Assert.assertEquals(3, dv.getIndexes().length);
+    Assert.assertEquals(3, fv.getIndexes().length);
+
+    Assert.assertEquals(0.1, dv.getValues()[0],0.01);
+    Assert.assertEquals(-0.3, dv.getValues()[1],0.01);
+    Assert.assertEquals(10.0, dv.getValues()[2],0.01);
+
+    Assert.assertEquals(0.1f, fv.getValues()[0],0.01);
+    Assert.assertEquals(-0.3f, fv.getValues()[1],0.01);
+    Assert.assertEquals(10.0f, fv.getValues()[2],0.01);
   }
 }

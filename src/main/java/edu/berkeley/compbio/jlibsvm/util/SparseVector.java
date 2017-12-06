@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 
 /**
@@ -19,6 +20,7 @@ public class SparseVector implements Serializable {
   private final int maxDimensions;
   private final int[] indexes;
   private final float[] values;
+  private final int hashCode;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -31,8 +33,25 @@ public class SparseVector implements Serializable {
     assert maxDimensions > indexes.length;
 
     this.maxDimensions = maxDimensions;
-    this.indexes = indexes;
-    this.values = values;
+    this.indexes = Arrays.copyOf(indexes, indexes.length);
+    this.values = Arrays.copyOf(values, indexes.length);
+    this.hashCode = calcHashCode(
+        maxDimensions,
+        indexes,
+        values
+    );
+  }
+
+  private static int calcHashCode(
+      final int maxDimensions,
+      final int[] indexes,
+      final float[] values
+  ) {
+    return Objects.hash(
+        maxDimensions,
+        Arrays.hashCode(indexes),
+        Arrays.hashCode(values)
+    );
   }
 
   public SparseVector(int maxDimensions) {
@@ -158,7 +177,7 @@ public class SparseVector implements Serializable {
     List<Float> valueList = new ArrayList<>(denseVector.length);
 
     for (int index = 0; index < denseVector.length; index++) {
-      if (denseVector[index] > 0.0) {
+      if (denseVector[index] > 0.0d || denseVector[index] < 0.0d) {
         indexList.add(index);
         valueList.add((float) denseVector[index]);
       }
@@ -166,6 +185,11 @@ public class SparseVector implements Serializable {
 
     final int[] indexes = new int[indexList.size()];
     final float[] values = new float[valueList.size()];
+
+    for(int index = 0; index < indexList.size(); index++){
+      indexes[index] = indexList.get(index);
+      values[index] = valueList.get(index);
+    }
 
     return new SparseVector(
         denseVector.length,
@@ -179,7 +203,7 @@ public class SparseVector implements Serializable {
     List<Float> valueList = new ArrayList<>(denseVector.length);
 
     for (int index = 0; index < denseVector.length; index++) {
-      if (denseVector[index] > 0.0) {
+      if (denseVector[index] > 0.0f || denseVector[index] < 0.0f) {
         indexList.add(index);
         valueList.add(denseVector[index]);
       }
@@ -187,6 +211,11 @@ public class SparseVector implements Serializable {
 
     final int[] indexes = new int[indexList.size()];
     final float[] values = new float[valueList.size()];
+
+    for(int index = 0; index < indexList.size(); index++){
+      indexes[index] = indexList.get(index);
+      values[index] = valueList.get(index);
+    }
 
     return new SparseVector(
         denseVector.length,
@@ -214,6 +243,19 @@ public class SparseVector implements Serializable {
       sb.append(indexes[j] + ":" + values[j] + ' ');
     }
     return sb.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    return hashCode;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof SparseVector
+        && getMaxDimensions() == ((SparseVector) obj).getMaxDimensions()
+        && Arrays.equals(getIndexes(), ((SparseVector) obj).getIndexes())
+        && Arrays.equals(getValues(), ((SparseVector) obj).getValues());
   }
 
   public static SparseVector fromString(final String vectorString) {
@@ -284,7 +326,7 @@ public class SparseVector implements Serializable {
     assert y != null;
     assert x.maxDimensions == y.maxDimensions;
 
-    if(x.indexes.length == 0) {
+    if (x.indexes.length == 0) {
       return 0.0;
     }
 
@@ -314,7 +356,7 @@ public class SparseVector implements Serializable {
     return dotProduct;
   }
 
-  public static double squareNorm(final SparseVector x, final SparseVector y){
+  public static double squareNorm(final SparseVector x, final SparseVector y) {
     SparseVector diff = SparseVector.difference(x, y);
 
     return SparseVector.dot(diff, diff);
@@ -331,7 +373,7 @@ public class SparseVector implements Serializable {
     int currentIndex1 = 0;
     int currentIndex2 = 0;
 
-    for(int index = 0; index < v1.getMaxDimensions(); index++){
+    for (int index = 0; index < v1.getMaxDimensions(); index++) {
 
       int valIndex1 = currentIndex1 < v1.indexes.length ? v1.indexes[currentIndex1] : -1;
       int valIndex2 = currentIndex2 < v2.indexes.length ? v2.indexes[currentIndex2] : -1;
@@ -339,19 +381,19 @@ public class SparseVector implements Serializable {
       float val1 = 0.0f;
       float val2 = 0.0f;
 
-      if(valIndex1 == index){
+      if (valIndex1 == index) {
         val1 = v1.values[currentIndex1];
         currentIndex1++;
       }
 
-      if(valIndex2 == index){
+      if (valIndex2 == index) {
         val2 = v2.values[currentIndex2];
         currentIndex2++;
       }
 
       float val = val1 - val2;
 
-      if(val > 0.0f || val < 0.0f){
+      if (val > 0.0f || val < 0.0f) {
         indexList.add(index);
         valueList.add(val);
       }
@@ -360,7 +402,7 @@ public class SparseVector implements Serializable {
     int[] indices = new int[indexList.size()];
     float[] values = new float[indexList.size()];
 
-    for(int index = 0; index < indexList.size(); index++){
+    for (int index = 0; index < indexList.size(); index++) {
       indices[index] = indexList.get(index);
       values[index] = valueList.get(index);
     }
@@ -386,7 +428,8 @@ public class SparseVector implements Serializable {
 
     @Override
     public Float next() {
-      int nextIndex = currentIndex < sparseVector.indexes.length ? sparseVector.indexes[currentIndex] : -1;
+      int nextIndex =
+          currentIndex < sparseVector.indexes.length ? sparseVector.indexes[currentIndex] : -1;
 
       float result = 0.0f;
 
