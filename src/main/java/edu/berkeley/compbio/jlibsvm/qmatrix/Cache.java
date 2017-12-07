@@ -71,9 +71,9 @@ class Cache {
       h.data = new_data;
       size -= more;
       do {
-        int _ = h.len;
+        int temp = h.len;
         h.len = len;
-        len = _;
+        len = temp;
       }
       while (false);
     }
@@ -109,15 +109,15 @@ class Cache {
       lru_delete(head[j]);
     }
     do {
-      double[] _ = head[i].data;
+      double[] temp = head[i].data;
       head[i].data = head[j].data;
-      head[j].data = _;
+      head[j].data = temp;
     }
     while (false);
     do {
-      int _ = head[i].len;
+      int temp = head[i].len;
       head[i].len = head[j].len;
-      head[j].len = _;
+      head[j].len = temp;
     }
     while (false);
     if (head[i].len > 0) {
@@ -129,9 +129,9 @@ class Cache {
 
     if (i > j) {
       do {
-        int _ = i;
+        int temp = i;
         i = j;
-        j = _;
+        j = temp;
       }
       while (false);
     }
@@ -139,9 +139,9 @@ class Cache {
       if (h.len > i) {
         if (h.len > j) {
           do {
-            double _ = h.data[i];
+            double temp = h.data[i];
             h.data[i] = h.data[j];
-            h.data[j] = _;
+            h.data[j] = temp;
           }
           while (false);
         } else {

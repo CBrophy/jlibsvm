@@ -35,11 +35,9 @@ public abstract class SolutionModel<L extends Comparable, P extends SparseVector
     try {
       BufferedReader fp = new BufferedReader(new FileReader(model_file_name));
       Properties props = new Properties();
-      //props.load(new StringReader(readUpToSVs(fp))));  // java 1.6 only
       props.load(new StringBufferInputStream(readUpToSVs(fp)));
 
       // first figure out which model type it is
-      //Class c = Class.forName(props.getProperty("svm_type"));
 
       // BAD quick hack
       Class c = BinaryModel.class;
