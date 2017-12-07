@@ -4,6 +4,7 @@ import edu.berkeley.compbio.jlibsvm.ExplicitSvmProblemImpl;
 import edu.berkeley.compbio.jlibsvm.labelinverter.LabelInverter;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.jlibsvm.util.SubtractionMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MultiClassProblemImpl<L extends Comparable, P> //, R extends MultiClassProblem<? extends L, ? extends P, ? extends R>>
+public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector> //, R extends MultiClassProblem<? extends L, ? extends P, ? extends R>>
     extends ExplicitSvmProblemImpl<L, P, MultiClassProblem<L, P>>
     implements MultiClassProblem<L, P> //, MutableSvmProblem<L,P,R>
 {
@@ -41,14 +42,14 @@ public class MultiClassProblemImpl<L extends Comparable, P> //, R extends MultiC
    * this should match the generics used on SvmProblem, etc.
    */
   public MultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter, Map<P, L> examples,
-      Map<P, Integer> exampleIds, ScalingModel<P> scalingModel) {
-    super(examples, exampleIds, scalingModel);
+      ScalingModel<P> scalingModel) {
+    super(examples, scalingModel);
     this.labelClass = labelClass;
     this.labelInverter = labelInverter;
   }
 
   public MultiClassProblemImpl(MultiClassProblemImpl<L, P> backingProblem, Set<P> heldOutPoints) {
-    super(new SubtractionMap(backingProblem.examples, heldOutPoints), backingProblem.exampleIds,
+    super(new SubtractionMap(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
     this.labelClass = backingProblem.labelClass;
     this.labelInverter = backingProblem.labelInverter;
@@ -99,10 +100,8 @@ public class MultiClassProblemImpl<L extends Comparable, P> //, R extends MultiC
   }
 
   public MultiClassProblem<L, P> createScaledCopy(Map<P, L> scaledExamples,
-      Map<P, Integer> scaledExampleIds,
       ScalingModel<P> learnedScalingModel) {
     return new MultiClassProblemImpl<L, P>(labelClass, labelInverter, scaledExamples,
-        scaledExampleIds,
         learnedScalingModel);
   }
 

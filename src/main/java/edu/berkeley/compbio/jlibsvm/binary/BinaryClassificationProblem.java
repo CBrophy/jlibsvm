@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm.binary;
 
 import edu.berkeley.compbio.jlibsvm.SvmProblem;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface BinaryClassificationProblem<L extends Comparable, P>
+public interface BinaryClassificationProblem<L extends Comparable, P extends SparseVector>
     extends SvmProblem<L, P, BinaryClassificationProblem<L, P>> {
 // -------------------------- OTHER METHODS --------------------------
 

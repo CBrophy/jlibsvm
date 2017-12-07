@@ -7,6 +7,7 @@ import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.qmatrix.BooleanInvertingKernelQMatrix;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Nu_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, P> {
+public class Nu_SVC<L extends Comparable, P extends SparseVector> extends BinaryClassificationSVM<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Nu_SVC.class);
@@ -25,7 +26,7 @@ public class Nu_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, 
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
-  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, float Cp, float Cn,
+  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, double Cp, double Cn,
       @NotNull ImmutableSvmParameterPoint<L, P> param) {
     if (Cp != 1f || Cn != 1f) {
       logger.warn("Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
@@ -37,18 +38,18 @@ public class Nu_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, 
 
     int l = problem.getNumExamples();
 
-    float nu = param.nu;
+    double nu = param.nu;
 
-    float sumPos = nu * l / 2;
-    float sumNeg = nu * l / 2;
+    double sumPos = nu * l / 2;
+    double sumNeg = nu * l / 2;
 
     Map<P, Boolean> examples = problem.getBooleanExamples();
 
-    float linearTerm = 0f;
+    double linearTerm = 0f;
     List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
 
     for (Map.Entry<P, Boolean> entry : examples.entrySet()) {
-      float initAlpha;
+      double initAlpha;
       if (entry.getValue()) {
         initAlpha = Math.min(1.0f, sumPos);
         sumPos -= initAlpha;
@@ -57,7 +58,7 @@ public class Nu_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, 
         sumNeg -= initAlpha;
       }
       SolutionVector<P> sv =
-          new SolutionVector(problem.getId(entry.getKey()), entry.getKey(), entry.getValue(),
+          new SolutionVector<>(problem.getId(entry.getKey()), entry.getKey(), entry.getValue(),
               linearTerm,
               initAlpha);
       //sv.id = problem.getId(entry.getKey());
@@ -78,7 +79,7 @@ public class Nu_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, 
     model.falseLabel = problem.getFalseLabel();
     model.setSvmType(getSvmType());
 
-    float r = model.r;
+    double r = model.r;
 
     logger.info("C = " + 1 / r);
 

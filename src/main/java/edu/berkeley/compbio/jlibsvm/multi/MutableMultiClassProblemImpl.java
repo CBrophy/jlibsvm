@@ -4,6 +4,7 @@ import edu.berkeley.compbio.jlibsvm.MutableSvmProblem;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.labelinverter.LabelInverter;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MutableMultiClassProblemImpl<L extends Comparable, P> extends
+public class MutableMultiClassProblemImpl<L extends Comparable, P extends SparseVector> extends
     MultiClassProblemImpl<L, P>
     implements MutableSvmProblem<L, P, MultiClassProblem<L, P>> {
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -25,7 +26,6 @@ public class MutableMultiClassProblemImpl<L extends Comparable, P> extends
       int numExamples,
       @NotNull ScalingModel<P> scalingModel) {
     super(labelClass, labelInverter, new HashMap<P, L>(numExamples),
-        new HashMap<P, Integer>(numExamples),
         scalingModel);
   }
 
@@ -35,10 +35,9 @@ public class MutableMultiClassProblemImpl<L extends Comparable, P> extends
 
   public void addExample(P point, L label) {
     examples.put(point, label);
-    exampleIds.put(point, exampleIds.size());
   }
 
-  public void addExampleFloat(P point, Float x) {
+  public void addExampleFloat(P point, Double x) {
     try {
       addExample(point, (L) labelClass.getConstructor(String.class).newInstance(x.toString()));
     } catch (Exception e) {

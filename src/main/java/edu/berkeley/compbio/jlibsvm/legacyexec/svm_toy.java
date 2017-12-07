@@ -226,9 +226,9 @@ public class svm_toy extends Applet {
         StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
         byte value = (byte) Integer.parseInt(st.nextToken());
         st.nextToken();
-        float x = Float.parseFloat(st.nextToken());
+        double x = Double.parseDouble(st.nextToken());
         st.nextToken();
-        float y = Float.parseFloat(st.nextToken());
+        double y = Double.parseDouble(st.nextToken());
         point_list.addElement(new point(x, y, value));
       }
       fp.close();
@@ -276,9 +276,6 @@ public class svm_toy extends Applet {
     paramPointBuilder.p = 0.1f;
     paramPointBuilder.shrinking = true;
     paramPointBuilder.probability = false;
-    //param.nr_weight = 0;
-    //param.weightLabel = new int[0];
-    //param.weight = new float[0];
 
     // parse options
     StringTokenizer st = new StringTokenizer(args);
@@ -290,8 +287,8 @@ public class svm_toy extends Applet {
     int svm_type = 0;
     int kernel_type = 2;
     int degree = 3;
-    float gamma = 0;
-    float coef0 = 0;
+    double gamma = 0;
+    double coef0 = 0;
 
     for (int i = 0; i < argv.length; i++) {
       if (argv[i].charAt(0) != '-') {
@@ -312,25 +309,25 @@ public class svm_toy extends Applet {
           degree = Integer.parseInt(argv[i]);
           break;
         case 'g':
-          gamma = Float.parseFloat(argv[i]);
+          gamma = Double.parseDouble(argv[i]);
           break;
         case 'r':
-          coef0 = Float.parseFloat(argv[i]);
+          coef0 = Double.parseDouble(argv[i]);
           break;
         case 'n':
-          paramPointBuilder.nu = Float.parseFloat(argv[i]);
+          paramPointBuilder.nu = Double.parseDouble(argv[i]);
           break;
         case 'm':
-          paramPointBuilder.cache_size = Float.parseFloat(argv[i]);
+          paramPointBuilder.cache_size = Double.parseDouble(argv[i]);
           break;
         case 'c':
-          paramPointBuilder.C = Float.parseFloat(argv[i]);
+          paramPointBuilder.C = Double.parseDouble(argv[i]);
           break;
         case 'e':
-          paramPointBuilder.eps = Float.parseFloat(argv[i]);
+          paramPointBuilder.eps = Double.parseDouble(argv[i]);
           break;
         case 'p':
-          paramPointBuilder.p = Float.parseFloat(argv[i]);
+          paramPointBuilder.p = Double.parseDouble(argv[i]);
           break;
         case 'h':
           paramPointBuilder.shrinking = Boolean.parseBoolean(argv[i]);
@@ -343,7 +340,7 @@ public class svm_toy extends Applet {
           break;
         case 'w':
           paramPointBuilder
-              .putWeight(Integer.parseInt(argv[i - 1].substring(2)), Float.parseFloat(argv[i]));
+              .putWeight(Integer.parseInt(argv[i - 1].substring(2)), Double.parseDouble(argv[i]));
           break;
         default:
           System.err.print("unknown option\n");
@@ -415,18 +412,13 @@ public class svm_toy extends Applet {
           new NoopScalingModel<SparseVector>());
     }
 
-    //prob.l = point_list.size();
-    //prob.targetValues = new Float[point_list.size()];
-
     if (kernel_type == svm_train.PRECOMPUTED) {
       throw new SvmException("Can't use precomputed kernel with svm_toy");
     } else if (svm_type == svm_train.EPSILON_SVR || svm_type == svm_train.NU_SVR) {
       if (param.kernel instanceof GammaKernel && ((GammaKernel) param.kernel).getGamma() == 0f) {
         ((GammaKernel) param.kernel).setGamma(1.0f);
-        //gamma = 1;
       }
 
-      //prob.examples = new SvmPoint[point_list.size()];
       for (int i = 0; i < point_list.size(); i++) {
         point p = point_list.elementAt(i);
 
@@ -436,25 +428,18 @@ public class svm_toy extends Applet {
 
         prob.addExampleFloat(v, p.y);
 
-				/*	prob.examples[i] = new SparseVector(1);
-								prob.examples[i].indexes[0] = 1;
-								prob.examples[i].values[0] = p.x;
-								prob.putTargetValue(i, p.y);*/
       }
 
       // build model & classify
-      //svm.setupQMatrix(prob);
       ContinuousModel model = (ContinuousModel) svm
-          .train(prob, param); //, new DepthFirstThreadPoolExecutor());
-      //System.err.println(svm.qMatrix.perfString());
+          .train(prob, param);
       SparseVector x = new SparseVector(1);
-      //x[0] = new svm_node();
       x.getIndexes()[0] = 1;
       int[] j = new int[XLEN];
 
       Graphics window_gc = getGraphics();
       for (int i = 0; i < XLEN; i++) {
-        x.getValues()[0] = (float) i / XLEN;
+        x.getValues()[0] = (double) i / XLEN;
         j[i] = (int) (YLEN * model.predictValue(x));
       }
 
@@ -522,8 +507,8 @@ public class svm_toy extends Applet {
       Graphics window_gc = getGraphics();
       for (int i = 0; i < XLEN; i++) {
         for (int j = 0; j < YLEN; j++) {
-          x.getValues()[0] = (float) i / XLEN;
-          x.getValues()[1] = (float) j / YLEN;
+          x.getValues()[0] = (double) i / XLEN;
+          x.getValues()[1] = (double) j / YLEN;
 
           int d;
           if (model instanceof DiscreteModel) {
@@ -573,7 +558,7 @@ public class svm_toy extends Applet {
       if (e.getX() >= XLEN || e.getY() >= YLEN) {
         return;
       }
-      point p = new point((float) e.getX() / XLEN, (float) e.getY() / YLEN, current_value);
+      point p = new point((double) e.getX() / XLEN, (double) e.getY() / YLEN, current_value);
       point_list.addElement(p);
       draw_point(p);
     }
@@ -591,12 +576,12 @@ public class svm_toy extends Applet {
   static class point {
 // ------------------------------ FIELDS ------------------------------
 
-    float x, y;
+    double x, y;
     byte value;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    point(float x, float y, byte value) {
+    point(double x, double y, byte value) {
       this.x = x;
       this.y = y;
       this.value = value;

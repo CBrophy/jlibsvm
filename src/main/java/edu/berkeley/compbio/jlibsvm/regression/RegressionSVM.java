@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm.regression;
 
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.SVM;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -10,40 +11,40 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class RegressionSVM<P, R extends RegressionProblem<P, R>> extends SVM<Float, P, R> {
+public abstract class RegressionSVM<P extends SparseVector, R extends RegressionProblem<P, R>> extends SVM<Double, P, R> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSVM.class);
 
-  private final float SQRT_2 = (float) Math.sqrt(2);
+  private final double SQRT_2 = (double) Math.sqrt(2);
 
 // -------------------------- OTHER METHODS --------------------------
 
   // Return parameter of a Laplace distribution
 
-  protected float laplaceParameter(RegressionProblem<P, R> problem,
-      @NotNull ImmutableSvmParameter<Float, P> param)
+  protected double laplaceParameter(RegressionProblem<P, R> problem,
+      @NotNull ImmutableSvmParameter<Double, P> param)
   //,   final TreeExecutorService execService)
   {
     int i;
-    float mae = 0;
+    double mae = 0;
 
-    Map<P, Float> ymv = continuousCrossValidation(problem, param); //, execService);
+    Map<P, Double> ymv = continuousCrossValidation(problem, param); //, execService);
 
-    for (Map.Entry<P, Float> entry : ymv.entrySet()) {
-      float newVal = problem.getTargetValue(entry.getKey()) - entry.getValue();
+    for (Map.Entry<P, Double> entry : ymv.entrySet()) {
+      double newVal = problem.getTargetValue(entry.getKey()) - entry.getValue();
       entry.setValue(newVal);
       mae += Math.abs(newVal);
     }
 
     mae /= problem.getNumExamples();
 
-    float std = SQRT_2 * mae;
+    double std = SQRT_2 * mae;
     int count = 0;
     mae = 0;
 
-    for (Map.Entry<P, Float> entry : ymv.entrySet()) {
-      float absVal = Math.abs(entry.getValue());
+    for (Map.Entry<P, Double> entry : ymv.entrySet()) {
+      double absVal = Math.abs(entry.getValue());
       if (absVal > 5 * std) {
         count = count + 1;
       } else {
@@ -57,20 +58,20 @@ public abstract class RegressionSVM<P, R extends RegressionProblem<P, R>> extend
   }
 
   public abstract RegressionModel<P> train(R problem,
-      @NotNull ImmutableSvmParameter<Float, P> param);
+      @NotNull ImmutableSvmParameter<Double, P> param);
   //,final TreeExecutorService execService);
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<Float, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameter<Double, P> param) {
     super.validateParam(param);
   }
 
 
   public RegressionCrossValidationResults<P, R> performCrossValidation(R problem,
-      @NotNull ImmutableSvmParameter<Float, P> param)
+      @NotNull ImmutableSvmParameter<Double, P> param)
   //,final TreeExecutorService execService)
   {
-    Map<P, Float> decisionValues = continuousCrossValidation(problem, param); //, execService);
+    Map<P, Double> decisionValues = continuousCrossValidation(problem, param); //, execService);
 
     RegressionCrossValidationResults<P, R> cv = new RegressionCrossValidationResults<P, R>(problem,
         decisionValues);

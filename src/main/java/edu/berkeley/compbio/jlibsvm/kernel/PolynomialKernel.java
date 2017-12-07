@@ -12,18 +12,18 @@ public class PolynomialKernel extends GammaKernel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
   public int degree;
-  public float coef0;
+  public double coef0;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
 /*	public PolynomialKernel(Properties props)
 		{
-		this(Integer.parseInt(props.getProperty("degree")), Float.parseFloat(props.getProperty("gamma")),
-		     Float.parseFloat(props.getProperty("coef0")));
+		this(Integer.parseInt(props.getProperty("degree")), Double.parseDouble(props.getProperty("gamma")),
+		     Double.parseDouble(props.getProperty("coef0")));
 		}
 */
 
-  public PolynomialKernel(int degree, float gamma, float coef0) {
+  public PolynomialKernel(int degree, double gamma, double coef0) {
     super(gamma);
     if (degree < 0) {
       throw new SvmException("degree of polynomial kernel < 0");

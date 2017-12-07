@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
 import edu.berkeley.compbio.jlibsvm.SigmoidProbabilityModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.BinaryCrossValidationResults;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -9,7 +10,7 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SvmBinaryCrossValidationResults<L extends Comparable, P> extends
+public class SvmBinaryCrossValidationResults<L extends Comparable, P extends SparseVector> extends
     BinaryCrossValidationResults {
 // ------------------------------ FIELDS ------------------------------
 
@@ -17,32 +18,20 @@ public class SvmBinaryCrossValidationResults<L extends Comparable, P> extends
 
   SigmoidProbabilityModel sigmoid;
 
-// --------------------------- CONSTRUCTORS ---------------------------
-
-	/*public CrossValidationResults(int numExamples, int tt, int tf, int ft, int ff)
-		{
-		this.numExamples = numExamples;
-		this.tt = tt;
-		this.tf = tf;
-		this.ft = ft;
-		this.ff = ff;
-		}
-*/
-
   public SvmBinaryCrossValidationResults(BinaryClassificationProblem<L, P> problem,
-      final Map<P, Float> decisionValues, boolean probability) {
+      final Map<P, Double> decisionValues, boolean probability) {
     // convert to arrays
 
     int totalExamples = decisionValues.size();
 
-    final float[] decisionValueArray = new float[totalExamples];
+    final double[] decisionValueArray = new double[totalExamples];
     final boolean[] labelArray = new boolean[totalExamples];
 
     logger.debug("Collecting binary cross-validation results for " + totalExamples + " points");
 
     L trueLabel = problem.getTrueLabel();
 
-    for (Map.Entry<P, Float> entry : decisionValues.entrySet()) {
+    for (Map.Entry<P, Double> entry : decisionValues.entrySet()) {
       decisionValueArray[numExamples] = entry.getValue();
       labelArray[numExamples] = problem.getTargetValue(entry.getKey()).equals(trueLabel);
       numExamples++;
@@ -73,18 +62,6 @@ public class SvmBinaryCrossValidationResults<L extends Comparable, P> extends
       }
     }
 
-    //** debug output disabled for now
-
-		/*
-		Formatter f = new Formatter();
-		f.format("Binary classifier for %s vs. %s: TP=%.2f FP=%.2f FN=%.2f TN=%.2f", trueLabel, problem.getFalseLabel(),
-		         trueTrueRate(), falseTrueRate(), trueFalseRate(), falseFalseRate());
-
-
-		//	logger.info("Binary classifier for " + trueLabel + " vs. " + problem.getFalseLabel() + ": TP="+((float)tp/i) + ": FP="
-		//			+ ((float) fp / i) + ": FN=" + ((float) fn / i) + ": TN=" + ((float) tn / i) );
-
-		logger.info(f.out().toString());*/
   }
 
   // --------------------- GETTER / SETTER METHODS ---------------------

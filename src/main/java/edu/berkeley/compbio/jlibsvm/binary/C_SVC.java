@@ -6,6 +6,7 @@ import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.qmatrix.BooleanInvertingKernelQMatrix;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class C_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, P> {
+public class C_SVC<L extends Comparable, P extends SparseVector> extends BinaryClassificationSVM<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(C_SVC.class);
@@ -24,9 +25,9 @@ public class C_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, P
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
-  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, float Cp, float Cn,
+  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, double Cp, double Cn,
       @NotNull ImmutableSvmParameterPoint<L, P> param) {
-    float linearTerm = -1f;
+    double linearTerm = -1f;
     Map<P, Boolean> examples = problem.getBooleanExamples();
 
     List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>(examples.size());
@@ -48,15 +49,12 @@ public class C_SVC<L extends Comparable, P> extends BinaryClassificationSVM<L, P
         param.shrinking);
 
     BinaryModel<L, P> model = s.solve();
-    //	model.vparam = vparam;
-    //	model.kernel = kernel;
+
     model.param = param;
     model.trueLabel = problem.getTrueLabel();
     model.falseLabel = problem.getFalseLabel();
     model.setSvmType(getSvmType());
     model.setScalingModel(problem.getScalingModel());
-
-    //System.err.println(qMatrix.perfString());
 
     if (Cp == Cn) {
       logger.debug("nu = " + model.getSumAlpha() / (Cp * problem.getNumExamples()));

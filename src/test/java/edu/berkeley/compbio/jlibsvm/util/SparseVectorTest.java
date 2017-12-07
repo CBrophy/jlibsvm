@@ -11,7 +11,7 @@ public class SparseVectorTest {
     final SparseVector vector = new SparseVector(
         25,
         new int[]{4, 10, 19},
-        new float[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5f, 3.4f, 9.0f}
     );
 
     String value = vector.toString();
@@ -40,10 +40,10 @@ public class SparseVectorTest {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
-        new float[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5f, 3.4f, 9.0f}
     );
 
-    float[] dv = vector1.toDenseVector();
+    double[] dv = vector1.toDenseVector();
 
     Assert.assertNotNull(dv);
     Assert.assertEquals(5, dv.length);
@@ -60,13 +60,13 @@ public class SparseVectorTest {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
-        new float[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5f, 3.4f, 9.0f}
     );
 
     final SparseVector vector2 = new SparseVector(
         5,
         new int[]{1, 3, 4},
-        new float[]{1.5f, 7.6f, 5.7f}
+        new double[]{1.5f, 7.6f, 5.7f}
     );
 
     double value = SparseVector.dot(vector1, vector2);
@@ -80,13 +80,13 @@ public class SparseVectorTest {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
-        new float[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5f, 3.4f, 9.0f}
     );
 
     final SparseVector vector2 = new SparseVector(
         5,
         new int[]{1, 3, 4},
-        new float[]{1.5f, 7.6f, 5.7f}
+        new double[]{1.5f, 7.6f, 5.7f}
     );
 
     SparseVector diff = SparseVector.difference(vector1, vector2);
@@ -105,13 +105,13 @@ public class SparseVectorTest {
     final SparseVector vector1 = new SparseVector(
         5,
         new int[]{2, 3, 4},
-        new float[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5f, 3.4f, 9.0f}
     );
 
     final SparseVector vector2 = new SparseVector(
         5,
         new int[]{1, 3, 4},
-        new float[]{1.5f, 7.6f, 5.7f}
+        new double[]{1.5f, 7.6f, 5.7f}
     );
 
     final double val = SparseVector.squareNorm(vector1, vector2);
@@ -122,25 +122,16 @@ public class SparseVectorTest {
   @Test
   public void testOf() {
     double[] d1 = new double[]{0.0, 0.1, -0.3, 0.0, 10.0};
-    float[] f1 = new float[]{0.0f, 0.1f, -0.3f, 0.0f, 10.0f};
 
     final SparseVector dv = SparseVector.of(d1);
-    final SparseVector fv = SparseVector.of(f1);
 
     Assert.assertNotNull(dv);
-    Assert.assertNotNull(fv);
 
     Assert.assertEquals(5, dv.getMaxDimensions());
-    Assert.assertEquals(5, fv.getMaxDimensions());
     Assert.assertEquals(3, dv.getIndexes().length);
-    Assert.assertEquals(3, fv.getIndexes().length);
 
     Assert.assertEquals(0.1, dv.getValues()[0], 0.01);
     Assert.assertEquals(-0.3, dv.getValues()[1], 0.01);
     Assert.assertEquals(10.0, dv.getValues()[2], 0.01);
-
-    Assert.assertEquals(0.1f, fv.getValues()[0], 0.01);
-    Assert.assertEquals(-0.3f, fv.getValues()[1], 0.01);
-    Assert.assertEquals(10.0f, fv.getValues()[2], 0.01);
   }
 }

@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.binary;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,11 +11,11 @@ import java.util.List;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinarySolver<L extends Comparable, P> extends Solver<L, P> {
+public class BinarySolver<L extends Comparable, P extends SparseVector> extends Solver<L, P> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, float Cp, float Cn,
-      float eps,
+  public BinarySolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double Cp, double Cn,
+      double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
   }
@@ -31,7 +32,7 @@ public class BinarySolver<L extends Comparable, P> extends Solver<L, P> {
 
     // calculate objective value
 
-    float v = 0;
+    double v = 0;
     for (SolutionVector svC : allExamples) {
       v += svC.alpha * (svC.G + svC.linearTerm);
     }

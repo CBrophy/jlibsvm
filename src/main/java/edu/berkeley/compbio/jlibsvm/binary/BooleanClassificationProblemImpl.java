@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.binary;
 import com.davidsoergel.dsutils.collections.MappingIterator;
 import com.google.common.collect.HashMultiset;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BooleanClassificationProblemImpl<L extends Comparable, P> extends
+public class BooleanClassificationProblemImpl<L extends Comparable, P extends SparseVector> extends
     BinaryClassificationProblemImpl<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -30,10 +31,10 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P> extends
 
   public BooleanClassificationProblemImpl(Class labelClass, L trueLabel, Set<P> trueExamples,
       L falseLabel,
-      Set<P> falseExamples, Map<P, Integer> exampleIds) {
+      Set<P> falseExamples) {
     // this is a hack: we leave examples==null and just deal with booleanExamples directly
 
-    super(labelClass, null, exampleIds);
+    super(labelClass, null);
     this.falseLabel = falseLabel;
     this.trueLabel = trueLabel;
     this.trueExamples = trueExamples;
@@ -53,7 +54,7 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P> extends
 
   public BooleanClassificationProblemImpl(BooleanClassificationProblemImpl<L, P> backingProblem,
       Set<P> heldOutPoints) {
-    super(backingProblem.labelClass, null, backingProblem.exampleIds, backingProblem.scalingModel,
+    super(backingProblem.labelClass, null, backingProblem.scalingModel,
         backingProblem.trueLabel, backingProblem.falseLabel);
     this.heldOutPoints = heldOutPoints;
 

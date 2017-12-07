@@ -11,5 +11,5 @@ package edu.berkeley.compbio.jlibsvm;
 public interface ContinuousModel<P> {
 // -------------------------- OTHER METHODS --------------------------
 
-  Float predictValue(P x);
+  Double predictValue(P x);
 }

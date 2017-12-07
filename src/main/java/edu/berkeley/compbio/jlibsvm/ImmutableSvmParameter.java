@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.multi.MultiClassModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
@@ -11,15 +12,15 @@ import java.util.LinkedHashMap;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class ImmutableSvmParameter<L extends Comparable, P> {
+public abstract class ImmutableSvmParameter<L extends Comparable, P extends SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
   // these are for training only
-  public final float cache_size;// in MB
-  public final float eps;// stopping criteria
+  public final double cache_size;// in MB
+  public final double eps;// stopping criteria
 
-  public final float nu;// for NU_SVC, ONE_CLASS, and NU_SVR
-  public final float p;// for EPSILON_SVR
+  public final double nu;// for NU_SVC, ONE_CLASS, and NU_SVR
+  public final double p;// for EPSILON_SVR
   public final boolean shrinking;// use the shrinking heuristics
 
 
@@ -56,7 +57,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 
   public final boolean probability;// do probability estimates
   // We need to maintain the labels (the key on this map) in insertion order
-  private final LinkedHashMap<L, Float> weights;// = new LinkedHashMap<L, Float>();
+  private final LinkedHashMap<L, Double> weights;// = new LinkedHashMap<L, Double>();
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -65,7 +66,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 		 cache_size = copyFrom.cache_size;
 		 eps = copyFrom.eps;
 		 C = copyFrom.C;
-		 weights = new LinkedHashMap<L, Float>(copyFrom.weights); //.clone();
+		 weights = new LinkedHashMap<L, Double>(copyFrom.weights); //.clone();
 		 nu = copyFrom.nu;
 		 p = copyFrom.p;
 		 shrinking = copyFrom.shrinking;
@@ -88,7 +89,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
   protected ImmutableSvmParameter(Builder<L, P> copyFrom) {
     cache_size = copyFrom.cache_size;
     eps = copyFrom.eps;
-    weights = new LinkedHashMap<L, Float>(copyFrom.weights); //.clone();
+    weights = new LinkedHashMap<L, Double>(copyFrom.weights); //.clone();
     nu = copyFrom.nu;
     p = copyFrom.p;
     shrinking = copyFrom.shrinking;
@@ -116,7 +117,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
     double mb = cache_size;
     double kb = mb * 1024;
     double bytes = kb * 1024;
-    double floats = bytes / 4; // float = 4 bytes
+    double floats = bytes / 4; // double = 4 bytes
     double floatrows = Math.sqrt(floats);
     //Math.sqrt(floats * 2);
     // the sqrt 2 term is because the cache will be symmetric
@@ -128,7 +129,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
     return weights.keySet();
   }
 
-  public Float getWeight(L key) {
+  public Double getWeight(L key) {
     return weights.get(key);
   }
 
@@ -145,15 +146,15 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 		}
 */
 
-  public abstract static class Builder<L extends Comparable, P> {
+  public abstract static class Builder<L extends Comparable, P extends SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
     // these are for training only
-    public float cache_size;// in MB
-    public float eps;// stopping criteria
+    public double cache_size;// in MB
+    public double eps;// stopping criteria
 
-    public float nu;// for NU_SVC, ONE_CLASS, and NU_SVR
-    public float p;// for EPSILON_SVR
+    public double nu;// for NU_SVC, ONE_CLASS, and NU_SVR
+    public double p;// for EPSILON_SVR
     public boolean shrinking;// use the shrinking heuristics
 
 
@@ -185,7 +186,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 
     public boolean probability;// do probability estimates
     // We need to maintain the labels (the key on this map) in insertion order
-    public LinkedHashMap<L, Float> weights = new LinkedHashMap<L, Float>();
+    public LinkedHashMap<L, Double> weights = new LinkedHashMap<L, Double>();
     public ScalingModelLearner<P> scalingModelLearner;
     //	public boolean crossValidation;
 
@@ -197,7 +198,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
     protected Builder(ImmutableSvmParameter<L, P> copyFrom) {
       cache_size = copyFrom.cache_size;
       eps = copyFrom.eps;
-      weights = new LinkedHashMap<L, Float>(copyFrom.weights); //.clone();
+      weights = new LinkedHashMap<L, Double>(copyFrom.weights); //.clone();
       nu = copyFrom.nu;
       p = copyFrom.p;
       shrinking = copyFrom.shrinking;
@@ -220,7 +221,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
     protected Builder(Builder<L, P> copyFrom) {
       cache_size = copyFrom.cache_size;
       eps = copyFrom.eps;
-      weights = new LinkedHashMap<L, Float>(copyFrom.weights); //.clone();
+      weights = new LinkedHashMap<L, Double>(copyFrom.weights); //.clone();
       nu = copyFrom.nu;
       p = copyFrom.p;
       shrinking = copyFrom.shrinking;
@@ -249,7 +250,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 		  double mb = cache_size;
 		  double kb = mb * 1024;
 		  double bytes = kb * 1024;
-		  double floats = bytes / 4; // float = 4 bytes
+		  double floats = bytes / 4; // double = 4 bytes
 		  double floatrows = Math.sqrt(floats);
 		  //Math.sqrt(floats * 2);
 		  // the sqrt 2 term is because the cache will be symmetric
@@ -258,7 +259,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable, P> {
 		  }
   */
 
-    public void putWeight(L key, Float weight) {
+    public void putWeight(L key, Double weight) {
       weights.put(key, weight);
     }
 

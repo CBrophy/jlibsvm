@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm.multi;
 
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.MultiClassCrossValidationResults;
 import java.util.Map;
 import org.apache.log4j.Logger;
@@ -10,7 +11,7 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SvmMultiClassCrossValidationResults<L extends Comparable, P> extends
+public class SvmMultiClassCrossValidationResults<L extends Comparable, P extends SparseVector> extends
     MultiClassCrossValidationResults<L> {
 // ------------------------------ FIELDS ------------------------------
 

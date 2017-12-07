@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -10,14 +11,13 @@ import java.io.IOException;
 import java.io.StringBufferInputStream;
 import java.util.Collection;
 import java.util.Properties;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class SolutionModel<L extends Comparable, P> extends SvmContext {
+public abstract class SolutionModel<L extends Comparable, P extends SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
 
@@ -101,8 +101,6 @@ public abstract class SolutionModel<L extends Comparable, P> extends SvmContext 
   public void writeToStream(DataOutputStream fp) throws IOException {
     // BAD broken with respect to grid search etc.
 
-    //throw new NotImplementedException();
-
     fp.writeBytes("svm_type " + svmType + "\n");
 
     fp.writeBytes(getKernelName()); //param.kernel.toString());
@@ -116,10 +114,10 @@ public abstract class SolutionModel<L extends Comparable, P> extends SvmContext 
   }
 
   public String getKernelName() {
-    throw new NotImplementedException();
+    throw new RuntimeException("Not implemented");
   }
 
   public Collection<L> getLabels() {
-    throw new NotImplementedException();
+    throw new RuntimeException("Not implemented");
   }
 }

@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm.qmatrix;
 
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Collection;
 
 
@@ -17,23 +18,15 @@ import java.util.Collection;
  * @version $Id$
  */
 
-public interface QMatrix<P> {
+public interface QMatrix<P extends SparseVector> {
 // -------------------------- OTHER METHODS --------------------------
 
-//	float[] getQ(int column, int len);
-//	float[] getQD();
-//	void swapIndex(int i, int j);
+  double evaluateDiagonal(SolutionVector<P> a);
 
-//	List<P> getVectors();
-
-  //float evaluate(SolutionVector<P> a, SolutionVector<P> b);
-
-  float evaluateDiagonal(SolutionVector<P> a);
-
-  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, float[] buf);
+  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, double[] buf);
 
   void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, SolutionVector<P>[] inactive,
-      float[] buf);
+      double[] buf);
 
 //	void storeRanks(Collection<SolutionVector<P>> allExamples);
 

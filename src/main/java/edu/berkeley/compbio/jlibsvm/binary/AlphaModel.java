@@ -15,7 +15,7 @@ import java.util.Map;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<L, P> {
+public abstract class AlphaModel<L extends Comparable, P extends SparseVector> extends SolutionModel<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
   // used only during training, then ditched
@@ -26,25 +26,15 @@ public abstract class AlphaModel<L extends Comparable, P> extends SolutionModel<
   public P[] SVs;
   public double[] alphas;
 
-  public float rho;
+  public double rho;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   protected AlphaModel() {
     super();
   }
-/*
-	public AlphaModel(Properties props, LabelParser<L> labelParser)
-		{
-		super(props, labelParser);
-		rho = Float.parseFloat(props.getProperty("rho"));
-		}
 
-	protected AlphaModel(@NotNull ImmutableSvmParameterPoint<L, P> param)
-		{
-		super(param);
-		}
-		*/
+
 
 // -------------------------- OTHER METHODS --------------------------
 

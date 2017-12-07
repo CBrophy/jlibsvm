@@ -9,12 +9,12 @@ import java.util.StringTokenizer;
 public class ArrayParsers {
 // -------------------------- STATIC METHODS --------------------------
 
-  public static float[] parseFloatArray(String s) {
+  public static double[] parseFloatArray(String s) {
     StringTokenizer st = new StringTokenizer(s);
-    float[] result = new float[st.countTokens()];
+    double[] result = new double[st.countTokens()];
     int i = 0;
     while (st.hasMoreTokens()) {
-      result[i] = Float.parseFloat(st.nextToken());
+      result[i] = Double.parseDouble(st.nextToken());
       i++;
     }
     return result;

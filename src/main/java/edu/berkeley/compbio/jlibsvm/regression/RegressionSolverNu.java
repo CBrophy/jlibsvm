@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.regression;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver_NU;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -11,15 +12,15 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionSolverNu<P> extends Solver_NU<Float, P> {
+public class RegressionSolverNu<P extends SparseVector> extends Solver_NU<Double, P> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSolverNu.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, float C,
-      float eps,
+  public RegressionSolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double C,
+      double eps,
       boolean shrinking) {
     super(solutionVectors, Q, C, C, eps, shrinking);
   }
@@ -36,7 +37,7 @@ public class RegressionSolverNu<P> extends Solver_NU<Float, P> {
     //		si.rho =
     calculate_rho(model);
 
-    //float sumAlpha = 0;
+    //double sumAlpha = 0;
 
     model.supportVectors = new HashMap<P, Double>();
     for (SolutionVector<P> svC : allExamples) {      // the examples contain both a true and a false SolutionVector for each P.			// we want the difference of their alphas

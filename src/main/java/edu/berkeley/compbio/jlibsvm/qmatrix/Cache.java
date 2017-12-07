@@ -46,7 +46,7 @@ class Cache {
   // (p >= len if nothing needs to be filled)
   // java: simulate pointer using single-element array
 
-  int get_data(int index, float[][] data, int len) {
+  int get_data(int index, double[][] data, int len) {
     head_t h = head[index];
     if (h.len > 0) {
       lru_delete(h);
@@ -64,7 +64,7 @@ class Cache {
       }
 
       // allocate new space
-      float[] new_data = new float[len];
+      double[] new_data = new double[len];
       if (h.data != null) {
         System.arraycopy(h.data, 0, new_data, 0, h.len);
       }
@@ -109,7 +109,7 @@ class Cache {
       lru_delete(head[j]);
     }
     do {
-      float[] _ = head[i].data;
+      double[] _ = head[i].data;
       head[i].data = head[j].data;
       head[j].data = _;
     }
@@ -139,7 +139,7 @@ class Cache {
       if (h.len > i) {
         if (h.len > j) {
           do {
-            float _ = h.data[i];
+            double _ = h.data[i];
             h.data[i] = h.data[j];
             h.data[j] = _;
           }
@@ -161,7 +161,7 @@ class Cache {
 // ------------------------------ FIELDS ------------------------------
 
     head_t prev, next;// a circular list
-    float[] data;
+    double[] data;
     int len;// data[0,len) is cached in this entry
   }
 }

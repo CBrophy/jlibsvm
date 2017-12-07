@@ -8,7 +8,7 @@ USER_HOME=`(cd ~; pwd)`
 MBVAL="0"
 
 function gb_to_mb {
-    MBVAL=`/usr/bin/python -c "print int(float('$1')*1000)"`
+    MBVAL=`/usr/bin/python -c "print int(double('$1')*1000)"`
     return 0
 }
 

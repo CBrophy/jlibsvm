@@ -121,29 +121,29 @@ public class svm_predict {
 
       StringTokenizer st = new StringTokenizer(line, " \t\n\r\f:");
 
-      Float target = Float.parseFloat(st.nextToken());
+      Double target = Double.parseDouble(st.nextToken());
       int m = st.countTokens() / 2;
       SparseVector x = new SparseVector(m);
       for (int j = 0; j < m; j++) {
         //x[j] = new svm_node();
         x.getIndexes()[j] = Integer.parseInt(st.nextToken());
-        x.getValues()[j] = Float.parseFloat(st.nextToken());
+        x.getValues()[j] = Double.parseDouble(st.nextToken());
       }
 
       Object prediction;
       if (predict_probability == 1
           && model instanceof MultiClassModel) //(svm_type == SvmParameter.C_SVC || svm_type == SvmParameter.NU_SVC))
       {
-        Map<Integer, Float> prob_estimates =
+        Map<Integer, Double> prob_estimates =
             ((MultiClassModel<Integer, SparseVector>) model).predictProbability(x); //null;
         //v = svm.svm_predict_probability(model, x, prob_estimates);
         prediction = ((MultiClassModel<Integer, SparseVector>) model)
             .bestProbabilityLabel(prob_estimates);
         output.writeBytes(prediction + " ");
 
-        SortedMap<Integer, Float> prob_estimates_sorted = new TreeMap<Integer, Float>(
+        SortedMap<Integer, Double> prob_estimates_sorted = new TreeMap<Integer, Double>(
             prob_estimates);
-        for (float prob_estimate : prob_estimates_sorted.values()) {
+        for (double prob_estimate : prob_estimates_sorted.values()) {
           output.writeBytes(prob_estimate + " ");
         }
         output.writeBytes("\n");
@@ -163,8 +163,8 @@ public class svm_predict {
       if (prediction.equals(target)) {
         ++correct;
       }
-      if (prediction instanceof Float) {
-        Float v = (Float) prediction;
+      if (prediction instanceof Double) {
+        Double v = (Double) prediction;
         error += (v - target) * (v - target);
         sumv += v;
         sumy += target;

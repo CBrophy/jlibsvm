@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm;
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,16 +19,16 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Solver_NU<L extends Comparable, P> extends Solver<L, P> {
+public class Solver_NU<L extends Comparable, P extends SparseVector> extends Solver<L, P> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  /*	protected Solver_NU(QMatrix<P> Q, float Cp, float Cn, float eps, boolean shrinking)
+  /*	protected Solver_NU(QMatrix<P> Q, double Cp, double Cn, double eps, boolean shrinking)
       {
       super(Q, Cp, Cn, eps, shrinking);
       }
   */
   public Solver_NU(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q,
-      float Cp, float Cn, float eps,
+      double Cp, double Cn, double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
   }
@@ -76,8 +77,8 @@ public class Solver_NU<L extends Comparable, P> extends Solver<L, P> {
       r2 = (ub2 + lb2) / 2;
     }
 
-    ((BinaryModel) model).r = (float) ((r1 + r2) / 2);
-    model.rho = (float) ((r1 - r2) / 2);
+    ((BinaryModel) model).r = (double) ((r1 + r2) / 2);
+    model.rho = (double) ((r1 - r2) / 2);
   }
 
   void do_shrinking() {
@@ -150,18 +151,18 @@ public class Solver_NU<L extends Comparable, P> extends Solver<L, P> {
     //    (if quadratic coefficeint <= 0, replace it with tau)
     //    -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
 
-    double Gmaxp = Float.NEGATIVE_INFINITY;
-    double Gmaxp2 = Float.NEGATIVE_INFINITY;
+    double Gmaxp = Double.NEGATIVE_INFINITY;
+    double Gmaxp2 = Double.NEGATIVE_INFINITY;
 
-    double Gmaxn = Float.NEGATIVE_INFINITY;
-    double Gmaxn2 = Float.NEGATIVE_INFINITY;
+    double Gmaxn = Double.NEGATIVE_INFINITY;
+    double Gmaxn2 = Double.NEGATIVE_INFINITY;
 
     SolutionVector GmaxnSV = null;
     SolutionVector GmaxpSV = null;
 
     SolutionVector GminSV = null;
 
-    double obj_diff_min = Float.POSITIVE_INFINITY;
+    double obj_diff_min = Double.POSITIVE_INFINITY;
 
     for (SolutionVector sv : active) {
       if (sv.targetValue) {

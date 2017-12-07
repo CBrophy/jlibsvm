@@ -10,16 +10,16 @@ import java.util.Properties;
 public class SigmoidKernel extends GammaKernel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
-  public float coef0;
+  public double coef0;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public SigmoidKernel(Properties props) {
-    this(Float.parseFloat(props.getProperty("gamma")),
-        Float.parseFloat(props.getProperty("coef0")));
+    this(Double.parseDouble(props.getProperty("gamma")),
+        Double.parseDouble(props.getProperty("coef0")));
   }
 
-  public SigmoidKernel(float gamma, float coef0) {
+  public SigmoidKernel(double gamma, double coef0) {
     super(gamma);
     this.coef0 = coef0;
   }

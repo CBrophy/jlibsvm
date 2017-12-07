@@ -9,6 +9,7 @@ import edu.berkeley.compbio.jlibsvm.qmatrix.BooleanInvertingKernelQMatrix;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
 import edu.berkeley.compbio.jlibsvm.regression.RegressionModel;
 import edu.berkeley.compbio.jlibsvm.regression.RegressionSVM;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassSVC<L extends Comparable, P> extends RegressionSVM<P, OneClassProblem<L, P>> {
+public class OneClassSVC<L extends Comparable, P extends SparseVector> extends RegressionSVM<P, OneClassProblem<L, P>> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(OneClassSVC.class);
@@ -28,7 +29,7 @@ public class OneClassSVC<L extends Comparable, P> extends RegressionSVM<P, OneCl
 
 
   public RegressionModel<P> train(OneClassProblem<L, P> problem,
-      @NotNull ImmutableSvmParameter<Float, P> param)
+      @NotNull ImmutableSvmParameter<Double, P> param)
   //, final TreeExecutorService execService)
   {
     validateParam(param);
@@ -37,14 +38,14 @@ public class OneClassSVC<L extends Comparable, P> extends RegressionSVM<P, OneCl
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Float, P>) param);//, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double, P>) param);//, execService);
     }
     return result;
   }
 
 
   private RegressionModel<P> trainScaled(OneClassProblem<L, P> problem,
-      @NotNull ImmutableSvmParameterPoint<Float, P> param)
+      @NotNull ImmutableSvmParameterPoint<Double, P> param)
   //,final TreeExecutorService execService)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
@@ -55,13 +56,13 @@ public class OneClassSVC<L extends Comparable, P> extends RegressionSVM<P, OneCl
       problem = problem.getScaledCopy(param.scalingModelLearner);
     }
 
-    float remainingAlpha = param.nu * problem.getNumExamples();
+    double remainingAlpha = param.nu * problem.getNumExamples();
 
-    float linearTerm = 0f;
+    double linearTerm = 0f;
     List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
     int c = 0;
-    for (Map.Entry<P, Float> example : problem.getExamples().entrySet()) {
-      float initAlpha = remainingAlpha > 1f ? 1f : remainingAlpha;
+    for (Map.Entry<P, Double> example : problem.getExamples().entrySet()) {
+      double initAlpha = remainingAlpha > 1f ? 1f : remainingAlpha;
       remainingAlpha -= initAlpha;
 
       SolutionVector<P> sv;
@@ -93,7 +94,7 @@ public class OneClassSVC<L extends Comparable, P> extends RegressionSVM<P, OneCl
     return "one_class_svc";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameterPoint<Float, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double, P> param) {
     super.validateParam(param);
 
     if (param.C != 1f) {

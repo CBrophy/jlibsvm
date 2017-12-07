@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm;
 
 import com.davidsoergel.conja.Function;
 import com.davidsoergel.conja.Parallel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,8 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class SVM<L extends Comparable, P, R extends SvmProblem<L, P, R>> extends
-    SvmContext {
+public abstract class SVM<L extends Comparable, P extends SparseVector, R extends SvmProblem<L, P, R>> {
 
   private static final Logger logger = Logger.getLogger(SVM.class);
 // ------------------------------ FIELDS ------------------------------
@@ -26,12 +26,12 @@ public abstract class SVM<L extends Comparable, P, R extends SvmProblem<L, P, R>
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public Map<P, Float> continuousCrossValidation(SvmProblem<L, P, R> problem,
+  public Map<P, Double> continuousCrossValidation(SvmProblem<L, P, R> problem,
       final ImmutableSvmParameter<L, P> param)
   //	,final TreeExecutorService execService)
   {
 
-    final Map<P, Float> predictions = new ConcurrentHashMap<P, Float>();
+    final Map<P, Double> predictions = new ConcurrentHashMap<P, Double>();
 
     if (param.crossValidationFolds >= problem.getNumExamples()) {
       // this can happen when the points chosen from a multiclass CV don't include enough points from a given pair of classes

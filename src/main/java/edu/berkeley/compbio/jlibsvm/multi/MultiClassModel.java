@@ -12,6 +12,7 @@ import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.MultiClassCrossValidationResults;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -26,13 +27,12 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P> implements
+public class MultiClassModel<L extends Comparable, P extends SparseVector> extends SolutionModel<L, P> implements
     DiscreteModel<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -92,31 +92,6 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-//	public MultiClassModel(Properties props, LabelParser<L> labelParser)
-//		{
-  //super(props, labelParser);
-
-//		throw new NotImplementedException();
-
-    /*
-                     numberOfClasses = Integer.parseInt(props.getProperty("nr_class"));
-
-                     StringTokenizer st = new StringTokenizer(props.getProperty("rho"));
-
-                     //ArrayList<BinaryModel<P>> models = new ArrayList<BinaryModel<P>>();
-                     while (st.hasMoreTokens())
-                         {
-                         BinaryModel<P> m = new BinaryModel<P>(kernel, param);
-                         m.rho = Float.parseFloat(st.nextToken());
-                         // no SVs yet
-                         oneVsOneModels.add(m);
-                         }
-                     //oneVsOneModels = models.toArray(new BinaryModel<P>[]{});
-
-                     probA = parseFloatArray(props.getProperty("probA"));
-                     probB = parseFloatArray(props.getProperty("probB"));*/
-//		}
-
   public MultiClassModel(ImmutableSvmParameter param, int numberOfClasses) {
     //super(param);
     super();
@@ -156,10 +131,10 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public L bestProbabilityLabel(Map<L, Float> labelProbabilities) {
-    Float bestProb = 0f;
+  public L bestProbabilityLabel(Map<L, Double> labelProbabilities) {
+    Double bestProb = 0.0;
     L bestLabel = null;
-    for (Map.Entry<L, Float> entry : labelProbabilities.entrySet()) {
+    for (Map.Entry<L, Double> entry : labelProbabilities.entrySet()) {
       if (entry.getValue() > bestProb) {
         bestLabel = entry.getKey();
         bestProb = entry.getValue();
@@ -176,22 +151,22 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
     L bestLabel = null;
     // L secondBestLabel = null;
 
-    float bestOneClassProbability = 0;
-    float secondBestOneClassProbability = 0;
+    double bestOneClassProbability = 0;
+    double secondBestOneClassProbability = 0;
 
-    float bestOneVsAllProbability = 0;
-    float secondBestOneVsAllProbability = 0;
+    double bestOneVsAllProbability = 0;
+    double secondBestOneVsAllProbability = 0;
 
     // stage 0: we're going to need the kernel value for x against each of the SVs, for each of the kernels that was used in a subsidary binary machine
 
     //	KValueCache kValuesPerKernel = new KValueCache(scaledX);
-    Map<KernelFunction<P>, float[]> kValuesPerKernel =
-        new MapMaker().makeComputingMap(new Function<KernelFunction<P>, float[]>() {
-          public float[] apply(@NotNull KernelFunction<P> kernel) {
-            float[] kvalues = new float[allSVs.length];
+    Map<KernelFunction<P>, double[]> kValuesPerKernel =
+        new MapMaker().makeComputingMap(new Function<KernelFunction<P>, double[]>() {
+          public double[] apply(@NotNull KernelFunction<P> kernel) {
+            double[] kvalues = new double[allSVs.length];
             int i = 0;
             for (P sv : allSVs) {
-              kvalues[i] = (float) kernel.evaluate(scaledX, sv);
+              kvalues[i] = (double) kernel.evaluate(scaledX, sv);
               i++;
             }
             return kvalues;
@@ -202,57 +177,9 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
     // (i.e., not only should such a prediction be rejected after the fact, but
     //  the binary machines involving disallowed labels shouldn't ever contribute to the voting in the first place
 
-
-/*
-		Map<KernelFunction<P>, float[]> kValuesPerKernel = new HashMap<KernelFunction<P>, float[]>();
-
-		for (KernelFunction<P> kernel : param.getKernels())
-			{
-			float[] kvalues = new float[allSVs.length];
-			int i = 0;
-			for (P sv : allSVs)
-				{
-				kvalues[i] = (float) kernel.evaluate(scaledX, sv);
-				i++;
-				}
-			kValuesPerKernel.put(kernel,kvalues);
-			}
-*/
-
-    // REVIEW ignore one-class models for now; maybe revisit later
-
-        /*
-          // stage 1: one-class
-          // always compute these; we may need them to tie-break when voting anyway (though that only works when probabilities are turned on)
-
-          Map<L, Float> oneClassProbabilities = computeOneClassProbabilities(x);
-
-          if (oneClassThreshold > 0 && oneClassProbabilities.isEmpty())
-              {
-              return null;
-              }
-
-          if (multiclassMode == MulticlassMode.OneClassOnly)
-              {
-              L bestLabel = null;
-              float bestProbability = 0;
-              for (Map.Entry<L, Float> entry : oneClassProbabilities.entrySet())
-                  {
-                  if (entry.getValue() > bestProbability)
-                      {
-                      bestLabel = entry.getKey();
-                      bestProbability = entry.getValue();
-                      }
-                  }
-              return bestLabel;
-              }
-
-          // now oneClassProbabilities is populated with all of the classes that pass the threshold (maybe all of them).
-          */
-
     // stage 2: one vs all
 
-    Map<L, Float> oneVsAllProbabilities =
+    Map<L, Double> oneVsAllProbabilities =
         oneVsAllMode == OneVsAllMode.None ? null : computeOneVsAllProbabilities(kValuesPerKernel);
 
     // now oneVsAllProbabilities is populated with all of the classes that pass the threshold (maybe all of them).
@@ -265,7 +192,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
 
     // if using the OneVsAll Best mode, then we should have had probabilities turned on, and allVsAll voting will be ignored
     if (oneVsAllMode == OneVsAllMode.Best) {
-      for (Map.Entry<L, Float> entry : oneVsAllProbabilities.entrySet()) {
+      for (Map.Entry<L, Double> entry : oneVsAllProbabilities.entrySet()) {
         if (entry.getValue() > bestOneVsAllProbability) {
           secondBestOneVsAllProbability = bestOneVsAllProbability;
           bestLabel = entry.getKey();
@@ -296,7 +223,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
       // This is what PhyloPythia does.
 
       for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
-        float[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
+        double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
         votes.add(binaryModel.predictLabel(kvalues, svIndexMaps.get(binaryModel)));
       }
     } else {
@@ -339,7 +266,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
       countSum += count;
 
       // get the oneVsAll value for this label, if needed
-      Float oneVsAll = 1f; // pass by default
+      Double oneVsAll = 1.0; // pass by default
       if (oneVsAllMode == OneVsAllMode.Veto || oneVsAllMode == OneVsAllMode.VetoAndBreakTies) {
         // if this is null it means this label didn't pass the threshold earlier, so it should fail here too
         oneVsAll = oneVsAllProbabilities.get(label);
@@ -349,7 +276,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
       // get the oneClass value for this label, if needed
 
       // if this is null it means this label didn't pass the threshold earlier
-      //	Float oneClass = oneClassProbabilities.get(label);
+      //	Double oneClass = oneClassProbabilities.get(label);
       //	oneClass = oneClass == null ? 0f : oneClass;
 
       // primary sort by number of votes
@@ -381,21 +308,21 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
       return new VotingResult<L>();
     }
 
-    return new VotingResult<L>(bestLabel, (float) bestVoteProportion,
-        (float) secondBestVoteProportion,
+    return new VotingResult<L>(bestLabel, (double) bestVoteProportion,
+        (double) secondBestVoteProportion,
         bestOneClassProbability, secondBestOneClassProbability, bestOneVsAllProbability,
         secondBestOneVsAllProbability);
   }
 
-    /*	public Map<L, Float> computeOneClassProbabilities(P x)
+    /*	public Map<L, Double> computeOneClassProbabilities(P x)
         {
-        Map<L, Float> oneClassProbabilities = new HashMap<L, Float>();
+        Map<L, Double> oneClassProbabilities = new HashMap<L, Double>();
 
         //	boolean oneClassProb = supportsOneClassProbability();
 
         for (OneClassModel<L, P> oneClassModel : oneClassModels.values())
             {
-            final float probability = oneClassModel.getProbability(x);
+            final double probability = oneClassModel.getProbability(x);
             if (probability >= oneClassThreshold)
                 {
                 oneClassProbabilities.put(oneClassModel.getLabel(), probability);
@@ -404,17 +331,17 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
         return oneClassProbabilities;
         }*/
 
-  public Map<L, Float> computeOneVsAllProbabilities(
-      Map<KernelFunction<P>, float[]> kValuesPerKernel) {
-    Map<L, Float> oneVsAllProbabilities = new HashMap<L, Float>();
+  public Map<L, Double> computeOneVsAllProbabilities(
+      Map<KernelFunction<P>, double[]> kValuesPerKernel) {
+    Map<L, Double> oneVsAllProbabilities = new HashMap<L, Double>();
 
     //	boolean prob = supportsOneVsAllProbability();
 
     for (BinaryModel<L, P> binaryModel : oneVsAllModels.values()) {
-      float[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
+      double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
 
       // if probability info isn't available, just substitute 1 and 0.
-      final float probability = binaryModel
+      final double probability = binaryModel
           .getTrueProbability(kvalues, svIndexMaps.get(binaryModel));
 
       if (probability >= oneVsAllThreshold) {
@@ -444,7 +371,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
     */
 
 
-  public Map<L, Float> predictProbability(P x) {
+  public Map<L, Double> predictProbability(P x) {
     if (!supportsOneVsOneProbability()) {
       throw new SvmException("Can't make probability predictions");
     }
@@ -452,8 +379,8 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
     //** ugly Map2d vs. array issue etc.; oh well, adapt for now to the old multiclassProbability signature
     // the main thing is just to iterate through the Map2d in the order given by the labels list
 
-    float minimumProbability = 1e-7f;
-    float[][] pairwiseProbabilities = new float[numberOfClasses][numberOfClasses];
+    double minimumProbability = 1e-7f;
+    double[][] pairwiseProbabilities = new double[numberOfClasses][numberOfClasses];
 
     // this is kind of a lame way to do it, but whatever.
 
@@ -476,7 +403,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
           pairwiseProbabilities[i][j] = 0;
           pairwiseProbabilities[j][i] = 0;
         } else {
-          float prob = binaryModel.crossValidationResults.getSigmoid()
+          double prob = binaryModel.crossValidationResults.getSigmoid()
               .predict(binaryModel.predictValue(
                   x));                //MathSupport.sigmoidPredict(decisionValues[k], probA[k], probB[k])
 
@@ -486,11 +413,11 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
         }
       }
     }
-    float[] probabilityEstimates = multiclassProbability(numberOfClasses, pairwiseProbabilities);
+    double[] probabilityEstimates = multiclassProbability(numberOfClasses, pairwiseProbabilities);
 
     // but then map back to the cleaner Map API.  Note the probabilityEstimates should come back in order corresponding to the labels list.
 
-    Map<L, Float> result = new HashMap<L, Float>();
+    Map<L, Double> result = new HashMap<L, Double>();
     int i = 0;
     for (L label : labels) {
       result.put(label, probabilityEstimates[i]);
@@ -508,13 +435,13 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
 
   // Method 2 from the multiclass_prob paper by Wu, Lin, and Weng
 
-  private float[] multiclassProbability(int k, float[][] r) {
-    float[] p = new float[k];
+  private double[] multiclassProbability(int k, double[][] r) {
+    double[] p = new double[k];
     int t, j;
     int iter = 0, maximumIterations = Math.max(100, k);
-    float[][] Q = new float[k][k];
-    float[] Qp = new float[k];
-    float pQp, eps = 0.005f / k;
+    double[][] Q = new double[k][k];
+    double[] Qp = new double[k];
+    double pQp, eps = 0.005f / k;
 
     for (t = 0; t < k; t++) {
       p[t] = 1.0f / k;// Valid if k = 1
@@ -538,9 +465,9 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
         }
         pQp += p[t] * Qp[t];
       }
-      float maxError = 0;
+      double maxError = 0;
       for (t = 0; t < k; t++) {
-        float error = Math.abs(Qp[t] - pQp);
+        double error = Math.abs(Qp[t] - pQp);
         if (error > maxError) {
           maxError = error;
         }
@@ -550,7 +477,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
       }
 
       for (t = 0; t < k; t++) {
-        float diff = (-Qp[t] + pQp) / Q[t][t];
+        double diff = (-Qp[t] + pQp) / Q[t][t];
         p[t] += diff;
         pQp = (pQp + diff * (diff * Q[t][t] + 2 * Qp[t])) / (1 + diff) / (1 + diff);
         for (j = 0; j < k; j++) {
@@ -628,43 +555,8 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
   }
 
   public void writeToStream(DataOutputStream fp) throws IOException {
-    throw new NotImplementedException();
+    throw new RuntimeException("Not implemented");
 
-        /*
-          super.writeToStream(fp);
-
-          fp.writeBytes("nr_class " + numberOfClasses + "\n");
-
-          fp.writeBytes("rho");
-          for (BinaryModel<P> m : oneVsOneModels)
-              {
-              fp.writeBytes(" " + m.rho);
-              }
-          fp.writeBytes("\n");
-
-          if (probA != null)// regression has probA only
-              {
-              fp.writeBytes("probA");
-              for (int i = 0; i < numberOfClasses * (numberOfClasses - 1) / 2; i++)
-                  {
-                  fp.writeBytes(" " + probA[i]);
-                  }
-              fp.writeBytes("\n");
-              }
-          if (probB != null)
-              {
-              fp.writeBytes("probB");
-              for (int i = 0; i < numberOfClasses * (numberOfClasses - 1) / 2; i++)
-                  {
-                  fp.writeBytes(" " + probB[i]);
-                  }
-              fp.writeBytes("\n");
-              }
-
-          //these must come after everything else
-          writeSupportVectors(fp);
-
-          fp.close();*/
   }
 
   public String getInfo() {
@@ -673,7 +565,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
     } else {
       StringBuffer result = new StringBuffer();
       if (oneVsAllMode != OneVsAllMode.None) {
-        Multiset<Float> cs = HashMultiset.create();
+        Multiset<Double> cs = HashMultiset.create();
         Multiset<KernelFunction> kernels = HashMultiset.create();
         for (BinaryModel<L, P> binaryModel : oneVsAllModels.values()) {
           cs.add(binaryModel.param.C);
@@ -682,7 +574,7 @@ public class MultiClassModel<L extends Comparable, P> extends SolutionModel<L, P
         result.append("OneVsAll:C=" + cs + "; gamma=" + kernels + "   ");
       }
       if (allVsAllMode != AllVsAllMode.None) {
-        Multiset<Float> cs = HashMultiset.create();
+        Multiset<Double> cs = HashMultiset.create();
         Multiset<KernelFunction> kernels = HashMultiset.create();
         for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
           cs.add(binaryModel.param.C);

@@ -10,17 +10,17 @@ public class SigmoidProbabilityModel {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(SigmoidProbabilityModel.class);
-  float A, B;
+  double A, B;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   // Platt's binary SVM Probablistic Output: an improvement from Lin et al.
-  // protected void sigmoidTrain(float[] decisionValues, boolean[] labels)
+  // protected void sigmoidTrain(double[] decisionValues, boolean[] labels)
 
-  public SigmoidProbabilityModel(float[] decisionValues, boolean[] labels) {
+  public SigmoidProbabilityModel(double[] decisionValues, boolean[] labels) {
     int l = decisionValues.length;
 
-    float prior1 = 0, prior0 = 0;    //int i;
+    double prior1 = 0, prior0 = 0;    //int i;
 
     for (boolean b : labels) {
       if (b) {
@@ -31,20 +31,20 @@ public class SigmoidProbabilityModel {
     }
 
     int maximumIterations = 100;// Maximal number of iterations
-    float minStep = 1e-10f;// Minimal step taken in line search
-    float sigma = 1e-12f;// For numerically strict PD of Hessian
-    float eps = 1e-5f;
-    float hiTarget = (prior1 + 1.0f) / (prior1 + 2.0f);
-    float loTarget = 1 / (prior0 + 2.0f);
-    float[] t = new float[l];
+    double minStep = 1e-10f;// Minimal step taken in line search
+    double sigma = 1e-12f;// For numerically strict PD of Hessian
+    double eps = 1e-5f;
+    double hiTarget = (prior1 + 1.0f) / (prior1 + 2.0f);
+    double loTarget = 1 / (prior0 + 2.0f);
+    double[] t = new double[l];
     double p, q;
-    float fApB, h11, h22, h21, g1, g2, det, dA, dB, gd, stepsize;
-    float newA, newB, newf, d1, d2;    //	int iter;
+    double fApB, h11, h22, h21, g1, g2, det, dA, dB, gd, stepsize;
+    double newA, newB, newf, d1, d2;    //	int iter;
 
     // Initial Point and Initial Fun Value
     A = 0.0f;
-    B = (float) Math.log((prior0 + 1.0f) / (prior1 + 1.0f)); // PERF use approximateLog?
-    float fval = 0.0f;
+    B = (double) Math.log((prior0 + 1.0f) / (prior1 + 1.0f)); // PERF use approximateLog?
+    double fval = 0.0f;
 
     for (int i = 0; i < l; i++) {
       if (labels[i]) {
@@ -82,11 +82,11 @@ public class SigmoidProbabilityModel {
           p = 1.0f / (1.0f + expfApB);
           q = expfApB / (1.0f + expfApB);
         }
-        d2 = (float) (p * q);
+        d2 = (double) (p * q);
         h11 += decisionValues[i] * decisionValues[i] * d2;
         h22 += d2;
         h21 += decisionValues[i] * d2;
-        d1 = (float) (t[i] - p);
+        d1 = (double) (t[i] - p);
         g1 += decisionValues[i] * d1;
         g2 += d1;
       }
@@ -143,13 +143,13 @@ public class SigmoidProbabilityModel {
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public float predict(float decisionValue) {
-    float fApB = decisionValue * A + B;
+  public double predict(double decisionValue) {
+    double fApB = decisionValue * A + B;
     if (fApB >= 0) {
       final double expMinusfApB = Math.exp(-fApB);
-      return (float) (expMinusfApB / (1.0 + expMinusfApB));
+      return (double) (expMinusfApB / (1.0 + expMinusfApB));
     } else {
-      return (float) (1.0 / (1 + Math.exp(fApB)));
+      return (double) (1.0 / (1 + Math.exp(fApB)));
     }
   }
 }

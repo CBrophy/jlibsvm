@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.regression;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -11,14 +12,14 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionSolver<P> extends Solver<Float, P> {
+public class RegressionSolver<P extends SparseVector> extends Solver<Double, P> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSolver.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, float C, float eps,
+  public RegressionSolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double C, double eps,
       boolean shrinking) {
     super(solutionVectors, Q, C, C, eps, shrinking);
   }
@@ -36,7 +37,7 @@ public class RegressionSolver<P> extends Solver<Float, P> {
 
     // calculate objective value
 
-    //float sumAlpha = 0;
+    //double sumAlpha = 0;
 
     model.supportVectors = new HashMap<P, Double>();
     for (SolutionVector<P> svC : allExamples) {

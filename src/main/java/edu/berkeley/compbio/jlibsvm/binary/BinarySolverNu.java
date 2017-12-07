@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.binary;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver_NU;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -11,15 +12,15 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinarySolverNu<L extends Comparable, P> extends Solver_NU<L, P> {
+public class BinarySolverNu<L extends Comparable, P  extends SparseVector> extends Solver_NU<L, P> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(BinarySolverNu.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, float Cp, float Cn,
-      float eps,
+  public BinarySolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double Cp, double Cn,
+      double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
   }
@@ -38,7 +39,7 @@ public class BinarySolverNu<L extends Comparable, P> extends Solver_NU<L, P> {
 
     // calculate objective value
 
-    float v = 0;
+    double v = 0;
     for (SolutionVector svC : active) {
       v += svC.alpha * (svC.G + svC.linearTerm);
     }

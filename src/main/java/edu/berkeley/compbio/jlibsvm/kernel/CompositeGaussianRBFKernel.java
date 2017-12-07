@@ -1,10 +1,12 @@
 package edu.berkeley.compbio.jlibsvm.kernel;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class CompositeGaussianRBFKernel<T> extends GammaKernel<T> {
+public class CompositeGaussianRBFKernel<T extends SparseVector> extends GammaKernel<T> {
 // ------------------------------ FIELDS ------------------------------
 
   KernelFunction<T> underlyingKernel;

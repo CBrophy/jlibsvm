@@ -8,6 +8,7 @@ import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collection;
@@ -20,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
+public class BinaryModel<L extends Comparable, P extends SparseVector> extends AlphaModel<L, P>
     implements DiscreteModel<L, P>, ContinuousModel<P> {
   // protected final would be nice, but the Solver constructs the Model without knowing about param so we have to set it afterwards.
   /**
@@ -35,16 +36,16 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
 
   private static final Logger logger = Logger.getLogger(BinaryModel.class);
 
-  public float obj;
-  public float upperBoundPositive;
-  public float upperBoundNegative;
+  public double obj;
+  public double upperBoundPositive;
+  public double upperBoundNegative;
 
   //public SigmoidProbabilityModel sigmoid;
 
 
   public ScalingModel<P> scalingModel = new NoopScalingModel<P>();
 
-  public float r;// for Solver_NU.  I wanted to factor this out as SolutionInfoNu, but that was too much hassle
+  public double r;// for Solver_NU.  I wanted to factor this out as SolutionInfoNu, but that was too much hassle
   public SvmBinaryCrossValidationResults<L, P> crossValidationResults;
 
   public SvmBinaryCrossValidationResults<L, P> getCrossValidationResults() {
@@ -125,7 +126,7 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
       builder.putWeight(labelParser.parse(st.nextToken()), null);
     }
 
-    rho = Float.parseFloat(props.getProperty("rho"));
+    rho = Double.parseDouble(props.getProperty("rho"));
     numSVs = Integer.parseInt(props.getProperty("total_sv"));
 //** test hack
 
@@ -173,19 +174,19 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public float getSumAlpha() {
-    float result = 0;
+  public double getSumAlpha() {
+    double result = 0;
     for (Double aFloat : supportVectors.values()) {
       result += aFloat;
     }
     return result;
   }
 
-  public float getTrueProbability(P x) {
+  public double getTrueProbability(P x) {
     return crossValidationResults.sigmoid.predict(predictValue(x));  // NPE if no sigmoid
   }
 
-  public float getProbability(P x, L l) {
+  public double getProbability(P x, L l) {
     if (l.equals(trueLabel)) {
       return getTrueProbability(x);
     } else if (l.equals(falseLabel)) {
@@ -198,13 +199,13 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
     }
   }
 
-  public Float predictValue(P x) {
-    float sum = 0;
+  public Double predictValue(P x) {
+    double sum = 0;
 
     P scaledX = scalingModel.scaledCopy(x);
 
     for (int i = 0; i < numSVs; i++) {
-      float kvalue = (float) param.kernel.evaluate(scaledX, SVs[i]);
+      double kvalue = (double) param.kernel.evaluate(scaledX, SVs[i]);
       sum += alphas[i] * kvalue;
     }
 
@@ -212,8 +213,8 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
     return sum;
   }
 
-  public float getTrueProbability(float[] kvalues, int[] svIndexMap) {
-    float pv = predictValue(kvalues, svIndexMap);
+  public double getTrueProbability(double[] kvalues, int[] svIndexMap) {
+    double pv = predictValue(kvalues, svIndexMap);
     if (crossValidationResults == null) {
       logger.error("Can't compute probability in binary model without crossvalidationresults");
       return pv > 0. ? 1f : 0f;
@@ -225,8 +226,8 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
     }
   }
 
-  public Float predictValue(float[] kvalues, int[] svIndexMap) {
-    float sum = 0;
+  public Double predictValue(double[] kvalues, int[] svIndexMap) {
+    double sum = 0;
 
     for (int i = 0; i < numSVs; i++) {
       sum += alphas[i] * kvalues[svIndexMap[i]];
@@ -242,7 +243,7 @@ public class BinaryModel<L extends Comparable, P> extends AlphaModel<L, P>
 		}
 */
 
-  public L predictLabel(float[] kvalues, int[] svIndexMap) {
+  public L predictLabel(double[] kvalues, int[] svIndexMap) {
     return predictValue(kvalues, svIndexMap) > 0 ? trueLabel : falseLabel;
   }
 

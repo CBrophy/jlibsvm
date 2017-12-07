@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 
-public abstract class Solver<L extends Comparable, P> {
+public abstract class Solver<L extends Comparable, P extends SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Solver.class);
@@ -40,23 +41,23 @@ public abstract class Solver<L extends Comparable, P> {
 
 
   QMatrix<P> Q;
-  float[] Q_svA;
-  float[] Q_svB;
-  float[] Q_all;
+  double[] Q_svA;
+  double[] Q_svB;
+  double[] Q_all;
 
-  float eps;
+  double eps;
   boolean unshrink = false;
   boolean shrinking;
 
   protected final List<SolutionVector<P>> allExamples;
   protected SolutionVector<P>[] active;
   protected SolutionVector<P>[] inactive;
-  protected final float Cp, Cn;
+  protected final double Cp, Cn;
   protected final int numExamples;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-/*	protected Solver(QMatrix<P> Q, float Cp, float Cn, float eps, boolean shrinking)
+/*	protected Solver(QMatrix<P> Q, double Cp, double Cn, double eps, boolean shrinking)
 		{
 		if (eps <= 0)
 			{
@@ -70,8 +71,8 @@ public abstract class Solver<L extends Comparable, P> {
 		this.shrinking = shrinking;
 		}*/
 
-  public Solver(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q, float Cp,
-      float Cn, float eps,
+  public Solver(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q, double Cp,
+      double Cn, double eps,
       boolean shrinking) {
     //this(Q, Cp, Cn, eps, shrinking);
 
@@ -88,7 +89,7 @@ public abstract class Solver<L extends Comparable, P> {
     this.allExamples = solutionVectors;
 
     this.numExamples = allExamples.size();
-    Q_all = new float[numExamples];
+    Q_all = new double[numExamples];
   }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -125,7 +126,7 @@ public abstract class Solver<L extends Comparable, P> {
       r = (ub + lb) / 2;
     }
 
-    si.rho = (float) r;
+    si.rho = (double) r;
   }
 
   protected int optimize() {
@@ -142,8 +143,8 @@ public abstract class Solver<L extends Comparable, P> {
 
     // initialize gradient
 
-    //	G = new float[numExamples];
-    //	G_bar = new float[numExamples];
+    //	G = new double[numExamples];
+    //	G_bar = new double[numExamples];
     for (SolutionVector svA : allExamples) {
       svA.G = svA.linearTerm;
       svA.G_bar = 0;
@@ -151,10 +152,10 @@ public abstract class Solver<L extends Comparable, P> {
     for (SolutionVector svA : allExamples) {
       if (!svA.isLowerBound()) //is_lower_bound(i))
       {
-        //	float[] Q_i = Q.getQ(i, numExamples);
-        // //	float alpha_i = shuffledAlpha[i];
+        //	double[] Q_i = Q.getQ(i, numExamples);
+        // //	double alpha_i = shuffledAlpha[i];
 
-        //float[] Q_svA =
+        //double[] Q_svA =
         Q.getQ(svA, active, Q_svA);
         for (SolutionVector svB : allExamples) {
           //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
@@ -241,20 +242,20 @@ public abstract class Solver<L extends Comparable, P> {
 
       // update alpha[i] and alpha[j], handle bounds carefully
 
-      //float[] Q_svA =
+      //double[] Q_svA =
       Q.getQ(svA, active, Q_svA);
-      //float[] Q_svB =
+      //double[] Q_svB =
       Q.getQ(svB, active, Q_svB);
 
-      float C_i = svA.getC(Cp, Cn); //getC(i);
-      float C_j = svB.getC(Cp, Cn); //getC(j);
+      double C_i = svA.getC(Cp, Cn); //getC(i);
+      double C_j = svB.getC(Cp, Cn); //getC(j);
 
       double old_alpha_i = svA.alpha;
       double old_alpha_j = svB.alpha;
 
       if (svA.targetValue != svB.targetValue) {
         //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-        float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
+        double quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
             + 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
         //	svA.wasEvaluated = true;
         //	svB.wasEvaluated = true;
@@ -291,7 +292,7 @@ public abstract class Solver<L extends Comparable, P> {
         }
       } else {
         //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
-        float quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
+        double quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
             - 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
         //	svA.wasEvaluated = true;
         //	svB.wasEvaluated = true;
@@ -334,7 +335,7 @@ public abstract class Solver<L extends Comparable, P> {
       double delta_alpha_j = svB.alpha - old_alpha_j;
 
       if (delta_alpha_i == 0 && delta_alpha_j == 0) {
-        // pair was already optimal, but selectWorkingPair() didn't realize it because the numeric precision of float is insufficient with respect to eps
+        // pair was already optimal, but selectWorkingPair() didn't realize it because the numeric precision of double is insufficient with respect to eps
         logger.error(
             "Pair is optimal within available numeric precision, but this is still larger than requested eps = "
                 + eps + ".");
@@ -423,14 +424,14 @@ public abstract class Solver<L extends Comparable, P> {
     // initial sort order was provided by allExamples.  This is why allExamples must be a List or array, not just a Collection
     active = allExamples.toArray(EMPTY_SV_ARRAY);
     inactive = EMPTY_SV_ARRAY;
-    Q_svA = new float[active.length];
-    Q_svB = new float[active.length];
+    Q_svA = new double[active.length];
+    Q_svB = new double[active.length];
   }
 
   void do_shrinking() {
     int i;
-    double Gmax1 = Float.NEGATIVE_INFINITY;// max { -y_i * grad(f)_i | i in I_up(\alpha) }
-    double Gmax2 = Float.NEGATIVE_INFINITY;// max { y_i * grad(f)_i | i in I_low(\alpha) }
+    double Gmax1 = Double.NEGATIVE_INFINITY;// max { -y_i * grad(f)_i | i in I_up(\alpha) }
+    double Gmax2 = Double.NEGATIVE_INFINITY;// max { y_i * grad(f)_i | i in I_low(\alpha) }
 
     // find maximal violating pair first
 
@@ -493,8 +494,8 @@ public abstract class Solver<L extends Comparable, P> {
 
     active = activeList.toArray(EMPTY_SV_ARRAY);
 
-    Q_svA = new float[active.length];
-    Q_svB = new float[active.length];
+    Q_svA = new double[active.length];
+    Q_svB = new double[active.length];
 
     SolutionVector<P>[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
     Q.maintainCache(active,
@@ -539,7 +540,7 @@ public abstract class Solver<L extends Comparable, P> {
 */
     if (nr_free * numExamples > 2 * activeSize * (numExamples - activeSize)) {
       for (SolutionVector svA : inactive) {
-        //float[] Q_i = Q.getQ(i, activeSize);
+        //double[] Q_i = Q.getQ(i, activeSize);
         Q.getQ(svA, active, Q_svA);
         for (SolutionVector svB : active) {
           if (svB.isFree()) //is_free(j))
@@ -557,8 +558,8 @@ public abstract class Solver<L extends Comparable, P> {
       for (SolutionVector svA : active) {
         if (svA.isFree()) //is_free(i))
         {
-          //	float[] Q_i = Q.getQ(i, numExamples);
-          //	float alpha_i = shuffledAlpha[i];
+          //	double[] Q_i = Q.getQ(i, numExamples);
+          //	double alpha_i = shuffledAlpha[i];
           Q.getQ(svA, active, inactive, Q_all);
           for (SolutionVector svB : inactive) {
             //assert Q_all[svB.rank] == Q.evaluate(svA, svB);
@@ -576,8 +577,8 @@ public abstract class Solver<L extends Comparable, P> {
     active = allExamples.toArray(EMPTY_SV_ARRAY);
     Arrays.sort(active);
     inactive = EMPTY_SV_ARRAY;
-    Q_svA = new float[active.length];
-    Q_svB = new float[active.length];
+    Q_svA = new double[active.length];
+    Q_svB = new double[active.length];
   }
 
   protected SolutionVectorPair selectWorkingPair() {

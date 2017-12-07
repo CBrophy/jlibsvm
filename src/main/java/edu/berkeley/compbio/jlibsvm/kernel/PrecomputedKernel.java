@@ -36,7 +36,7 @@ public class PrecomputedKernel implements KernelFunction<SparseVector> {
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public float evaluateF(SparseVector x, SparseVector y) {
+  public double evaluateF(SparseVector x, SparseVector y) {
     return x.getValues()[(int) (y.getValues()[0])];
   }
 }

@@ -29,15 +29,15 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModelLearner ---------------------
 
   public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
-    float[] minima = null;
-    float[] sizes = null;
+    double[] minima = null;
+    double[] sizes = null;
 
     int count = 0;
     for (SparseVector example : examples) {
 
       if (minima == null) {
-        minima = new float[example.getMaxDimensions()];
-        sizes = new float[example.getMaxDimensions()];
+        minima = new double[example.getMaxDimensions()];
+        sizes = new double[example.getMaxDimensions()];
       }
 
       if (count >= maxExamples) {
@@ -45,7 +45,7 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
       }
 
       for (int index : example.getIndexes()) {
-        float v = example.get(index);
+        double v = example.get(index);
 
         minima[index] = Math.min(minima[index], v);
         sizes[index] = Math.max(sizes[index], v - minima[index]);
@@ -62,13 +62,13 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
   public class LinearScalingModel implements ScalingModel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
-    float[] minima;
+    double[] minima;
     //double[] maxima;
-    float[] sizes;
+    double[] sizes;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public LinearScalingModel(float[] minima, float[] sizes) {
+    public LinearScalingModel(double[] minima, double[] sizes) {
       this.minima = minima;
       this.sizes = sizes;
     }
@@ -82,10 +82,10 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 
       for (int i = 0; i < example.getIndexes().length; i++) {
         int index = example.getIndexes()[i];
-        float v = example.getValues()[i];
+        double v = example.getValues()[i];
 
         result.getIndexes()[i] = index;
-        float min = minima[index];
+        double min = minima[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
         if (sizes[index] > 0.0f) {

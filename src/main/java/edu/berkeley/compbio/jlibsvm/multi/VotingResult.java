@@ -8,21 +8,21 @@ public class VotingResult<L> {
 // ------------------------------ FIELDS ------------------------------
 
   private L bestLabel = null;
-  private float bestVoteProportion = 0;
-  private float secondBestVoteProportion = 0;
-  private float bestOneClassProbability = 0;
-  private float secondBestOneClassProbability = 0;
-  private float bestOneVsAllProbability = 0;
-  private float secondBestOneVsAllProbability = 0;
+  private double bestVoteProportion = 0;
+  private double secondBestVoteProportion = 0;
+  private double bestOneClassProbability = 0;
+  private double secondBestOneClassProbability = 0;
+  private double bestOneVsAllProbability = 0;
+  private double secondBestOneVsAllProbability = 0;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public VotingResult() {
   }
 
-  public VotingResult(L bestLabel, float bestVoteProportion, float secondBestVoteProportion,
-      float bestOneClassProbability, float secondBestOneClassProbability,
-      float bestOneVsAllProbability, float secondBestOneVsAllProbability) {
+  public VotingResult(L bestLabel, double bestVoteProportion, double secondBestVoteProportion,
+      double bestOneClassProbability, double secondBestOneClassProbability,
+      double bestOneVsAllProbability, double secondBestOneVsAllProbability) {
     this.bestLabel = bestLabel;
     this.bestVoteProportion = bestVoteProportion;
     this.secondBestVoteProportion = secondBestVoteProportion;
@@ -39,27 +39,27 @@ public class VotingResult<L> {
     return bestLabel;
   }
 
-  public float getBestOneVsAllProbability() {
+  public double getBestOneVsAllProbability() {
     return bestOneVsAllProbability;
   }
 
-  public float getBestOneClassProbability() {
+  public double getBestOneClassProbability() {
     return bestOneClassProbability;
   }
 
-  public float getBestVoteProportion() {
+  public double getBestVoteProportion() {
     return bestVoteProportion;
   }
 
-  public float getSecondBestOneVsAllProbability() {
+  public double getSecondBestOneVsAllProbability() {
     return secondBestOneVsAllProbability;
   }
 
-  public float getSecondBestOneClassProbability() {
+  public double getSecondBestOneClassProbability() {
     return secondBestOneClassProbability;
   }
 
-  public float getSecondBestVoteProportion() {
+  public double getSecondBestVoteProportion() {
     return secondBestVoteProportion;
   }
 }

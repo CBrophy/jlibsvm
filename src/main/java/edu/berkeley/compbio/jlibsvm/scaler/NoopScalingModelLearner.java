@@ -1,10 +1,12 @@
 package edu.berkeley.compbio.jlibsvm.scaler;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class NoopScalingModelLearner<P> implements ScalingModelLearner<P> {
+public class NoopScalingModelLearner<P extends SparseVector> implements ScalingModelLearner<P> {
 // ------------------------ INTERFACE METHODS ------------------------
 
 // --------------------- Interface ScalingModelLearner ---------------------

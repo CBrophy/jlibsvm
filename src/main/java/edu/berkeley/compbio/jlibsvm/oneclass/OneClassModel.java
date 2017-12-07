@@ -2,12 +2,13 @@ package edu.berkeley.compbio.jlibsvm.oneclass;
 
 import edu.berkeley.compbio.jlibsvm.DiscreteModel;
 import edu.berkeley.compbio.jlibsvm.regression.RegressionModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassModel<L, P> extends RegressionModel<P> implements DiscreteModel<Boolean, P> {
+public class OneClassModel<L, P extends SparseVector> extends RegressionModel<P> implements DiscreteModel<Boolean, P> {
 // ------------------------------ FIELDS ------------------------------
 
   L label;
@@ -18,11 +19,6 @@ public class OneClassModel<L, P> extends RegressionModel<P> implements DiscreteM
     super();
   }
 
-/*	public OneClassModel(Properties props, LabelParser<Float>labelParser)
-		{
-		super(props, labelParser);
-		}
-*/
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
@@ -36,8 +32,8 @@ public class OneClassModel<L, P> extends RegressionModel<P> implements DiscreteM
 
   //** Hmmm does this make sense?
 
-  public Float predictValue(P x) {
-    return predictLabel(x) ? 1f : -1f;
+  public Double predictValue(P x) {
+    return predictLabel(x) ? 1.0 : -1.0;
   }
 
 // --------------------- Interface DiscreteModel ---------------------
@@ -53,24 +49,12 @@ public class OneClassModel<L, P> extends RegressionModel<P> implements DiscreteM
    * thing, and take the laplace parameter into account, etc.  Is it valid to do cross-validation and train a sigmoid
    * model just like in C-SVC?
    */
-  public float getProbability(P x) {
+  public double getProbability(P x) {
     // REVIEW one-class probability hack
     // at least the logistic function is monotonic
     double v = super.predictValue(x);
     double result = 1 / (1 + Math.exp(-v));
-    return (float) result;
+    return (double) result;
 
-    // linear interpolation from -1 to 1
-		/*
-		if (v <= -1f)
-			{
-			return 0f;
-			}
-		if (v >= 1f)
-			{
-			return 1f;
-			}
-		return (v + 1f) / 2f;
-		*/
   }
 }

@@ -13,6 +13,7 @@ import edu.berkeley.compbio.jlibsvm.binary.BinaryClassificationSVM;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.jlibsvm.binary.BooleanClassificationProblemImpl;
 import edu.berkeley.compbio.jlibsvm.labelinverter.LabelInverter;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.jlibsvm.util.SubtractionMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MultiClassificationSVM<L extends Comparable<L>, P> extends
+public class MultiClassificationSVM<L extends Comparable<L>, P extends SparseVector> extends
     SVM<L, P, MultiClassProblem<L, P>> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -150,11 +151,11 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 
     //ImmutableSvmParameterPoint<L, P> bestParam = null;
     SvmMultiClassCrossValidationResults<L, P> bestCrossValidationResults = null;
-    float bestSensitivity = -1F;
+    double bestSensitivity = -1F;
 
     synchronized void update( //ImmutableSvmParameterPoint<L, P> gridParam,
         SvmMultiClassCrossValidationResults<L, P> crossValidationResults) {
-      float sensitivity = crossValidationResults.classNormalizedSensitivity();
+      double sensitivity = crossValidationResults.classNormalizedSensitivity();
       if (sensitivity > bestSensitivity) {
         //bestParam = gridParam;
         bestSensitivity = sensitivity;
@@ -211,7 +212,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
      *
      * Now the approach is: just recompute them from scratch within each binary machine
      */
-    //final Map<L, Float> weights = prepareWeights(problem, param);
+    //final Map<L, Double> weights = prepareWeights(problem, param);
 
 		/*
 		if (param.multiclassMode != MultiClassModel.MulticlassMode.OneVsAllOnly)
@@ -222,7 +223,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 
 			for (Map.Entry<L,Set<P>> entry : problem.getExamplesByLabel().entrySet())
 				{
-				Map<P, Float> subExamples = new HashMap<P, Float>(problem.getNumExamples(););
+				Map<P, Double> subExamples = new HashMap<P, Double>(problem.getNumExamples(););
 
 				for (P point : entry.getValue())
 					{
@@ -274,7 +275,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
           final BinaryClassificationProblem<L, P> subProblem =
               new BooleanClassificationProblemImpl<L, P>(problem.getLabelClass(), label,
                   labelExamples,
-                  notLabel, notlabelExamples, problem.getExampleIds());
+                  notLabel, notlabelExamples);
           // Unbalanced data: see prepareWeights
           // since these will be extremely unbalanced, this should nearly guarantee that no positive examples are misclassified.
 
@@ -335,7 +336,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
           final BinaryClassificationProblem<L, P> subProblem =
               new BooleanClassificationProblemImpl<L, P>(problem.getLabelClass(), label1,
                   label1Examples,
-                  label2, label2Examples, problem.getExampleIds());
+                  label2, label2Examples);
 
           BinaryModel<L, P> result = binarySvm.train(subProblem, param); //, execService);
           model.putOneVsOneModel(label1, label2, result);
@@ -403,11 +404,11 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
    * <p/>
    * Disabling the whole procedure & delegating to the binary machines for now.
    */
-/*	private Map<L, Float> prepareWeights(MultiClassProblem<L, P> problem, @NotNull ImmutableSvmParameter<L, P> param)
+/*	private Map<L, Double> prepareWeights(MultiClassProblem<L, P> problem, @NotNull ImmutableSvmParameter<L, P> param)
 		{
 		LabelInverter<L> labelInverter = problem.getLabelInverter();
 
-		Map<L, Float> weights = new HashMap<L, Float>();
+		Map<L, Double> weights = new HashMap<L, Double>();
 
 
 		final Map<L, Set<P>> examplesByLabel = problem.getExamplesByLabel();
@@ -432,8 +433,8 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 			int numClasses = examplesByLabel.size();
 
 			// first figure out the average total weight for each class if the samples were uniformly distributed (i.e., the average number of examples with weight 1)
-			float totalWeightPerClass = (float) numExamples / (float) numClasses;
-			//float totalCPerRemainder = totalCPerClass * (numClasses - 1);
+			double totalWeightPerClass = (double) numExamples / (double) numClasses;
+			//double totalCPerRemainder = totalCPerClass * (numClasses - 1);
 
 
 			// then assign the proper weight per _sample_ within each class by distributing the per-class weight
@@ -443,7 +444,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 
 				L label = entry.getKey();
 				Set<P> examples = entry.getValue();
-				float weight = totalWeightPerClass / (float) examples.size();
+				double weight = totalWeightPerClass / (double) examples.size();
 
 				weights.put(label, weight);
 
@@ -456,7 +457,7 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 				L inverse = labelInverter.invert(label);
 				int numFalseExamples = numExamples - examples.size();
 				numFalseExamples = Math.min(numFalseExamples, param.falseClassSVlimit);
-				float inverseWeight = totalWeightPerClass / numFalseExamples;
+				double inverseWeight = totalWeightPerClass / numFalseExamples;
 				weights.put(inverse, inverseWeight);
 				}
 
@@ -474,12 +475,12 @@ public class MultiClassificationSVM<L extends Comparable<L>, P> extends
 //
 //
 //	   // ... but if any weights are provided, apply them
-//	   for (Map.Entry<L, Float> weightEntry : param.getWeights().entrySet())
+//	   for (Map.Entry<L, Double> weightEntry : param.getWeights().entrySet())
 //		   {
 //		   L key = weightEntry.getKey();
 //		   if (problem.getLabels().contains(key))
 //			   {
-//			   Float w = weightEntry.getValue();
+//			   Double w = weightEntry.getValue();
 //			   weights.put(key, w * param.C);
 //			   }
 //		   else

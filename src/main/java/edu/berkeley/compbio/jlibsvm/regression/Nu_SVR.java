@@ -7,6 +7,7 @@ import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.qmatrix.BooleanInvertingKernelQMatrix;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,14 +18,14 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Nu_SVR<P, R extends RegressionProblem<P, R>> extends RegressionSVM<P, R> {
+public class Nu_SVR<P extends SparseVector, R extends RegressionProblem<P, R>> extends RegressionSVM<P, R> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Nu_SVR.class);
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public RegressionModel<P> train(R problem, @NotNull ImmutableSvmParameter<Float, P> param)
+  public RegressionModel<P> train(R problem, @NotNull ImmutableSvmParameter<Double, P> param)
   //,final TreeExecutorService execService)
   {
     validateParam(param);
@@ -33,14 +34,14 @@ public class Nu_SVR<P, R extends RegressionProblem<P, R>> extends RegressionSVM<
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Float, P>) param);//, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double, P>) param);//, execService);
     }
     return result;
   }
 
 
   private RegressionModel<P> trainScaled(R problem,
-      @NotNull ImmutableSvmParameterPoint<Float, P> param)
+      @NotNull ImmutableSvmParameterPoint<Double, P> param)
   //, final TreeExecutorService execService)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
@@ -51,17 +52,17 @@ public class Nu_SVR<P, R extends RegressionProblem<P, R>> extends RegressionSVM<
       problem = problem.getScaledCopy(param.scalingModelLearner);
     }
 
-    float laplaceParameter = RegressionModel.NO_LAPLACE_PARAMETER;
+    double laplaceParameter = RegressionModel.NO_LAPLACE_PARAMETER;
     if (param.probability) {
       laplaceParameter = laplaceParameter(problem, param);//, execService);
     }
 
-    float sum = param.C * param.nu * problem.getNumExamples() / 2f;
+    double sum = param.C * param.nu * problem.getNumExamples() / 2f;
 
     List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
 
-    for (Map.Entry<P, Float> example : problem.getExamples().entrySet()) {
-      float initAlpha = Math.min(sum, param.C);
+    for (Map.Entry<P, Double> example : problem.getExamples().entrySet()) {
+      double initAlpha = Math.min(sum, param.C);
       sum -= initAlpha;
 
       SolutionVector<P> sv;
@@ -102,7 +103,7 @@ public class Nu_SVR<P, R extends RegressionProblem<P, R>> extends RegressionSVM<
     return "nu_svr";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameterPoint<Float, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double, P> param) {
     super.validateParam(param);
     if (param.nu <= 0 || param.nu > 1) {
       throw new SvmException("nu <= 0 or nu > 1");

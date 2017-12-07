@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.binary;
 import edu.berkeley.compbio.jlibsvm.ExplicitSvmProblemImpl;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.jlibsvm.util.SubtractionMap;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinaryClassificationProblemImpl<L extends Comparable, P>
+public class BinaryClassificationProblemImpl<L extends Comparable, P extends SparseVector>
     extends ExplicitSvmProblemImpl<L, P, BinaryClassificationProblem<L, P>>
     implements BinaryClassificationProblem<L, P>, Serializable {
 // ------------------------------ FIELDS ------------------------------
@@ -33,9 +34,8 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P>
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinaryClassificationProblemImpl(Class labelClass, Map<P, L> examples,
-      @NotNull Map<P, Integer> exampleIds) {
-    super(examples, exampleIds);
+  public BinaryClassificationProblemImpl(Class labelClass, Map<P, L> examples) {
+    super(examples);
     setupLabels();
     this.labelClass = labelClass;
   }
@@ -50,9 +50,8 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P>
   }
 
   public BinaryClassificationProblemImpl(Class labelClass, Map<P, L> examples,
-      Map<P, Integer> exampleIds,
       @NotNull ScalingModel<P> scalingModel, L trueLabel, L falseLabel) {
-    super(examples, exampleIds, scalingModel);
+    super(examples, scalingModel);
     this.trueLabel = trueLabel;
     this.falseLabel = falseLabel;
     this.labelClass = labelClass;
@@ -61,7 +60,6 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P>
   public BinaryClassificationProblemImpl(BinaryClassificationProblemImpl<L, P> backingProblem,
       Set<P> heldOutPoints) {
     super(new SubtractionMap<P, L>(backingProblem.examples, heldOutPoints),
-        backingProblem.exampleIds,
         backingProblem.scalingModel, heldOutPoints);
     this.trueLabel = backingProblem.trueLabel;
     this.falseLabel = backingProblem.falseLabel;
@@ -105,9 +103,8 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P>
   }
 
   public BinaryClassificationProblem<L, P> createScaledCopy(Map<P, L> scaledExamples,
-      Map<P, Integer> scaledExampleIds,
       ScalingModel<P> learnedScalingModel) {
-    return new BinaryClassificationProblemImpl<L, P>(labelClass, scaledExamples, scaledExampleIds,
+    return new BinaryClassificationProblemImpl<L, P>(labelClass, scaledExamples,
         learnedScalingModel, trueLabel, falseLabel);
   }
 

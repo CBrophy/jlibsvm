@@ -1,31 +1,31 @@
 package edu.berkeley.compbio.jlibsvm.regression;
 
 import edu.berkeley.compbio.jlibsvm.MutableSvmProblem;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MutableRegressionProblemImpl<P> extends
+public class MutableRegressionProblemImpl<P extends SparseVector> extends
     RegressionProblemImpl<P, MutableRegressionProblemImpl<P>>
-    implements MutableSvmProblem<Float, P, MutableRegressionProblemImpl<P>> {
+    implements MutableSvmProblem<Double, P, MutableRegressionProblemImpl<P>> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public MutableRegressionProblemImpl(int numExamples) {
-    super(new HashMap<P, Float>(numExamples), new HashMap<P, Integer>(numExamples));
+    super(new HashMap<P, Double>(numExamples));
   }
 
 // ------------------------ INTERFACE METHODS ------------------------
 
 // --------------------- Interface MutableSvmProblem ---------------------
 
-  public void addExample(P point, Float label) {
+  public void addExample(P point, Double label) {
     examples.put(point, label);
-    exampleIds.put(point, exampleIds.size());
   }
 
-  public void addExampleFloat(P point, Float x) {
+  public void addExampleFloat(P point, Double x) {
     addExample(point, x);
   }
 }

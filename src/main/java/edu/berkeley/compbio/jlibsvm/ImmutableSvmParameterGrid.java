@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -10,7 +11,7 @@ import java.util.HashSet;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
+public class ImmutableSvmParameterGrid<L extends Comparable, P extends SparseVector> extends
     ImmutableSvmParameter<L, P> {
 
   private final Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
@@ -24,13 +25,13 @@ public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
     return gridParams;
   }
 
-  public static <L extends Comparable, P> Builder<L, P> builder() {
+  public static <L extends Comparable, P extends SparseVector> Builder<L, P> builder() {
     return new Builder<L, P>();
   }
 
-  public static class Builder<L extends Comparable, P> extends ImmutableSvmParameter.Builder {
+  public static class Builder<L extends Comparable, P extends SparseVector> extends ImmutableSvmParameter.Builder {
 
-    public Collection<Float> Cset;
+    public Collection<Double> Cset;
     public Collection<KernelFunction<P>> kernelSet;
     private Collection<ImmutableSvmParameterPoint<L, P>> gridParams;
 
@@ -38,19 +39,13 @@ public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
       super(copyFrom);
 
       //default
-      Cset = new HashSet<Float>();
-      Cset.add(1f);
+      Cset = new HashSet<Double>();
+      Cset.add(1.0);
     }
 
     public Builder(ImmutableSvmParameterGrid<L, P> copyFrom) {
       super(copyFrom);
 
-      //default
-      //Cset = new HashSet<Float>();
-      //Cset.add(1f);
-
-      //Cset = copyFrom.Cset;
-      //kernelSet = copyFrom.kernelSet;
       gridParams = copyFrom.gridParams;
     }
 
@@ -58,8 +53,8 @@ public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
       super();
 
       //default
-      Cset = new HashSet<Float>();
-      Cset.add(1f);
+      Cset = new HashSet<Double>();
+      Cset.add(1.0);
     }
 
     public ImmutableSvmParameter<L, P> build() {
@@ -83,7 +78,7 @@ public class ImmutableSvmParameterGrid<L extends Comparable, P> extends
 
       // the C and kernel set here are ignored; we just overwrite them with the grid points
 
-      for (Float gridC : Cset) {
+      for (Double gridC : Cset) {
         for (KernelFunction<P> gridKernel : kernelSet) {
           builder.C = gridC;
           builder.kernel = gridKernel;

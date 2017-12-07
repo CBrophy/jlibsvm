@@ -7,6 +7,7 @@ import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterGrid;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
 import edu.berkeley.compbio.jlibsvm.SVM;
 import edu.berkeley.compbio.jlibsvm.SvmException;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class BinaryClassificationSVM<L extends Comparable, P>
+public abstract class BinaryClassificationSVM<L extends Comparable, P extends SparseVector>
     extends SVM<L, P, BinaryClassificationProblem<L, P>> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -99,11 +100,11 @@ public abstract class BinaryClassificationSVM<L extends Comparable, P>
 
     ImmutableSvmParameterPoint<L, P> bestParam = null;
     SvmBinaryCrossValidationResults<L, P> bestCrossValidationResults = null;
-    float bestSensitivity = -1F;
+    double bestSensitivity = -1F;
 
     synchronized void update(ImmutableSvmParameterPoint<L, P> gridParam,
         SvmBinaryCrossValidationResults<L, P> crossValidationResults) {
-      float sensitivity = crossValidationResults.classNormalizedSensitivity();
+      double sensitivity = crossValidationResults.classNormalizedSensitivity();
       if (sensitivity > bestSensitivity) {
         bestParam = gridParam;
         bestSensitivity = sensitivity;
@@ -137,31 +138,16 @@ public abstract class BinaryClassificationSVM<L extends Comparable, P>
     return result;
   }
 
-  /**
-   * Cross-validation decision values for probability estimates
-   */
-/*	private SigmoidProbabilityModel svcProbability(BinaryClassificationProblem<L, P> problem, float Cp, float Cn,
-	                                               @NotNull ImmutableSvmParameter<L, P> param)
-		{
-		// ** Original implementation makes a point of not explicitly training if all of the examples are in one class anyway.  Does that matter?
 
-		Map<P, Float> decisionValues = performCrossValidation(problem, Cp, Cn,param);
-
-		CrossValidationResults<L,P> cv = new CrossValidationResults<L,P>(problem, decisionValues);
-
-		return new SigmoidProbabilityModel(cv.decisionValueArray, cv.labelArray);
-		}
-*/
   public SvmBinaryCrossValidationResults<L, P> performCrossValidation(
       @NotNull BinaryClassificationProblem<L, P> problem,
       @NotNull ImmutableSvmParameter<L, P> param)
-  //,	@NotNull final TreeExecutorService execService)
   {
     //there is no point in computing probabilities on these submodels (and that produces infinite recursion)
     ImmutableSvmParameterPoint<L, P> noProbParam = (ImmutableSvmParameterPoint<L, P>) param
         .noProbabilityCopy();
 
-    final Map<P, Float> decisionValues = continuousCrossValidation(problem,
+    final Map<P, Double> decisionValues = continuousCrossValidation(problem,
         noProbParam); //, execService);
 
     // but the CV may be used to compute probabilities at this level, if requested
@@ -174,8 +160,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable, P>
    * Normal training on the entire problem, with no scaling and no cross-validation-based probability measure.
    */
   protected abstract BinaryModel<L, P> trainOne(@NotNull BinaryClassificationProblem<L, P> problem,
-      float Cp,
-      float Cn, @NotNull ImmutableSvmParameterPoint<L, P> param);
+      double Cp,
+      double Cn, @NotNull ImmutableSvmParameterPoint<L, P> param);
 
 
   private BinaryModel<L, P> trainScaled(@NotNull BinaryClassificationProblem<L, P> problem,
@@ -198,16 +184,16 @@ public abstract class BinaryClassificationSVM<L extends Comparable, P>
       @NotNull ImmutableSvmParameterPoint<L, P> param) {
     // calculate weighted C
 
-    float weightedCp = param.C;
-    float weightedCn = param.C;
+    double weightedCp = param.C;
+    double weightedCn = param.C;
 
     if (param.redistributeUnbalancedC) {
-      Float weightP = param.getWeight(problem.getTrueLabel());
+      Double weightP = param.getWeight(problem.getTrueLabel());
       if (weightP != null) {
         weightedCp *= weightP;
       }
 
-      Float weightN = param.getWeight(problem.getFalseLabel());
+      Double weightN = param.getWeight(problem.getFalseLabel());
       if (weightN != null) {
         weightedCn *= weightN;
       }

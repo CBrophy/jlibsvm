@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm.oneclass;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 
@@ -10,10 +11,10 @@ import java.util.List;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassSolver<L, P> extends Solver<Float, P> {
+public class OneClassSolver<L, P extends SparseVector> extends Solver<Double, P> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public OneClassSolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, float C, float eps,
+  public OneClassSolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double C, double eps,
       boolean shrinking) {
     super(solutionVectors, Q, C, C, eps, shrinking);
   }

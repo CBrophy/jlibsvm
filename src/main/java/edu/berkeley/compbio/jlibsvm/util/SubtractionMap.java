@@ -12,7 +12,7 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SubtractionMap<P, L> extends AbstractMap<P, L> {
+public class SubtractionMap<P extends SparseVector, L> extends AbstractMap<P, L> {
 // ------------------------------ FIELDS ------------------------------
 
   private Set<Entry<P, L>> entries;

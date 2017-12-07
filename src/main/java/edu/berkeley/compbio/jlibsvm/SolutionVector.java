@@ -1,12 +1,13 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SolutionVector<P> implements Comparable<SolutionVector> {
+public class SolutionVector<P extends SparseVector> implements Comparable<SolutionVector> {
 // ------------------------------ FIELDS ------------------------------
 
   /**
@@ -17,25 +18,25 @@ public class SolutionVector<P> implements Comparable<SolutionVector> {
   /**
    * keep track of the sample id for mapping to ranks
    */
-  final public int id;
+  final public long id;
   final public P point;
   public boolean targetValue;
   public double alpha;
   public double G;
-  public float linearTerm;
+  public double linearTerm;
   Status alphaStatus;
-  float G_bar;
+  double G_bar;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SolutionVector(int id, @NotNull P key, Boolean targetValue, float linearTerm) {
+  public SolutionVector(long id, @NotNull P key, Boolean targetValue, double linearTerm) {
     this.id = id;
     point = key;
     this.linearTerm = linearTerm;
     this.targetValue = targetValue;
   }
 
-  public SolutionVector(int id, @NotNull P key, Boolean value, float linearTerm, float alpha) {
+  public SolutionVector(long id, @NotNull P key, Boolean value, double linearTerm, double alpha) {
     this(id, key, value, linearTerm);
     this.alpha = alpha;
   }
@@ -44,26 +45,15 @@ public class SolutionVector<P> implements Comparable<SolutionVector> {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    SolutionVector that = (SolutionVector) o;
-
-    if (rank != that.rank) {
-      return false;
-    }
-
-    return true;
+    return o instanceof SolutionVector
+        && id == ((SolutionVector) o).id
+        && rank == ((SolutionVector) o).rank;
   }
 
   // PERF hack for speed
 
   public int hashCode() {
-    return id;
+    return Long.hashCode(id);
   }
 
   @Override
@@ -79,7 +69,7 @@ public class SolutionVector<P> implements Comparable<SolutionVector> {
 // --------------------- Interface Comparable ---------------------
 
   public int compareTo(SolutionVector b) {
-    return rank < b.rank ? -1 : (rank > b.rank ? 1 : 0);
+    return Integer.compare(rank, b.rank);
   }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -134,7 +124,7 @@ public class SolutionVector<P> implements Comparable<SolutionVector> {
     }
   }
 
-  public void updateAlphaStatus(float Cp, float Cn) {
+  public void updateAlphaStatus(double Cp, double Cn) {
     if (alpha >= getC(Cp, Cn)) {
       alphaStatus = Status.UPPER_BOUND;
     } else if (alpha <= 0) {
@@ -144,7 +134,7 @@ public class SolutionVector<P> implements Comparable<SolutionVector> {
     }
   }
 
-  float getC(float Cp, float Cn) {
+  double getC(double Cp, double Cn) {
     return targetValue ? Cp : Cn;
   }
 

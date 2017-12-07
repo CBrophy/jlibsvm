@@ -2,6 +2,7 @@ package edu.berkeley.compbio.jlibsvm;
 
 import com.google.common.collect.Multiset;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,16 +18,14 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface SvmProblem<L extends Comparable, P, R> {
+public interface SvmProblem<L extends Comparable, P extends SparseVector, R> {
 // -------------------------- OTHER METHODS --------------------------
 
   Multiset<L> getExampleCounts();
 
-  Map<P, Integer> getExampleIds();
-
   Map<P, L> getExamples();
 
-  int getId(P key);
+  long getId(P key);
 
   List<L> getLabels();
 

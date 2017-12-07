@@ -1,5 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ import java.util.Map;
  * @version $Id$
  */
 @Deprecated
-public interface ExplicitSvmProblem<L extends Comparable, P, R extends SvmProblem<L, P, R>> extends
+public interface ExplicitSvmProblem<L extends Comparable, P extends SparseVector, R extends SvmProblem<L, P, R>> extends
     SvmProblem<L, P, R> {
 // ------------------------ INTERFACE METHODS ------------------------
 

@@ -19,23 +19,23 @@ public class GaussianRBFKernelTest {
 
   @Test
   public void explicitAndCompositeKernelsAreEqual() {
-    float gamma = 1f;
+    double gamma = 1f;
 
     CompositeGaussianRBFKernel<SparseVector> composite =
-        new CompositeGaussianRBFKernel<SparseVector>(gamma, new LinearKernel());
+        new CompositeGaussianRBFKernel<>(gamma, new LinearKernel());
 
     GaussianRBFKernel explicit = new GaussianRBFKernel(gamma);
 
     // need a lot of iterations to use enough time for profiling (e.g. 1000)
 
     for (int i = 0; i < 100; i++) {
-      SparseVector sv1 = SparseVector.createRandomSparseVector(100, .5f, 1);
-      SparseVector sv2 = SparseVector.createRandomSparseVector(100, .5f, 1);
+      SparseVector sv1 = SparseVector.createRandomSparseVector(100, .5, 1);
+      SparseVector sv2 = SparseVector.createRandomSparseVector(100, .5, 1);
 
       // those vectors are likely far apart, and the RBF is always near zero for those.  Interpolate to test closer distances.
 
       for (int j = 0; j < 100; j++) {
-        SparseVector sv3 = SparseVector.mergeScaleVectors(sv1, 1f - (j / 1000f), sv2, (j / 1000f));
+        SparseVector sv3 = SparseVector.mergeScaleVectors(sv1, 1.0 - (j / 1000.0), sv2, (j / 1000.0));
         final double compositeResult = composite.evaluate(sv1, sv3);
         final double explicitResult = explicit.evaluate(sv1, sv3);
         final double diff = Math.abs(explicitResult - compositeResult);

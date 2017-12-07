@@ -16,25 +16,25 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 
   // running mean is obvious; running stddev from http://en.wikipedia.org/wiki/Standard_deviation
 
-  public static float runningMean(int sampleCount, float priorMean, float value) {
-    float d = sampleCount;  // cast only once
+  public static double runningMean(int sampleCount, double priorMean, double value) {
+    double d = sampleCount;  // cast only once
     return priorMean + (value - priorMean) / d;
   }
 
-  public static float runningStddevQ(int sampleCount, float priorMean, float priorQ, float value) {
-    float d = value - priorMean;
-    float result = priorQ + ((sampleCount - 1) * d * d / sampleCount);
+  public static double runningStddevQ(int sampleCount, double priorMean, double priorQ, double value) {
+    double d = value - priorMean;
+    double result = priorQ + ((sampleCount - 1) * d * d / sampleCount);
     //	assert result < 1000;  // temporary test
-    //	assert !Float.isInfinite(result);
-    //	assert !Float.isNaN(result);
+    //	assert !Double.isInfinite(result);
+    //	assert !Double.isNaN(result);
     return result;
   }
 
-  public static void runningStddevQtoStddevInPlace(float[] stddevQ, int sampleCount) {
+  public static void runningStddevQtoStddevInPlace(double[] stddevQ, int sampleCount) {
 
-    float d = sampleCount;  // cast only once
+    double d = sampleCount;  // cast only once
     for (int index = 0; index < stddevQ.length; index++) {
-      stddevQ[index] = (float) Math.sqrt(stddevQ[index] / d);
+      stddevQ[index] = (double) Math.sqrt(stddevQ[index] / d);
     }
   }
 
@@ -50,15 +50,15 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 // --------------------- Interface ScalingModelLearner ---------------------
 
   public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
-    float[] mean = null;
-    float[] stddevQ = null;
+    double[] mean = null;
+    double[] stddevQ = null;
 
     int sampleCount = 0;
     for (SparseVector example : examples) {
 
       if (mean == null) {
-        mean = new float[example.getMaxDimensions()];
-        stddevQ = new float[example.getMaxDimensions()];
+        mean = new double[example.getMaxDimensions()];
+        stddevQ = new double[example.getMaxDimensions()];
       }
 
       if (sampleCount >= maxExamples) {
@@ -68,9 +68,9 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
       sampleCount++;  // runningMean etc. assume 1-based indexes
 
       for (int index : example.getIndexes()) {
-        float v = example.get(index);
+        double v = example.get(index);
 
-        float currentMean = mean[index];
+        double currentMean = mean[index];
 
         mean[index] = runningMean(sampleCount, currentMean, v);
         stddevQ[index] = runningStddevQ(sampleCount, currentMean, stddevQ[index], v);
@@ -88,12 +88,12 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
   public class ZscoreScalingModel implements ScalingModel<SparseVector> {
 // ------------------------------ FIELDS ------------------------------
 
-    private final float[] mean;
-    private final float[] stddev;
+    private final double[] mean;
+    private final double[] stddev;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public ZscoreScalingModel(float[] mean, float[] stddev) {
+    public ZscoreScalingModel(double[] mean, double[] stddev) {
       this.mean = mean;
       this.stddev = stddev;
     }
@@ -107,10 +107,10 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 
       for (int i = 0; i < example.getIndexes().length; i++) {
         int index = example.getIndexes()[i];
-        float v = example.getValues()[i];
+        double v = example.getValues()[i];
 
         result.getIndexes()[i] = index;
-        float theMean = mean[index];
+        double theMean = mean[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
         if (theMean > 0.0f) {
