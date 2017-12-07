@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class C_SVC<L extends Comparable, P extends SparseVector> extends BinaryClassificationSVM<L, P> {
+public class C_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(C_SVC.class);
@@ -25,30 +25,29 @@ public class C_SVC<L extends Comparable, P extends SparseVector> extends BinaryC
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
-  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, double Cp, double Cn,
-      @NotNull ImmutableSvmParameterPoint<L, P> param) {
-    double linearTerm = -1f;
-    Map<P, Boolean> examples = problem.getBooleanExamples();
+  public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
+      @NotNull ImmutableSvmParameterPoint<L> param) {
+    double linearTerm = -1.0;
+    Map<SparseVector, Boolean> examples = problem.getBooleanExamples();
 
-    List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>(examples.size());
+    List<SolutionVector> solutionVectors = new ArrayList<>(examples.size());
 
-    for (Map.Entry<P, Boolean> example : examples.entrySet()) {
-      SolutionVector<P> sv =
-          new SolutionVector<P>(problem.getId(example.getKey()), example.getKey(),
+    for (Map.Entry<SparseVector, Boolean> example : examples.entrySet()) {
+      SolutionVector sv =
+          new SolutionVector(example.getKey().getId(), example.getKey(),
               example.getValue(),
               linearTerm);
-      //sv.id = problem.getId(example.getKey());
       solutionVectors.add(sv);
     }
 
-    QMatrix<P> qMatrix =
-        new BooleanInvertingKernelQMatrix<P>(param.kernel, solutionVectors.size(),
+    QMatrix qMatrix =
+        new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
 
-    BinarySolver<L, P> s = new BinarySolver<L, P>(solutionVectors, qMatrix, Cp, Cn, param.eps,
+    BinarySolver<L> s = new BinarySolver<L>(solutionVectors, qMatrix, Cp, Cn, param.eps,
         param.shrinking);
 
-    BinaryModel<L, P> model = s.solve();
+    BinaryModel<L> model = s.solve();
 
     model.param = param;
     model.trueLabel = problem.getTrueLabel();
@@ -60,8 +59,8 @@ public class C_SVC<L extends Comparable, P extends SparseVector> extends BinaryC
       logger.debug("nu = " + model.getSumAlpha() / (Cp * problem.getNumExamples()));
     }
 
-    for (Map.Entry<P, Double> entry : model.supportVectors.entrySet()) {
-      final P key = entry.getKey();
+    for (Map.Entry<SparseVector, Double> entry : model.supportVectors.entrySet()) {
+      final SparseVector key = entry.getKey();
       final Boolean target = examples.get(key);
       if (!target) {
         entry.setValue(entry.getValue() * -1);
@@ -78,7 +77,7 @@ public class C_SVC<L extends Comparable, P extends SparseVector> extends BinaryC
   }
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<L, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameter<L> param) {
     super.validateParam(param);
     if (param instanceof ImmutableSvmParameterPoint) {
       if (((ImmutableSvmParameterPoint) param).C <= 0) {

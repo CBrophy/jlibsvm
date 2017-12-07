@@ -6,7 +6,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class LinearKernel implements KernelFunction<SparseVector> {
+public class LinearKernel implements KernelFunction {
 // ------------------------ CANONICAL METHODS ------------------------
 
   public String toString() {

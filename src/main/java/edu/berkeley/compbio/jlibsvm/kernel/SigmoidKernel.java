@@ -7,7 +7,7 @@ import java.util.Properties;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SigmoidKernel extends GammaKernel<SparseVector> {
+public class SigmoidKernel extends GammaKernel {
 // ------------------------------ FIELDS ------------------------------
 
   public double coef0;

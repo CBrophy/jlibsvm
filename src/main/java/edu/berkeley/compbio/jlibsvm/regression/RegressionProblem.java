@@ -8,8 +8,8 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface RegressionProblem<P extends SparseVector, R> extends SvmProblem<Double, P, R> {
+public interface RegressionProblem<R> extends SvmProblem<Double, R> {
 
-  R getScaledCopy(ScalingModelLearner<P> scalingModelLearner);
+  R getScaledCopy(ScalingModelLearner scalingModelLearner);
 }
 

@@ -18,26 +18,22 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface SvmProblem<L extends Comparable, P extends SparseVector, R> {
+public interface SvmProblem<L extends Comparable, R> {
 // -------------------------- OTHER METHODS --------------------------
 
   Multiset<L> getExampleCounts();
 
-  Map<P, L> getExamples();
-
-  long getId(P key);
+  Map<SparseVector, L> getExamples();
 
   List<L> getLabels();
 
   int getNumExamples();
 
-  ScalingModel<P> getScalingModel();
+  ScalingModel getScalingModel();
 
-  L getTargetValue(P point);
+  L getTargetValue(SparseVector point);
 
   Iterator<R> makeFolds(int numberOfFolds);
 
-//	R asR();
-
-  Set<P> getHeldOutPoints();
+  Set<SparseVector> getHeldOutPoints();
 }

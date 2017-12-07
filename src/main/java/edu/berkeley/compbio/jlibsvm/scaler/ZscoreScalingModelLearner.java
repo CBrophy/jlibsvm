@@ -6,7 +6,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVector> {
+public class ZscoreScalingModelLearner implements ScalingModelLearner {
 // ------------------------------ FIELDS ------------------------------
 
   private final int maxExamples;
@@ -49,7 +49,7 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 
 // --------------------- Interface ScalingModelLearner ---------------------
 
-  public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
+  public ScalingModel learnScaling(Iterable<SparseVector> examples) {
     double[] mean = null;
     double[] stddevQ = null;
 
@@ -85,7 +85,7 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
 
 // -------------------------- INNER CLASSES --------------------------
 
-  public class ZscoreScalingModel implements ScalingModel<SparseVector> {
+  public class ZscoreScalingModel implements ScalingModel {
 // ------------------------------ FIELDS ------------------------------
 
     private final double[] mean;
@@ -113,7 +113,7 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner<SparseVect
         double theMean = mean[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
-        if (theMean > 0.0f) {
+        if (theMean > 0.0) {
           result.getValues()[i] = (v - theMean) / stddev[index];
         }
       }

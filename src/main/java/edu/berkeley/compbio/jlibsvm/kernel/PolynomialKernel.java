@@ -8,7 +8,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class PolynomialKernel extends GammaKernel<SparseVector> {
+public class PolynomialKernel extends GammaKernel {
 // ------------------------------ FIELDS ------------------------------
 
   public int degree;

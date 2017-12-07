@@ -31,20 +31,20 @@ public class SigmoidProbabilityModel {
     }
 
     int maximumIterations = 100;// Maximal number of iterations
-    double minStep = 1e-10f;// Minimal step taken in line search
-    double sigma = 1e-12f;// For numerically strict PD of Hessian
-    double eps = 1e-5f;
-    double hiTarget = (prior1 + 1.0f) / (prior1 + 2.0f);
-    double loTarget = 1 / (prior0 + 2.0f);
+    double minStep = 1e-10;// Minimal step taken in line search
+    double sigma = 1e-12;// For numerically strict PD of Hessian
+    double eps = 1e-5;
+    double hiTarget = (prior1 + 1.0) / (prior1 + 2.0);
+    double loTarget = 1 / (prior0 + 2.0);
     double[] t = new double[l];
     double p, q;
     double fApB, h11, h22, h21, g1, g2, det, dA, dB, gd, stepsize;
     double newA, newB, newf, d1, d2;    //	int iter;
 
     // Initial Point and Initial Fun Value
-    A = 0.0f;
-    B = (double) Math.log((prior0 + 1.0f) / (prior1 + 1.0f)); // PERF use approximateLog?
-    double fval = 0.0f;
+    A = 0.0;
+    B = Math.log((prior0 + 1.0) / (prior1 + 1.0)); // PERF use approximateLog?
+    double fval = 0.0;
 
     for (int i = 0; i < l; i++) {
       if (labels[i]) {
@@ -65,9 +65,9 @@ public class SigmoidProbabilityModel {
         iter++) {      // Update Gradient and Hessian (use H' = H + sigma I)
       h11 = sigma;// numerically ensures strict PD
       h22 = sigma;
-      h21 = 0.0f;
-      g1 = 0.0f;
-      g2 = 0.0f;
+      h21 = 0.0;
+      g1 = 0.0;
+      g2 = 0.0;
       for (int i = 0; i < l; i++) {
         fApB = decisionValues[i] * A + B;
 
@@ -75,18 +75,18 @@ public class SigmoidProbabilityModel {
 
         if (fApB >= 0) {
           final double expfApB = Math.exp(-fApB);
-          p = expfApB / (1.0f + expfApB);
-          q = 1.0f / (1.0f + expfApB);
+          p = expfApB / (1.0 + expfApB);
+          q = 1.0 / (1.0 + expfApB);
         } else {
           final double expfApB = Math.exp(fApB);
-          p = 1.0f / (1.0f + expfApB);
-          q = expfApB / (1.0f + expfApB);
+          p = 1.0 / (1.0 + expfApB);
+          q = expfApB / (1.0 + expfApB);
         }
-        d2 = (double) (p * q);
+        d2 = (p * q);
         h11 += decisionValues[i] * decisionValues[i] * d2;
         h22 += d2;
         h21 += decisionValues[i] * d2;
-        d1 = (double) (t[i] - p);
+        d1 = (t[i] - p);
         g1 += decisionValues[i] * d1;
         g2 += d1;
       }
@@ -110,7 +110,7 @@ public class SigmoidProbabilityModel {
         newB = B + stepsize * dB;
 
         // New function value
-        newf = 0.0f;
+        newf = 0.0;
         for (int i = 0; i < l; i++) {
           fApB = decisionValues[i] * newA + newB;
           if (fApB >= 0) {
@@ -126,7 +126,7 @@ public class SigmoidProbabilityModel {
           fval = newf;
           break;
         } else {
-          stepsize = stepsize / 2.0f;
+          stepsize = stepsize / 2.0;
         }
       }
 
@@ -147,9 +147,9 @@ public class SigmoidProbabilityModel {
     double fApB = decisionValue * A + B;
     if (fApB >= 0) {
       final double expMinusfApB = Math.exp(-fApB);
-      return (double) (expMinusfApB / (1.0 + expMinusfApB));
+      return (expMinusfApB / (1.0 + expMinusfApB));
     } else {
-      return (double) (1.0 / (1 + Math.exp(fApB)));
+      return (1.0 / (1 + Math.exp(fApB)));
     }
   }
 }

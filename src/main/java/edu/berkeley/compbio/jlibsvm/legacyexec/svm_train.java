@@ -148,7 +148,7 @@ public class svm_train {
     builder.probability = false;
     builder.redistributeUnbalancedC = true;
 
-    ScalingModelLearner<SparseVector> scalingModelLearner = new NoopScalingModelLearner<SparseVector>();
+    ScalingModelLearner scalingModelLearner = new NoopScalingModelLearner();
 
     String scalingType = null;
     int scalingExamples = 1000;
@@ -428,10 +428,10 @@ public class svm_train {
         problem = new MutableBinaryClassificationProblemImpl(String.class, vy.size());
       } else {
         problem =
-            new MutableMultiClassProblemImpl<String, SparseVector>(String.class,
+            new MutableMultiClassProblemImpl<>(String.class,
                 new StringLabelInverter(),
                 vy.size(),
-                new NoopScalingModel<SparseVector>());
+                new NoopScalingModel());
       }
 
 

@@ -1,5 +1,7 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+
 /**
  * An SVM solution which can classify unknown points using a set of discrete labels.
  *
@@ -8,8 +10,8 @@ package edu.berkeley.compbio.jlibsvm;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface DiscreteModel<L, P> {
+public interface DiscreteModel<L> {
 // -------------------------- OTHER METHODS --------------------------
 
-  L predictLabel(P x);
+  L predictLabel(SparseVector x);
 }

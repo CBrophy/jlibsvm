@@ -399,17 +399,17 @@ public class svm_toy extends Applet {
     // build problem
     MutableSvmProblem prob;
     if (svm instanceof RegressionSVM) {
-      prob = new MutableRegressionProblemImpl<SparseVector>(point_list.size());
+      prob = new MutableRegressionProblemImpl(point_list.size());
     } else if (numClasses == 1) {
-      prob = new MutableRegressionProblemImpl<SparseVector>(point_list.size());
+      prob = new MutableRegressionProblemImpl(point_list.size());
     } else if (numClasses == 2) {
-      prob = new MutableBinaryClassificationProblemImpl<Byte, SparseVector>(Byte.class,
+      prob = new MutableBinaryClassificationProblemImpl<Byte>(Byte.class,
           point_list.size());
     } else {
-      prob = new MutableMultiClassProblemImpl<Byte, SparseVector>(Byte.class,
+      prob = new MutableMultiClassProblemImpl<>(Byte.class,
           new ByteLabelInverter(),
           point_list.size(),
-          new NoopScalingModel<SparseVector>());
+          new NoopScalingModel());
     }
 
     if (kernel_type == svm_train.PRECOMPUTED) {
@@ -524,7 +524,7 @@ public class svm_toy extends Applet {
               throw new SvmException("Don't know how to plot label of type " + o.getClass());
             }
           } else {
-            d = ((ContinuousModel) model).predictValue(x).intValue();
+            d = (int) ((ContinuousModel) model).predictValue(x);
           }
 
 					/*if (svm_type == svm_train.ONE_CLASS && d < 0)

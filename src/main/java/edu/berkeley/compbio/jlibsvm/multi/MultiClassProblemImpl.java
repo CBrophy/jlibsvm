@@ -16,9 +16,9 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector> //, R extends MultiClassProblem<? extends L, ? extends P, ? extends R>>
-    extends ExplicitSvmProblemImpl<L, P, MultiClassProblem<L, P>>
-    implements MultiClassProblem<L, P> //, MutableSvmProblem<L,P,R>
+public class MultiClassProblemImpl<L extends Comparable>
+    extends ExplicitSvmProblemImpl<L, MultiClassProblem<L>>
+    implements MultiClassProblem<L>
 {
 // ------------------------------ FIELDS ------------------------------
 
@@ -28,11 +28,11 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
 
   // cache the scaled copy, taking care that the scalingModelLearner is the same one.
   // only bother keeping one (i.e. don't make a map from learners to scaled copies)
-  private ScalingModelLearner<P> lastScalingModelLearner = null;
-  private MultiClassProblem<L, P> scaledCopy = null;
+  private ScalingModelLearner lastScalingModelLearner = null;
+  private MultiClassProblem<L> scaledCopy = null;
 
 
-  private Map<L, Set<P>> theInverseMap = null;
+  private Map<L, Set<SparseVector>> theInverseMap = null;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -41,14 +41,14 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
    * alone, so we need to provide the class object (e.g., String.class or whatever) for the label type used.  Of course
    * this should match the generics used on SvmProblem, etc.
    */
-  public MultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter, Map<P, L> examples,
-      ScalingModel<P> scalingModel) {
+  public MultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter, Map<SparseVector, L> examples,
+      ScalingModel scalingModel) {
     super(examples, scalingModel);
     this.labelClass = labelClass;
     this.labelInverter = labelInverter;
   }
 
-  public MultiClassProblemImpl(MultiClassProblemImpl<L, P> backingProblem, Set<P> heldOutPoints) {
+  public MultiClassProblemImpl(MultiClassProblemImpl<L> backingProblem, Set<SparseVector> heldOutPoints) {
     super(new SubtractionMap(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
     this.labelClass = backingProblem.labelClass;
@@ -69,11 +69,11 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
 
 // --------------------- Interface MultiClassProblem ---------------------
 
-  public Map<L, Set<P>> getExamplesByLabel() {
+  public Map<L, Set<SparseVector>> getExamplesByLabel() {
     if (theInverseMap == null) {
-      theInverseMap = new HashMap<L, Set<P>>();
+      theInverseMap = new HashMap<>();
       for (L label : getLabels()) {
-        theInverseMap.put(label, new HashSet<P>());
+        theInverseMap.put(label, new HashSet<>());
       }
 
       // separate the training set into label-specific sets, caching all the while
@@ -81,7 +81,7 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
 
       // The Apache or Google collections should have a reversible map...?  Whatever, do it by hand
 
-      for (Map.Entry<P, L> entry : examples.entrySet()) {
+      for (Map.Entry<SparseVector, L> entry : examples.entrySet()) {
         theInverseMap.get(entry.getValue()).add(entry.getKey());
         //examples.put(label, sample);
       }
@@ -90,8 +90,8 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
   }
 
 
-  public MultiClassProblem<L, P> getScaledCopy(
-      @NotNull ScalingModelLearner<P> scalingModelLearner) {
+  public MultiClassProblem<L> getScaledCopy(
+      @NotNull ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;
@@ -99,15 +99,15 @@ public class MultiClassProblemImpl<L extends Comparable, P extends SparseVector>
     return scaledCopy;
   }
 
-  public MultiClassProblem<L, P> createScaledCopy(Map<P, L> scaledExamples,
-      ScalingModel<P> learnedScalingModel) {
-    return new MultiClassProblemImpl<L, P>(labelClass, labelInverter, scaledExamples,
+  public MultiClassProblem<L> createScaledCopy(Map<SparseVector, L> scaledExamples,
+      ScalingModel learnedScalingModel) {
+    return new MultiClassProblemImpl<L>(labelClass, labelInverter, scaledExamples,
         learnedScalingModel);
   }
 
 // -------------------------- OTHER METHODS --------------------------
 
-  protected MultiClassProblem<L, P> makeFold(Set<P> heldOutPoints) {
+  protected MultiClassProblem<L> makeFold(Set<SparseVector> heldOutPoints) {
     return new MultiClassProblemImpl(this, heldOutPoints);
   }
 }

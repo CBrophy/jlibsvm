@@ -18,30 +18,30 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Nu_SVR<P extends SparseVector, R extends RegressionProblem<P, R>> extends RegressionSVM<P, R> {
+public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Nu_SVR.class);
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public RegressionModel<P> train(R problem, @NotNull ImmutableSvmParameter<Double, P> param)
+  public RegressionModel train(R problem, @NotNull ImmutableSvmParameter<Double> param)
   //,final TreeExecutorService execService)
   {
     validateParam(param);
-    RegressionModel<P> result;
+    RegressionModel result;
     if (param instanceof ImmutableSvmParameterGrid && param.gridsearchBinaryMachinesIndependently) {
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double, P>) param);//, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double>) param);//, execService);
     }
     return result;
   }
 
 
-  private RegressionModel<P> trainScaled(R problem,
-      @NotNull ImmutableSvmParameterPoint<Double, P> param)
+  private RegressionModel trainScaled(R problem,
+      @NotNull ImmutableSvmParameterPoint<Double> param)
   //, final TreeExecutorService execService)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
@@ -59,35 +59,33 @@ public class Nu_SVR<P extends SparseVector, R extends RegressionProblem<P, R>> e
 
     double sum = param.C * param.nu * problem.getNumExamples() / 2f;
 
-    List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
+    List<SolutionVector> solutionVectors = new ArrayList<>();
 
-    for (Map.Entry<P, Double> example : problem.getExamples().entrySet()) {
+    for (Map.Entry<SparseVector, Double> example : problem.getExamples().entrySet()) {
       double initAlpha = Math.min(sum, param.C);
       sum -= initAlpha;
 
-      SolutionVector<P> sv;
+      SolutionVector sv;
 
-      sv = new SolutionVector<P>(problem.getId(example.getKey()), example.getKey(), true,
+      sv = new SolutionVector(example.getKey().getId(), example.getKey(), true,
           -example.getValue(),
           initAlpha);
       solutionVectors.add(sv);
-      //sv.id = problem.getId(example.getKey());
 
-      sv = new SolutionVector<P>(-problem.getId(example.getKey()), example.getKey(), false,
+      sv = new SolutionVector(-example.getKey().getId(), example.getKey(), false,
           example.getValue(),
           initAlpha);
       solutionVectors.add(sv);
-      //sv.id = -problem.getId(example.getKey());
     }
 
-    QMatrix<P> qMatrix =
-        new BooleanInvertingKernelQMatrix<P>(param.kernel, solutionVectors.size(),
+    QMatrix qMatrix =
+        new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
-    RegressionSolverNu<P> s =
-        new RegressionSolverNu<P>(solutionVectors, qMatrix, param.C, param.eps, param.shrinking);
+    RegressionSolverNu s =
+        new RegressionSolverNu(solutionVectors, qMatrix, param.C, param.eps, param.shrinking);
 
-    RegressionModel<P> model = s.solve(); //new RegressionModel<P>(binaryModel);
-    //	model.kernel = kernel;
+    RegressionModel model = s.solve();
+
     model.param = param;
     model.setSvmType(getSvmType());
     model.laplaceParameter = laplaceParameter;
@@ -103,7 +101,7 @@ public class Nu_SVR<P extends SparseVector, R extends RegressionProblem<P, R>> e
     return "nu_svr";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double> param) {
     super.validateParam(param);
     if (param.nu <= 0 || param.nu > 1) {
       throw new SvmException("nu <= 0 or nu > 1");

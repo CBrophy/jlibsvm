@@ -11,15 +11,15 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassProblemImpl<L, P extends SparseVector> extends RegressionProblemImpl<P, OneClassProblem<L, P>>
-    implements OneClassProblem<L, P> {
+public class OneClassProblemImpl<L> extends RegressionProblemImpl<OneClassProblem<L>>
+    implements OneClassProblem<L> {
 // ------------------------------ FIELDS ------------------------------
 
   L label;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public OneClassProblemImpl(Map<P, Double> examples,
+  public OneClassProblemImpl(Map<SparseVector, Double> examples,
       L label)  // set<P> examples
   {
     super(examples);
@@ -32,32 +32,32 @@ public class OneClassProblemImpl<L, P extends SparseVector> extends RegressionPr
     return label;
   }
 
-  private ScalingModelLearner<P> lastScalingModelLearner = null;
-  private OneClassProblemImpl<L, P> scaledCopy = null;
+  private ScalingModelLearner lastScalingModelLearner = null;
+  private OneClassProblemImpl<L> scaledCopy = null;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
 
-  public OneClassProblemImpl(Map<P, Double> examples, L label,
-      ScalingModel<P> learnedScalingModel)  // set<P> examples
+  public OneClassProblemImpl(Map<SparseVector, Double> examples, L label,
+      ScalingModel learnedScalingModel)
   {
     super(examples, learnedScalingModel);
     this.label = label;
   }
 
 
-  public OneClassProblemImpl<L, P> getScaledCopy(
-      @NotNull ScalingModelLearner<P> scalingModelLearner) {
+  public OneClassProblemImpl<L> getScaledCopy(
+      @NotNull ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
-      scaledCopy = (OneClassProblemImpl<L, P>) learnScaling(scalingModelLearner);
+      scaledCopy = (OneClassProblemImpl<L>) learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;
     }
     return scaledCopy;
   }
 
-  public OneClassProblemImpl<L, P> createScaledCopy(Map<P, Double> scaledExamples,
-      ScalingModel<P> learnedScalingModel) {
-    return new OneClassProblemImpl<L, P>(scaledExamples, label,
+  public OneClassProblemImpl<L> createScaledCopy(Map<SparseVector, Double> scaledExamples,
+      ScalingModel learnedScalingModel) {
+    return new OneClassProblemImpl<>(scaledExamples, label,
         learnedScalingModel);
   }
 }

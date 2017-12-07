@@ -6,8 +6,8 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface ScalingModel<P extends SparseVector> {
+public interface ScalingModel {
 // -------------------------- OTHER METHODS --------------------------
 
-  P scaledCopy(P example);
+  SparseVector scaledCopy(SparseVector example);
 }

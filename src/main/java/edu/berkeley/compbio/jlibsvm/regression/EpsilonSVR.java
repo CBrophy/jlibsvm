@@ -17,28 +17,26 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class EpsilonSVR<P extends SparseVector, R extends RegressionProblem<P, R>> extends RegressionSVM<P, R> {
+public class EpsilonSVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
 // -------------------------- OTHER METHODS --------------------------
 
 
-  public RegressionModel<P> train(R problem, @NotNull ImmutableSvmParameter<Double, P> param)
-  //,   final TreeExecutorService execService)
+  public RegressionModel train(R problem, @NotNull ImmutableSvmParameter<Double> param)
   {
     validateParam(param);
-    RegressionModel<P> result;
+    RegressionModel result;
     if (param instanceof ImmutableSvmParameterGrid && param.gridsearchBinaryMachinesIndependently) {
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double, P>) param); //, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double>) param); //, execService);
     }
     return result;
   }
 
 
-  private RegressionModel<P> trainScaled(R problem,
-      @NotNull ImmutableSvmParameterPoint<Double, P> param)
-  //, final TreeExecutorService execService)
+  private RegressionModel trainScaled(R problem,
+      @NotNull ImmutableSvmParameterPoint<Double> param)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
       // the examples are copied before scaling, not scaled in place
@@ -50,34 +48,34 @@ public class EpsilonSVR<P extends SparseVector, R extends RegressionProblem<P, R
 
     double laplaceParameter = RegressionModel.NO_LAPLACE_PARAMETER;
     if (param.probability) {
-      laplaceParameter = laplaceParameter(problem, param); //, execService);
+      laplaceParameter = laplaceParameter(problem, param);
     }
 
-    List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
+    List<SolutionVector> solutionVectors = new ArrayList<>();
 
-    for (Map.Entry<P, Double> example : problem.getExamples().entrySet()) {
-      SolutionVector<P> sv;
+    for (Map.Entry<SparseVector, Double> example : problem.getExamples().entrySet()) {
+      SolutionVector sv;
 
-      sv = new SolutionVector<>(example.getKey().getId(), example.getKey(), true,
+      sv = new SolutionVector(example.getKey().getId(), example.getKey(), true,
           param.p - example.getValue());
 
       solutionVectors.add(sv);
 
-      sv = new SolutionVector<>(-example.getKey().getId(), example.getKey(), false,
+      sv = new SolutionVector(-example.getKey().getId(), example.getKey(), false,
           param.p + example.getValue());
 
       solutionVectors.add(sv);
     }
 
-    QMatrix<P> qMatrix =
-        new BooleanInvertingKernelQMatrix<>(param.kernel, solutionVectors.size(),
+    QMatrix qMatrix =
+        new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
 
-    RegressionSolver<P> s = new RegressionSolver<>(solutionVectors, qMatrix, param.C, param.eps,
+    RegressionSolver s = new RegressionSolver(solutionVectors, qMatrix, param.C, param.eps,
         param.shrinking);
 
-    RegressionModel<P> model = s.solve();
-    //model.kernel = kernel;
+    RegressionModel model = s.solve();
+
     model.param = param;
     model.setSvmType(getSvmType());
     model.laplaceParameter = laplaceParameter;
@@ -92,7 +90,7 @@ public class EpsilonSVR<P extends SparseVector, R extends RegressionProblem<P, R
   }
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<Double, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameter<Double> param) {
     super.validateParam(param);
     if (param.p < 0) {
       throw new SvmException("p < 0");

@@ -17,14 +17,13 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends SparseVector, R extends SvmProblem<L, P, R>>
-    extends AbstractSvmProblem<L, P, R> implements ExplicitSvmProblem<L, P, R> {
+public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends SvmProblem<L, R>>
+    extends AbstractSvmProblem<L, R> implements ExplicitSvmProblem<L, R> {
 // ------------------------------ FIELDS ------------------------------
 
-  public Map<P, L> examples;
+  public Map<SparseVector, L> examples;
 
-  public ScalingModel<P> scalingModel = new NoopScalingModel<P>();
-  //protected int numExamples = 0;
+  public ScalingModel scalingModel = new NoopScalingModel();
 
   /**
    * the unique set of targetvalues, in a defined order avoid populating for regression!  OK, regression should never
@@ -34,18 +33,18 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends Spa
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  protected ExplicitSvmProblemImpl(Map<P, L> examples) {
+  protected ExplicitSvmProblemImpl(Map<SparseVector, L> examples) {
     this.examples = examples;
   }
 
-  protected ExplicitSvmProblemImpl(Map<P, L> examples,
-      @NotNull ScalingModel<P> scalingModel) {
+  protected ExplicitSvmProblemImpl(Map<SparseVector, L> examples,
+      @NotNull ScalingModel scalingModel) {
     this.examples = examples;
     this.scalingModel = scalingModel;
   }
 
-  protected ExplicitSvmProblemImpl(Map<P, L> examples,
-      @NotNull ScalingModel<P> scalingModel, Set<P> heldOutPoints) {
+  protected ExplicitSvmProblemImpl(Map<SparseVector, L> examples,
+      @NotNull ScalingModel scalingModel, Set<SparseVector> heldOutPoints) {
     this.examples = examples;
     this.scalingModel = scalingModel;
     this.heldOutPoints = heldOutPoints;
@@ -54,7 +53,7 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends Spa
 // --------------------- GETTER / SETTER METHODS ---------------------
 
   @NotNull
-  public Map<P, L> getExamples() {
+  public Map<SparseVector, L> getExamples() {
     return examples;
   }
 
@@ -63,15 +62,15 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends Spa
       if (examples.isEmpty()) {
         return null;
       }
-      Set<L> uniq = new HashSet<L>(examples.values());
-      labels = new ArrayList<L>(uniq);
+      Set<L> uniq = new HashSet<>(examples.values());
+      labels = new ArrayList<>(uniq);
       Collections.sort(labels);
     }
     return labels;
   }
 
   @NotNull
-  public ScalingModel<P> getScalingModel() {
+  public ScalingModel getScalingModel() {
     return scalingModel;
   }
 
@@ -80,50 +79,38 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends Spa
 // --------------------- Interface ExplicitSvmProblem ---------------------
 
   public Iterator<R> makeFolds(int numberOfFolds) {
-//		Set<R> result = new HashSet<R>();
 
-    List<P> points = new ArrayList<P>(getExamples().keySet());
+    List<SparseVector> points = new ArrayList<>(getExamples().keySet());
 
     Collections.shuffle(points);
 
     // PERF this is maybe overwrought, but ensures the best possible balance among folds (unlike examples.size() / numberOfFolds)
 
-    List<Set<P>> heldOutPointSets = new ArrayList<Set<P>>();
+    List<Set<SparseVector>> heldOutPointSets = new ArrayList<>();
     for (int i = 0; i < numberOfFolds; i++) {
-      heldOutPointSets.add(new HashSet<P>());
+      heldOutPointSets.add(new HashSet<>());
     }
 
     int f = 0;
-    for (P point : points) {
+    for (SparseVector point : points) {
       heldOutPointSets.get(f).add(point);
       f++;
       f %= numberOfFolds;
     }
 
-    Iterator<R> foldIterator = new MappingIterator<Set<P>, R>(heldOutPointSets.iterator()) {
+    Iterator<R> foldIterator = new MappingIterator<Set<SparseVector>, R>(heldOutPointSets.iterator()) {
       @NotNull
-      public R function(Set<P> p) {
+      public R function(Set<SparseVector> p) {
         return makeFold(p);
       }
     };
     return foldIterator;
 
-/*
-		for (Set<P> heldOutPoints : heldOutPointSets)
-			{
-			result.add(makeFold(heldOutPoints));
-			}
-
-		return result;*/
   }
 
 // --------------------- Interface SvmProblem ---------------------
 
-  public long getId(P key) {
-    return key.getId();
-  }
-
-  public L getTargetValue(P point) {
+  public L getTargetValue(SparseVector point) {
     return examples.get(point);
   }
 
@@ -131,21 +118,16 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, P extends Spa
 
     return examples.size();
   }
-/*
-	public R asR()
-		{
-		return (R) this;
-		}
-*/
-// -------------------------- OTHER METHODS --------------------------
 
-  protected Set<P> heldOutPoints = new HashSet<P>();
-  //protected Map<P, L> subtractionMap;
+  // -------------------------- OTHER METHODS --------------------------
 
-  public Set<P> getHeldOutPoints() {
+  protected Set<SparseVector> heldOutPoints = new HashSet<>();
+
+
+  public Set<SparseVector> getHeldOutPoints() {
     return heldOutPoints;
   }
 
 
-  protected abstract R makeFold(Set<P> heldOutPoints);
+  protected abstract R makeFold(Set<SparseVector> heldOutPoints);
 }

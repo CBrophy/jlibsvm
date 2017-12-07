@@ -1,5 +1,7 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+
 /**
  * An SVM solution which assigns a floating-point value to unknown points.
  *
@@ -8,8 +10,8 @@ package edu.berkeley.compbio.jlibsvm;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface ContinuousModel<P> {
+public interface ContinuousModel {
 // -------------------------- OTHER METHODS --------------------------
 
-  Double predictValue(P x);
+  double predictValue(SparseVector x);
 }

@@ -9,16 +9,16 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BasicKernelQMatrix<P extends SparseVector> extends KernelQMatrix<P> {
+public class BasicKernelQMatrix extends KernelQMatrix {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BasicKernelQMatrix(@NotNull KernelFunction<P> kernel, int numExamples, int maxCachedRank) {
+  public BasicKernelQMatrix(@NotNull KernelFunction kernel, int numExamples, int maxCachedRank) {
     super(kernel, numExamples, maxCachedRank);
   }
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public double computeQ(SolutionVector<P> a, SolutionVector<P> b) {
-    return (double) kernel.evaluate(a.point, b.point);
+  public double computeQ(SolutionVector a, SolutionVector b) {
+    return kernel.evaluate(a.point, b.point);
   }
 }

@@ -12,8 +12,8 @@ import java.util.Map;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class AbstractSvmProblem<L extends Comparable, P extends SparseVector, R extends SvmProblem<L, P, R>>
-    implements SvmProblem<L, P, R> {
+public abstract class AbstractSvmProblem<L extends Comparable, R extends SvmProblem<L, R>>
+    implements SvmProblem<L, R> {
 // ------------------------------ FIELDS ------------------------------
 
   protected Multiset<L> exampleCounts = null;
@@ -29,22 +29,22 @@ public abstract class AbstractSvmProblem<L extends Comparable, P extends SparseV
   }
 
 
-  protected R learnScaling(ScalingModelLearner<P> scalingModelLearner) {
-    Map<P, L> examples = getExamples();
+  protected R learnScaling(ScalingModelLearner scalingModelLearner) {
+    Map<SparseVector, L> examples = getExamples();
 
-    ScalingModel<P> learnedScalingModel = scalingModelLearner.learnScaling(examples.keySet());
+    ScalingModel learnedScalingModel = scalingModelLearner.learnScaling(examples.keySet());
 
-    Map<P, L> unscaledExamples = getExamples();
-    Map<P, L> scaledExamples = new HashMap<P, L>(examples.size());
+    Map<SparseVector, L> unscaledExamples = getExamples();
+    Map<SparseVector, L> scaledExamples = new HashMap<SparseVector, L>(examples.size());
 
-    for (Map.Entry<P, L> entry : unscaledExamples.entrySet()) {
-      P scaledPoint = learnedScalingModel.scaledCopy(entry.getKey());
+    for (Map.Entry<SparseVector, L> entry : unscaledExamples.entrySet()) {
+      SparseVector scaledPoint = learnedScalingModel.scaledCopy(entry.getKey());
       scaledExamples.put(scaledPoint, entry.getValue());
     }
 
     return createScaledCopy(scaledExamples, learnedScalingModel);
   }
 
-  public abstract R createScaledCopy(Map<P, L> scaledExamples,
-      ScalingModel<P> learnedScalingModel);
+  public abstract R createScaledCopy(Map<SparseVector, L> scaledExamples,
+      ScalingModel learnedScalingModel);
 }

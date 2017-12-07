@@ -14,9 +14,9 @@ import java.util.Collection;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionModel<P extends SparseVector> extends AlphaModel<Double, P> implements ContinuousModel<P> {
+public class RegressionModel extends AlphaModel<Double> implements ContinuousModel {
 
-  public ImmutableSvmParameterPoint<Double, P> param;
+  public ImmutableSvmParameterPoint<Double> param;
 // ------------------------------ FIELDS ------------------------------
 
   public static final double NO_LAPLACE_PARAMETER = -1;
@@ -59,7 +59,7 @@ public class RegressionModel<P extends SparseVector> extends AlphaModel<Double, 
 
 // --------------------- Interface ContinuousModel ---------------------
 
-  public Double predictValue(P x) {
+  public double predictValue(SparseVector x) {
     double sum = 0;
     for (int i = 0; i < numSVs; i++) {
       sum += alphas[i] * param.kernel.evaluate(x, SVs[i]);

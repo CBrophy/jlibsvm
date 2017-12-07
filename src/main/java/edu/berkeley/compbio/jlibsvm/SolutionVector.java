@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SolutionVector<P extends SparseVector> implements Comparable<SolutionVector> {
+public class SolutionVector implements Comparable<SolutionVector> {
 // ------------------------------ FIELDS ------------------------------
 
   /**
@@ -19,7 +19,7 @@ public class SolutionVector<P extends SparseVector> implements Comparable<Soluti
    * keep track of the sample id for mapping to ranks
    */
   final public long id;
-  final public P point;
+  final public SparseVector point;
   public boolean targetValue;
   public double alpha;
   public double G;
@@ -29,14 +29,14 @@ public class SolutionVector<P extends SparseVector> implements Comparable<Soluti
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SolutionVector(long id, @NotNull P key, Boolean targetValue, double linearTerm) {
+  public SolutionVector(long id, @NotNull SparseVector key, Boolean targetValue, double linearTerm) {
     this.id = id;
     point = key;
     this.linearTerm = linearTerm;
     this.targetValue = targetValue;
   }
 
-  public SolutionVector(long id, @NotNull P key, Boolean value, double linearTerm, double alpha) {
+  public SolutionVector(long id, @NotNull SparseVector key, Boolean value, double linearTerm, double alpha) {
     this(id, key, value, linearTerm);
     this.alpha = alpha;
   }

@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class RegressionSVM<P extends SparseVector, R extends RegressionProblem<P, R>> extends SVM<Double, P, R> {
+public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<Double, R> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSVM.class);
@@ -22,16 +22,15 @@ public abstract class RegressionSVM<P extends SparseVector, R extends Regression
 
   // Return parameter of a Laplace distribution
 
-  protected double laplaceParameter(RegressionProblem<P, R> problem,
-      @NotNull ImmutableSvmParameter<Double, P> param)
-  //,   final TreeExecutorService execService)
+  protected double laplaceParameter(RegressionProblem<R> problem,
+      @NotNull ImmutableSvmParameter<Double> param)
   {
     int i;
     double mae = 0;
 
-    Map<P, Double> ymv = continuousCrossValidation(problem, param); //, execService);
+    Map<SparseVector, Double> ymv = continuousCrossValidation(problem, param); //, execService);
 
-    for (Map.Entry<P, Double> entry : ymv.entrySet()) {
+    for (Map.Entry<SparseVector, Double> entry : ymv.entrySet()) {
       double newVal = problem.getTargetValue(entry.getKey()) - entry.getValue();
       entry.setValue(newVal);
       mae += Math.abs(newVal);
@@ -43,7 +42,7 @@ public abstract class RegressionSVM<P extends SparseVector, R extends Regression
     int count = 0;
     mae = 0;
 
-    for (Map.Entry<P, Double> entry : ymv.entrySet()) {
+    for (Map.Entry<SparseVector, Double> entry : ymv.entrySet()) {
       double absVal = Math.abs(entry.getValue());
       if (absVal > 5 * std) {
         count = count + 1;
@@ -57,23 +56,21 @@ public abstract class RegressionSVM<P extends SparseVector, R extends Regression
     return mae;
   }
 
-  public abstract RegressionModel<P> train(R problem,
-      @NotNull ImmutableSvmParameter<Double, P> param);
-  //,final TreeExecutorService execService);
+  public abstract RegressionModel train(R problem,
+      @NotNull ImmutableSvmParameter<Double> param);
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<Double, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameter<Double> param) {
     super.validateParam(param);
   }
 
 
-  public RegressionCrossValidationResults<P, R> performCrossValidation(R problem,
-      @NotNull ImmutableSvmParameter<Double, P> param)
-  //,final TreeExecutorService execService)
+  public RegressionCrossValidationResults<R> performCrossValidation(R problem,
+      @NotNull ImmutableSvmParameter<Double> param)
   {
-    Map<P, Double> decisionValues = continuousCrossValidation(problem, param); //, execService);
+    Map<SparseVector, Double> decisionValues = continuousCrossValidation(problem, param);
 
-    RegressionCrossValidationResults<P, R> cv = new RegressionCrossValidationResults<P, R>(problem,
+    RegressionCrossValidationResults<R> cv = new RegressionCrossValidationResults<>(problem,
         decisionValues);
     return cv;
   }

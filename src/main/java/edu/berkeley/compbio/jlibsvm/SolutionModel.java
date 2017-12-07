@@ -17,7 +17,7 @@ import java.util.Properties;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class SolutionModel<L extends Comparable, P extends SparseVector> {
+public abstract class SolutionModel<L extends Comparable> {
 // ------------------------------ FIELDS ------------------------------
 
 
@@ -44,7 +44,6 @@ public abstract class SolutionModel<L extends Comparable, P extends SparseVector
       LabelParser<String> labelParser = new LabelParser<String>() {
         public String parse(final String s) {
           return s;
-          //if(s.equals("true")) return
         }
       };
 
@@ -77,7 +76,6 @@ public abstract class SolutionModel<L extends Comparable, P extends SparseVector
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public SolutionModel() {
-    //super(null);
   }
 
 // --------------------- GETTER / SETTER METHODS ---------------------

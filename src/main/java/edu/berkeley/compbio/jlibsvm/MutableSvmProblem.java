@@ -8,11 +8,11 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface MutableSvmProblem<L extends Comparable, P extends SparseVector, R extends SvmProblem<L, P, R>>
-    extends ExplicitSvmProblem<L, P, R> {
+public interface MutableSvmProblem<L extends Comparable, R extends SvmProblem<L, R>>
+    extends ExplicitSvmProblem<L, R> {
 // -------------------------- OTHER METHODS --------------------------
 
-  void addExample(P point, L label);
+  void addExample(SparseVector point, L label);
 
-  void addExampleFloat(P point, Double x);
+  void addExampleFloat(SparseVector point, Double x);
 }

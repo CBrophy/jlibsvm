@@ -11,15 +11,14 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface MultiClassProblem<L extends Comparable, P extends SparseVector
-    > extends SvmProblem<L, P, MultiClassProblem<L, P>> {
+public interface MultiClassProblem<L extends Comparable> extends SvmProblem<L, MultiClassProblem<L>> {
 // -------------------------- OTHER METHODS --------------------------
 
-  Map<L, Set<P>> getExamplesByLabel();
+  Map<L, Set<SparseVector>> getExamplesByLabel();
 
   Class getLabelClass();
 
   LabelInverter<L> getLabelInverter();
 
-  MultiClassProblem<L, P> getScaledCopy(ScalingModelLearner<P> scalingModelLearner);
+  MultiClassProblem<L> getScaledCopy(ScalingModelLearner scalingModelLearner);
 }

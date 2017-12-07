@@ -21,8 +21,8 @@ public class GaussianRBFKernelTest {
   public void explicitAndCompositeKernelsAreEqual() {
     double gamma = 1f;
 
-    CompositeGaussianRBFKernel<SparseVector> composite =
-        new CompositeGaussianRBFKernel<>(gamma, new LinearKernel());
+    CompositeGaussianRBFKernel composite =
+        new CompositeGaussianRBFKernel(gamma, new LinearKernel());
 
     GaussianRBFKernel explicit = new GaussianRBFKernel(gamma);
 

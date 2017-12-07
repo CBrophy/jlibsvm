@@ -8,20 +8,20 @@ import java.util.Map;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionCrossValidationResults<P extends SparseVector, R extends RegressionProblem<P, R>> extends
+public class RegressionCrossValidationResults<R extends RegressionProblem<R>> extends
     CrossValidationResults {
 
   double meanSquaredError;
   double squaredCorrCoeff;
 
-  public RegressionCrossValidationResults(RegressionProblem<P, R> problem,
-      Map<P, Double> decisionValues) {
+  public RegressionCrossValidationResults(RegressionProblem<R> problem,
+      Map<SparseVector, Double> decisionValues) {
     double sumv = 0, sumy = 0, sumvv = 0, sumyy = 0, sumvy = 0;
     double total_error = 0;
     int numExamples = problem.getNumExamples();
 
-    for (Map.Entry<P, Double> entry : problem.getExamples().entrySet()) {
-      P p = entry.getKey();
+    for (Map.Entry<SparseVector, Double> entry : problem.getExamples().entrySet()) {
+      SparseVector p = entry.getKey();
       Double y = entry.getValue();
       Double v = decisionValues.get(p);
       total_error += (v - y) * (v - y);

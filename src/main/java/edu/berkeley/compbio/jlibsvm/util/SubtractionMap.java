@@ -12,27 +12,27 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SubtractionMap<P extends SparseVector, L> extends AbstractMap<P, L> {
+public class SubtractionMap<L> extends AbstractMap<SparseVector, L> {
 // ------------------------------ FIELDS ------------------------------
 
-  private Set<Entry<P, L>> entries;
+  private Set<Entry<SparseVector, L>> entries;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SubtractionMap(Map<P, L> orig, Set<P> except) {
+  public SubtractionMap(Map<SparseVector, L> orig, Set<SparseVector> except) {
     this(orig.entrySet(), except);
   }
 
-  public SubtractionMap(Collection<Entry<P, L>> origEntries, Set<P> except) {
-    entries = new SubtractionEntrySet<P, L>(origEntries, except);
+  public SubtractionMap(Collection<Entry<SparseVector, L>> origEntries, Set<SparseVector> except) {
+    entries = new SubtractionEntrySet<>(origEntries, except);
   }
 
-  public SubtractionMap(Map<P, L> orig, Set<P> except, int maxSize) {
+  public SubtractionMap(Map<SparseVector, L> orig, Set<SparseVector> except, int maxSize) {
     this(orig.entrySet(), except, maxSize);
   }
 
-  public SubtractionMap(Collection<Entry<P, L>> origEntries, Set<P> except, int maxSize) {
-    entries = new SubtractionEntrySet<P, L>(origEntries, except, maxSize);
+  public SubtractionMap(Collection<Entry<SparseVector, L>> origEntries, Set<SparseVector> except, int maxSize) {
+    entries = new SubtractionEntrySet<>(origEntries, except, maxSize);
   }
 
 // ------------------------ INTERFACE METHODS ------------------------
@@ -44,7 +44,7 @@ public class SubtractionMap<P extends SparseVector, L> extends AbstractMap<P, L>
     return entries.size();
   }
 
-  public Set<Entry<P, L>> entrySet() {
+  public Set<Entry<SparseVector, L>> entrySet() {
     return entries;
   }
 

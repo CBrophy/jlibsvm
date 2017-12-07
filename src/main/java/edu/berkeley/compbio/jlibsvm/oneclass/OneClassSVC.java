@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassSVC<L extends Comparable, P extends SparseVector> extends RegressionSVM<P, OneClassProblem<L, P>> {
+public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassProblem<L>> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(OneClassSVC.class);
@@ -28,25 +28,23 @@ public class OneClassSVC<L extends Comparable, P extends SparseVector> extends R
 // -------------------------- OTHER METHODS --------------------------
 
 
-  public RegressionModel<P> train(OneClassProblem<L, P> problem,
-      @NotNull ImmutableSvmParameter<Double, P> param)
-  //, final TreeExecutorService execService)
+  public RegressionModel train(OneClassProblem<L> problem,
+      @NotNull ImmutableSvmParameter<Double> param)
   {
     validateParam(param);
-    RegressionModel<P> result;
+    RegressionModel result;
     if (param instanceof ImmutableSvmParameterGrid && param.gridsearchBinaryMachinesIndependently) {
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double, P>) param);//, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double>) param);
     }
     return result;
   }
 
 
-  private RegressionModel<P> trainScaled(OneClassProblem<L, P> problem,
-      @NotNull ImmutableSvmParameterPoint<Double, P> param)
-  //,final TreeExecutorService execService)
+  private RegressionModel trainScaled(OneClassProblem<L> problem,
+      @NotNull ImmutableSvmParameterPoint<Double> param)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
       // the examples are copied before scaling, not scaled in place
@@ -58,30 +56,29 @@ public class OneClassSVC<L extends Comparable, P extends SparseVector> extends R
 
     double remainingAlpha = param.nu * problem.getNumExamples();
 
-    double linearTerm = 0f;
-    List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
+    double linearTerm = 0.0;
+    List<SolutionVector> solutionVectors = new ArrayList<>();
     int c = 0;
-    for (Map.Entry<P, Double> example : problem.getExamples().entrySet()) {
-      double initAlpha = remainingAlpha > 1f ? 1f : remainingAlpha;
+    for (Map.Entry<SparseVector, Double> example : problem.getExamples().entrySet()) {
+      double initAlpha = remainingAlpha > 1.0 ? 1.0 : remainingAlpha;
       remainingAlpha -= initAlpha;
 
-      SolutionVector<P> sv;
+      SolutionVector sv;
 
-      sv = new SolutionVector<P>(problem.getId(example.getKey()), example.getKey(), true,
+      sv = new SolutionVector(example.getKey().getId(), example.getKey(), true,
           linearTerm, initAlpha);
-      //sv.id = problem.getId(example.getKey());
       c++;
       solutionVectors.add(sv);
     }
 
-    QMatrix<P> qMatrix =
-        new BooleanInvertingKernelQMatrix<P>(param.kernel, solutionVectors.size(),
+    QMatrix qMatrix =
+        new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
-    OneClassSolver<L, P> s = new OneClassSolver<L, P>(solutionVectors, qMatrix, 1.0f, param.eps,
+    OneClassSolver<L> s = new OneClassSolver<>(solutionVectors, qMatrix, 1.0, param.eps,
         param.shrinking);
 
-    OneClassModel<L, P> model = s.solve(); //new RegressionModel<P>(binaryModel);
-    //model.kernel = kernel;
+    OneClassModel<L> model = s.solve();
+
     model.param = param;
     model.label = problem.getLabel();
     model.setSvmType(getSvmType());
@@ -94,10 +91,10 @@ public class OneClassSVC<L extends Comparable, P extends SparseVector> extends R
     return "one_class_svc";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double> param) {
     super.validateParam(param);
 
-    if (param.C != 1f) {
+    if (param.C != 1.0) {
       logger.warn("OneClassSVC ignores param.C, provided value " + param.C + " + not used");
     }
     if (param.probability) {

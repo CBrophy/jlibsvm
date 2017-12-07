@@ -135,9 +135,9 @@ public class svm_predict {
           && model instanceof MultiClassModel) //(svm_type == SvmParameter.C_SVC || svm_type == SvmParameter.NU_SVC))
       {
         Map<Integer, Double> prob_estimates =
-            ((MultiClassModel<Integer, SparseVector>) model).predictProbability(x); //null;
+            ((MultiClassModel<Integer>) model).predictProbability(x); //null;
         //v = svm.svm_predict_probability(model, x, prob_estimates);
-        prediction = ((MultiClassModel<Integer, SparseVector>) model)
+        prediction = ((MultiClassModel<Integer>) model)
             .bestProbabilityLabel(prob_estimates);
         output.writeBytes(prediction + " ");
 

@@ -7,7 +7,7 @@ import java.util.Properties;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class PrecomputedKernel implements KernelFunction<SparseVector> {
+public class PrecomputedKernel implements KernelFunction {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public PrecomputedKernel() {
@@ -31,7 +31,7 @@ public class PrecomputedKernel implements KernelFunction<SparseVector> {
 // --------------------- Interface KernelFunction ---------------------
 
   public double evaluate(SparseVector x, SparseVector y) {
-    return (double) evaluateF(x, y);
+    return evaluateF(x, y);
   }
 
 // -------------------------- OTHER METHODS --------------------------

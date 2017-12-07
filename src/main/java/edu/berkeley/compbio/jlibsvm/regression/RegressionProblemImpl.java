@@ -15,28 +15,28 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionProblemImpl<P extends SparseVector, R extends RegressionProblem<P, R>> extends
-    ExplicitSvmProblemImpl<Double, P, R>
-    implements RegressionProblem<P, R> {
+public class RegressionProblemImpl<R extends RegressionProblem<R>> extends
+    ExplicitSvmProblemImpl<Double, R>
+    implements RegressionProblem<R> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionProblemImpl(Map<P, Double> examples,
-      ScalingModel<P> scalingModel) {
+  public RegressionProblemImpl(Map<SparseVector, Double> examples,
+      ScalingModel scalingModel) {
     super(examples, scalingModel);
   }
 
-  public RegressionProblemImpl(Map<P, Double> examples,
-      ScalingModel<P> scalingModel,
-      Set<P> heldOutPoints) {
+  public RegressionProblemImpl(Map<SparseVector, Double> examples,
+      ScalingModel scalingModel,
+      Set<SparseVector> heldOutPoints) {
     super(examples, scalingModel, heldOutPoints);
   }
 
-  public RegressionProblemImpl(RegressionProblemImpl<P, R> backingProblem, Set<P> heldOutPoints) {
-    super(new SubtractionMap<P, Double>(backingProblem.examples, heldOutPoints),
+  public RegressionProblemImpl(RegressionProblemImpl<R> backingProblem, Set<SparseVector> heldOutPoints) {
+    super(new SubtractionMap<>(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
   }
 
-  public RegressionProblemImpl(Map<P, Double> examples) {
+  public RegressionProblemImpl(Map<SparseVector, Double> examples) {
     super(examples);
   }
 
@@ -44,7 +44,7 @@ public class RegressionProblemImpl<P extends SparseVector, R extends RegressionP
 
   // cache the scaled copy, taking care that the scalingModelLearner is the same one.
   // only bother keeping one (i.e. don't make a map from learners to scaled copies)
-  private ScalingModelLearner<P> lastScalingModelLearner = null;
+  private ScalingModelLearner lastScalingModelLearner = null;
   private R scaledCopy = null;
 
 // --------------------- Interface SvmProblem ---------------------
@@ -55,11 +55,11 @@ public class RegressionProblemImpl<P extends SparseVector, R extends RegressionP
 
 // -------------------------- OTHER METHODS --------------------------
 
-  protected R makeFold(Set<P> heldOutPoints) {
+  protected R makeFold(Set<SparseVector> heldOutPoints) {
     return (R) new RegressionProblemImpl(this, heldOutPoints);
   }
 
-  public R getScaledCopy(@NotNull ScalingModelLearner<P> scalingModelLearner) {
+  public R getScaledCopy(@NotNull ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;
@@ -67,9 +67,9 @@ public class RegressionProblemImpl<P extends SparseVector, R extends RegressionP
     return scaledCopy;
   }
 
-  public R createScaledCopy(Map<P, Double> scaledExamples,
-      ScalingModel<P> learnedScalingModel) {
-    return (R) new RegressionProblemImpl<P, R>(scaledExamples,
+  public R createScaledCopy(Map<SparseVector, Double> scaledExamples,
+      ScalingModel learnedScalingModel) {
+    return (R) new RegressionProblemImpl<R>(scaledExamples,
         learnedScalingModel);
   }
 }

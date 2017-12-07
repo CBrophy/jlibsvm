@@ -12,9 +12,9 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MutableMultiClassProblemImpl<L extends Comparable, P extends SparseVector> extends
-    MultiClassProblemImpl<L, P>
-    implements MutableSvmProblem<L, P, MultiClassProblem<L, P>> {
+public class MutableMultiClassProblemImpl<L extends Comparable> extends
+    MultiClassProblemImpl<L>
+    implements MutableSvmProblem<L,MultiClassProblem<L>> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   /**
@@ -24,8 +24,8 @@ public class MutableMultiClassProblemImpl<L extends Comparable, P extends Sparse
    */
   public MutableMultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter,
       int numExamples,
-      @NotNull ScalingModel<P> scalingModel) {
-    super(labelClass, labelInverter, new HashMap<P, L>(numExamples),
+      @NotNull ScalingModel scalingModel) {
+    super(labelClass, labelInverter, new HashMap<>(numExamples),
         scalingModel);
   }
 
@@ -33,11 +33,11 @@ public class MutableMultiClassProblemImpl<L extends Comparable, P extends Sparse
 
 // --------------------- Interface MutableSvmProblem ---------------------
 
-  public void addExample(P point, L label) {
+  public void addExample(SparseVector point, L label) {
     examples.put(point, label);
   }
 
-  public void addExampleFloat(P point, Double x) {
+  public void addExampleFloat(SparseVector point, Double x) {
     try {
       addExample(point, (L) labelClass.getConstructor(String.class).newInstance(x.toString()));
     } catch (Exception e) {

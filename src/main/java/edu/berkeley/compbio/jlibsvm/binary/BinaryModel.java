@@ -21,8 +21,8 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinaryModel<L extends Comparable, P extends SparseVector> extends AlphaModel<L, P>
-    implements DiscreteModel<L, P>, ContinuousModel<P> {
+public class BinaryModel<L extends Comparable> extends AlphaModel<L>
+    implements DiscreteModel<L>, ContinuousModel {
   // protected final would be nice, but the Solver constructs the Model without knowing about param so we have to set it afterwards.
   /**
    * a thing that is confusing here: if a grid search was done, then the specific point that was the optimum should be
@@ -30,7 +30,7 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
    * param.gridsearchBinaryMachinesIndependently, there is no one point that makes sense.  Really we should just leave it
    * null and refer to the subsidiary BinaryModels.
    */
-  public ImmutableSvmParameterPoint<L, P> param;
+  public ImmutableSvmParameterPoint<L> param;
 
 // ------------------------------ FIELDS ------------------------------
 
@@ -40,15 +40,12 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
   public double upperBoundPositive;
   public double upperBoundNegative;
 
-  //public SigmoidProbabilityModel sigmoid;
-
-
-  public ScalingModel<P> scalingModel = new NoopScalingModel<P>();
+  public ScalingModel scalingModel = new NoopScalingModel();
 
   public double r;// for Solver_NU.  I wanted to factor this out as SolutionInfoNu, but that was too much hassle
-  public SvmBinaryCrossValidationResults<L, P> crossValidationResults;
+  public SvmBinaryCrossValidationResults<L> crossValidationResults;
 
-  public SvmBinaryCrossValidationResults<L, P> getCrossValidationResults() {
+  public SvmBinaryCrossValidationResults<L> getCrossValidationResults() {
     return crossValidationResults;
   }
 
@@ -67,45 +64,15 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
 
   // --------------------------- CONSTRUCTORS ---------------------------
 
-	/*(public BinaryModel(Properties props, LabelParser<L> labelParser)
-		{
-		super(props, labelParser);
-		}
-*/
-
   public BinaryModel() {
     super();
   }
 
-/*	public BinaryModel(Properties props)
-			{
-			//super(null); //null, null);
-
-			ImmutableSvmParameterPoint.Builder<L, P> builder = new ImmutableSvmParameterPoint.Builder<L, P>();
-			try
-				{
-				//** test hack
-				builder.kernel = (KernelFunction<P>) new LinearKernel(); //props);
-
-			//	builder.kernel =
-			//			(KernelFunction) Class.forName(props.getProperty("kernel_type")).getConstructor(Properties.class)
-			//					.newInstance(props);
-				}
-			catch (Throwable e)
-				{
-				throw new SvmException(e);
-				}
-
-			param = builder.build();
-			}*/
 
   public BinaryModel(Properties props, LabelParser<L> labelParser) {
-    //super(null); //null, null);
 
-    ImmutableSvmParameterPoint.Builder<L, P> builder = new ImmutableSvmParameterPoint.Builder<L, P>();
+    ImmutableSvmParameterPoint.Builder<L> builder = new ImmutableSvmParameterPoint.Builder<L>();
     try {
-      //BAD test hack
-      //builder.kernel = (KernelFunction<P>) new LinearKernel(); //props);
       builder.kernel =
           (KernelFunction) Class.forName(props.getProperty("kernel_type"))
               .getConstructor(Properties.class)
@@ -113,14 +80,6 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     } catch (Throwable e) {
       throw new SvmException(e);
     }
-
-    // param is only useful for training; when loading a trained model for testing, we can leave it null
-    //param = new SvmParameter(props);
-
-    // ... oops, except that we need the labels.
-
-    //param = new ImmutableSvmParameter();
-
     StringTokenizer st = new StringTokenizer(props.getProperty("label"));
     while (st.hasMoreTokens()) {
       builder.putWeight(labelParser.parse(st.nextToken()), null);
@@ -130,21 +89,15 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     numSVs = Integer.parseInt(props.getProperty("total_sv"));
 //** test hack
 
-    trueLabel = (L) (Object) "true";
-    falseLabel = (L) (Object) "false";
+    trueLabel = (L) "true";
+    falseLabel = (L) "false";
     param = builder.build();
   }
 
-  public BinaryModel(ImmutableSvmParameterPoint<L, P> param) {
-    //super(param);
+  public BinaryModel(ImmutableSvmParameterPoint<L> param) {
     this.param = param;
   }
 
-/*	public BinaryModel(@NotNull ImmutableSvmParameter<L, P> param)
-		{
-		super(param);
-		}
-*/
 // --------------------- GETTER / SETTER METHODS ---------------------
 
   public L getFalseLabel() {
@@ -152,11 +105,11 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
   }
 
   @NotNull
-  public ScalingModel<P> getScalingModel() {
+  public ScalingModel getScalingModel() {
     return scalingModel;
   }
 
-  public void setScalingModel(@NotNull ScalingModel<P> scalingModel) {
+  public void setScalingModel(@NotNull ScalingModel scalingModel) {
     this.scalingModel = scalingModel;
   }
 
@@ -168,7 +121,7 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
 
 // --------------------- Interface DiscreteModel ---------------------
 
-  public L predictLabel(P x) {
+  public L predictLabel(SparseVector x) {
     return predictValue(x) > 0 ? trueLabel : falseLabel;
   }
 
@@ -182,15 +135,15 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     return result;
   }
 
-  public double getTrueProbability(P x) {
+  public double getTrueProbability(SparseVector x) {
     return crossValidationResults.sigmoid.predict(predictValue(x));  // NPE if no sigmoid
   }
 
-  public double getProbability(P x, L l) {
+  public double getProbability(SparseVector x, L l) {
     if (l.equals(trueLabel)) {
       return getTrueProbability(x);
     } else if (l.equals(falseLabel)) {
-      return 1f - getTrueProbability(x);
+      return 1.0 - getTrueProbability(x);
     } else {
       throw new SvmException(
           "Can't compute probability: " + l + " is not one of the classes in this binary model ("
@@ -199,13 +152,13 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     }
   }
 
-  public Double predictValue(P x) {
+  public double predictValue(SparseVector x) {
     double sum = 0;
 
-    P scaledX = scalingModel.scaledCopy(x);
+    SparseVector scaledX = scalingModel.scaledCopy(x);
 
     for (int i = 0; i < numSVs; i++) {
-      double kvalue = (double) param.kernel.evaluate(scaledX, SVs[i]);
+      double kvalue = param.kernel.evaluate(scaledX, SVs[i]);
       sum += alphas[i] * kvalue;
     }
 
@@ -217,16 +170,16 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     double pv = predictValue(kvalues, svIndexMap);
     if (crossValidationResults == null) {
       logger.error("Can't compute probability in binary model without crossvalidationresults");
-      return pv > 0. ? 1f : 0f;
+      return pv > 0. ? 1.0 : 0.0;
     } else if (crossValidationResults.sigmoid == null) {
       logger.error("Can't compute probability in binary model without sigmoid");
-      return pv > 0. ? 1f : 0f;
+      return pv > 0. ? 1.0 : 0.0;
     } else {
       return crossValidationResults.sigmoid.predict(pv);  // NPE if no sigmoid
     }
   }
 
-  public Double predictValue(double[] kvalues, int[] svIndexMap) {
+  public double predictValue(double[] kvalues, int[] svIndexMap) {
     double sum = 0;
 
     for (int i = 0; i < numSVs; i++) {
@@ -237,17 +190,11 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
     return sum;
   }
 
-	/*public CrossValidationResults newCrossValidationResults(int i, int tt, int ft, int tf, int ff)
-		{
-		return new CrossValidationResults(i, tt, ft, tf, ff);
-		}
-*/
-
   public L predictLabel(double[] kvalues, int[] svIndexMap) {
     return predictValue(kvalues, svIndexMap) > 0 ? trueLabel : falseLabel;
   }
 
-  public void printSolutionInfo(BinaryClassificationProblem<L, P> problem) {
+  public void printSolutionInfo(BinaryClassificationProblem<L> problem) {
     if (logger.isDebugEnabled()) {
       logger.debug("obj = " + obj + ", rho = " + rho);
 
@@ -256,7 +203,7 @@ public class BinaryModel<L extends Comparable, P extends SparseVector> extends A
       int nBSV = 0;
       for (int i = 0; i < numSVs; i++) {
         Double alpha = alphas[i];
-        P point = SVs[i];
+        SparseVector point = SVs[i];
         if (Math.abs(alpha) > 0) {
           if (problem.getTargetValue(point).equals(trueLabel)) {
             if (Math.abs(alpha) >= upperBoundPositive) {

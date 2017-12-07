@@ -15,15 +15,15 @@ import java.util.Map;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class AlphaModel<L extends Comparable, P extends SparseVector> extends SolutionModel<L, P> {
+public abstract class AlphaModel<L extends Comparable> extends SolutionModel<L> {
 // ------------------------------ FIELDS ------------------------------
 
   // used only during training, then ditched
-  public Map<P, Double> supportVectors;
+  public Map<SparseVector, Double> supportVectors;
 
   // more compact representation used after training
   public int numSVs;
-  public P[] SVs;
+  public SparseVector[] SVs;
   public double[] alphas;
 
   public double rho;
@@ -43,8 +43,8 @@ public abstract class AlphaModel<L extends Comparable, P extends SparseVector> e
    */
   public void compact() {
     // do this first so as to make the arrays the right size below
-    for (Iterator<Map.Entry<P, Double>> i = supportVectors.entrySet().iterator(); i.hasNext(); ) {
-      Map.Entry<P, Double> entry = i.next();
+    for (Iterator<Map.Entry<SparseVector, Double>> i = supportVectors.entrySet().iterator(); i.hasNext(); ) {
+      Map.Entry<SparseVector, Double> entry = i.next();
       if (entry.getValue() == 0) {
         i.remove();
       }
@@ -53,11 +53,11 @@ public abstract class AlphaModel<L extends Comparable, P extends SparseVector> e
     // put the keys and values in parallel arrays, to free memory and maybe make things a bit faster (?)
 
     numSVs = supportVectors.size();
-    SVs = (P[]) new Object[numSVs];
+    SVs = new SparseVector[numSVs];
     alphas = new double[numSVs];
 
     int c = 0;
-    for (Map.Entry<P, Double> entry : supportVectors.entrySet()) {
+    for (Map.Entry<SparseVector, Double> entry : supportVectors.entrySet()) {
       SVs[c] = entry.getKey();
       alphas[c] = entry.getValue();
       c++;
@@ -72,7 +72,6 @@ public abstract class AlphaModel<L extends Comparable, P extends SparseVector> e
     List<SparseVector> svList = new ArrayList<SparseVector>();
 
     String line;
-    //int lineNo = 0;
     while ((line = reader.readLine()) != null) {
 
       final String trimmed = line.trim();
@@ -93,7 +92,7 @@ public abstract class AlphaModel<L extends Comparable, P extends SparseVector> e
     }
 
     alphas = DSArrayUtils.toPrimitiveDoubleArray(alphaList);
-    SVs = (P[]) svList.toArray(new SparseVector[0]);
+    SVs = svList.toArray(new SparseVector[0]);
 
     numSVs = SVs.length;
 

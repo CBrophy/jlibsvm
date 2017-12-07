@@ -2,7 +2,6 @@ package edu.berkeley.compbio.jlibsvm.qmatrix;
 
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Arrays;
 import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
@@ -11,16 +10,16 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P> {
+public abstract class KernelQMatrix implements QMatrix {
 // ------------------------------ FIELDS ------------------------------
 
-  protected KernelFunction<P> kernel;
+  protected KernelFunction kernel;
 
   private RecentActivitySquareCache cache;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  KernelQMatrix(@NotNull KernelFunction<P> kernel, int numExamples, int cacheRows) {
+  KernelQMatrix(@NotNull KernelFunction kernel, int numExamples, int cacheRows) {
     this.kernel = kernel;
     this.cache = new RecentActivitySquareCache(numExamples, cacheRows);
   }
@@ -29,27 +28,27 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
 
 // --------------------- Interface QMatrix ---------------------
 
-  public final double evaluateDiagonal(SolutionVector<P> a) {
+  public final double evaluateDiagonal(SolutionVector a) {
     return cache.getDiagonal(a);
   }
 
-  public void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, double[] buf) {
+  public void getQ(SolutionVector svA, SolutionVector[] active, double[] buf) {
     cache.get(svA, active, buf);
   }
 
-  public void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, SolutionVector<P>[] inactive,
+  public void getQ(SolutionVector svA, SolutionVector[] active, SolutionVector[] inactive,
       double[] buf) {
     cache.get(svA, active, inactive, buf);
   }
 
-  public void initRanks(Collection<SolutionVector<P>> allExamples) {
+  public void initRanks(Collection<SolutionVector> allExamples) {
     int c = 0;
-    for (SolutionVector<P> a : allExamples) {
+    for (SolutionVector a : allExamples) {
       a.rank = c++;
     }
   }
 
-  public void maintainCache(SolutionVector<P>[] active, SolutionVector<P>[] newlyInactive) {
+  public void maintainCache(SolutionVector[] active, SolutionVector[] newlyInactive) {
     cache.maintainCache(active, newlyInactive);
   }
 
@@ -59,9 +58,9 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public abstract double computeQ(SolutionVector<P> a, SolutionVector<P> b);
+  public abstract double computeQ(SolutionVector a, SolutionVector b);
 
-  public final double evaluate(SolutionVector<P> a, SolutionVector<P> b) {
+  public final double evaluate(SolutionVector a, SolutionVector b) {
     return cache.get(a, b);
   }
 
@@ -125,7 +124,7 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
 
 // -------------------------- OTHER METHODS --------------------------
 
-    public double get(SolutionVector<P> a, SolutionVector<P> b) {
+    public double get(SolutionVector a, SolutionVector b) {
       //assert a != b;
       // the diagonal entries should always stay empty; use getDiagonal instead
       if (a == b) {
@@ -147,13 +146,12 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
         data[b.rank][a.rank] = result;
         misses++;
       } else {
-        //assert result == computeQ(a, b);
         hits++;
       }
       return result;
     }
 
-    public double getDiagonal(SolutionVector<P> a) {
+    public double getDiagonal(SolutionVector a) {
       double result = diagonal[a.rank];
       if (result == NOTCACHED) {
         result = computeQ(a, a);
@@ -169,7 +167,7 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
      * Get the kernel value from a given SV to all those provided in the active array, computing any that are not already
      * cached.  Requires that the active array is in rank order, including all ranks from 0 to n!
      */
-    public void get(SolutionVector<P> a, SolutionVector<P>[] active, double[] buf) {
+    public void get(SolutionVector a, SolutionVector[] active, double[] buf) {
       // active array is in rank order
 
       if (a.rank >= maxCachedRank) {
@@ -181,36 +179,27 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
       }
 
       double[] row = data[a.rank];
-      //	assert row[a.rank] == NOTCACHED || (row[a.rank] == getDiagonal(a));
 
       int cachedAndActive = Math.min(row.length, active.length);
 
       for (int i = 0; i < cachedAndActive; i++) {
         if (row[i] == NOTCACHED) {
-          final SolutionVector<P> b = active[i];
-          //		assert b.rank == i;
+          final SolutionVector b = active[i];
           row[i] = computeQ(a, b);
 
           data[b.rank][a.rank] = row[i];
-					/*		if (a == b)
-					   {
-					   assert (row[a.rank] == getDiagonal(a));
-					   }*/
           misses++;
         } else {
-          SolutionVector<P> b = active[i];
-          //		assert b.rank == i;
-          //	assert row[i] == computeQ(a, b);
+          SolutionVector b = active[i];
           hits++;
         }
       }
-      //	assert (row[a.rank] == getDiagonal(a));
 
       System.arraycopy(row, 0, buf, 0,
           cachedAndActive);  // PERF test whether this really helps (cache locality?)
 
       for (int i = cachedAndActive; i < active.length; i++) {
-        final SolutionVector<P> b = active[i];
+        final SolutionVector b = active[i];
         buf[i] = computeQ(a, b);
         widemisses++;
       }
@@ -221,7 +210,7 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
      * order, including all ranks from 0 to n. Does not require that the inactive array has any particular order, but does
      * return the results in buf to match the requested order.
      */
-    public void get(SolutionVector<P> a, SolutionVector<P>[] active, SolutionVector<P>[] inactive,
+    public void get(SolutionVector a, SolutionVector[] active, SolutionVector[] inactive,
         double[] buf) {
       // first fill the active portion.  Here the requested order must match the rank order anyway
       get(a, active, buf);
@@ -230,7 +219,7 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
 
       if (a.rank >= maxCachedRank) {
         int i = active.length;
-        for (SolutionVector<P> b : inactive) {
+        for (SolutionVector b : inactive) {
           buf[i] = computeQ(a, b);
           widemisses++;
           i++;
@@ -239,7 +228,7 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
         double[] row = data[a.rank];
 
         int i = active.length;
-        for (SolutionVector<P> b : inactive) {
+        for (SolutionVector b : inactive) {
           if (b.rank >= maxCachedRank) {
             buf[i] = computeQ(a, b);
             widemisses++;
@@ -249,7 +238,6 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
               data[b.rank][a.rank] = row[b.rank];
               misses++;
             } else {
-              //assert result == computeQ(a, b);
               hits++;
             }
             buf[i] = row[b.rank];
@@ -263,11 +251,9 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
      * Rearrange the ranks so that all active SVs come before all inactive SVs. Sort the data[][] and diagonal[] arrays
      * according to the new ranking. The provided arrays are in the correct rank order already.
      */
-    public void maintainCache(SolutionVector<P>[] active,
-        SolutionVector<P>[] newlyInactive) //, SolutionVector<P>[] previouslyInactive)
+    public void maintainCache(SolutionVector[] active,
+        SolutionVector[] newlyInactive)
     {
-      //int rankTrav = 0;
-
       // the desired partitioning is provided by the arguments; the current partitioning is buried inside each element as SV.rank.
 
       // note the ranks of the previously inactive SVs don't change, so we don't have to touch them or their cache entries at all
@@ -306,8 +292,6 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
           // now we're pointing at the first available pair that should be swapped
 
           swapBySolutionVector(active[i], newlyInactive[j]);
-          //	active[i].rank = i;
-          //	newlyInactive[j].rank = j + partitionRank;
 
           // now the pair is swapped, advance the counters past it
 
@@ -317,41 +301,16 @@ public abstract class KernelQMatrix<P extends SparseVector> implements QMatrix<P
           break;
         }
       }
-/*
-			// Now the SV.rank entries should match the real ranks for the active list
-			int count = 0;
-			for (SolutionVector<P> b : active)
-				{
-				assert b.rank == count;
-				count++;
-				}
-			for (SolutionVector<P> b : newlyInactive)
-				{
-				assert b.rank == count;
-				count++;
-				}
-				*/
+
     }
 
-    private void swapBySolutionVector(SolutionVector<P> svA, SolutionVector<P> svB) {
+    private void swapBySolutionVector(SolutionVector svA, SolutionVector svB) {
       swapByRank(svA.rank, svB.rank);
       int tmp = svA.rank;
       svA.rank = svB.rank;
       svB.rank = tmp;
-
-			/*	swapById(svA.id, svB.id);
-						svA.rank = idToRankMap[svA.id];
-						svB.rank = idToRankMap[svB.id];*/
     }
 
-    /*		private void swapById(int idA, int idB)
-        {
-        swapByRank(idToRankMap[idA], idToRankMap[idB]);
-        int tmp = idToRankMap[idA];
-        idToRankMap[idA] = idToRankMap[idB];
-        idToRankMap[idB] = tmp;
-        }
-  */
     private void swapByRank(int rankA, int rankB) {
       double tmp = diagonal[rankA];
       diagonal[rankA] = diagonal[rankB];

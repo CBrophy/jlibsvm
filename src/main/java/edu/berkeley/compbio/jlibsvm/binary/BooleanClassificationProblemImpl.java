@@ -18,20 +18,20 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BooleanClassificationProblemImpl<L extends Comparable, P extends SparseVector> extends
-    BinaryClassificationProblemImpl<L, P> {
+public class BooleanClassificationProblemImpl<L extends Comparable> extends
+    BinaryClassificationProblemImpl<L> {
 // ------------------------------ FIELDS ------------------------------
 
-  private Map<P, Boolean> booleanExamples;
-  private Set<P> trueExamples;
-  private Set<P> falseExamples;
+  private Map<SparseVector, Boolean> booleanExamples;
+  private Set<SparseVector> trueExamples;
+  private Set<SparseVector> falseExamples;
   int numExamples = 0;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BooleanClassificationProblemImpl(Class labelClass, L trueLabel, Set<P> trueExamples,
+  public BooleanClassificationProblemImpl(Class labelClass, L trueLabel, Set<SparseVector> trueExamples,
       L falseLabel,
-      Set<P> falseExamples) {
+      Set<SparseVector> falseExamples) {
     // this is a hack: we leave examples==null and just deal with booleanExamples directly
 
     super(labelClass, null);
@@ -52,19 +52,19 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P extends Sp
   }
 
 
-  public BooleanClassificationProblemImpl(BooleanClassificationProblemImpl<L, P> backingProblem,
-      Set<P> heldOutPoints) {
+  public BooleanClassificationProblemImpl(BooleanClassificationProblemImpl<L> backingProblem,
+      Set<SparseVector> heldOutPoints) {
     super(backingProblem.labelClass, null, backingProblem.scalingModel,
         backingProblem.trueLabel, backingProblem.falseLabel);
     this.heldOutPoints = heldOutPoints;
 
     // PERF use a SubtractionSet?
-    this.trueExamples = new HashSet<P>(backingProblem.trueExamples);
-    this.falseExamples = new HashSet<P>(backingProblem.falseExamples);
+    this.trueExamples = new HashSet<>(backingProblem.trueExamples);
+    this.falseExamples = new HashSet<>(backingProblem.falseExamples);
     trueExamples.removeAll(heldOutPoints);
     falseExamples.removeAll(heldOutPoints);
 
-    labels = new ArrayList<L>(2);
+    labels = new ArrayList<>(2);
     labels.add(trueLabel);
     labels.add(falseLabel);
 
@@ -77,13 +77,13 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P extends Sp
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
-  public synchronized Map<P, Boolean> getBooleanExamples() {
+  public synchronized Map<SparseVector, Boolean> getBooleanExamples() {
     if (booleanExamples == null) {
-      booleanExamples = new HashMap<P, Boolean>(numExamples);
-      for (P trueExample : trueExamples) {
+      booleanExamples = new HashMap<>(numExamples);
+      for (SparseVector trueExample : trueExamples) {
         booleanExamples.put(trueExample, Boolean.TRUE);
       }
-      for (P falseExample : falseExamples) {
+      for (SparseVector falseExample : falseExamples) {
         booleanExamples.put(falseExample, Boolean.FALSE);
       }
       assert booleanExamples.size() == numExamples;
@@ -98,8 +98,8 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P extends Sp
   /**
    * There's no sense in scaling Boolean values, so this is a noop.  note we don't make a copy for efficiency.
    */
-  public BinaryClassificationProblem<L, P> getScaledCopy(
-      @NotNull ScalingModelLearner<P> scalingModelLearner) {
+  public BinaryClassificationProblem<L> getScaledCopy(
+      @NotNull ScalingModelLearner scalingModelLearner) {
     return this;
   }
 
@@ -109,7 +109,7 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P extends Sp
 
 // --------------------- Interface SvmProblem ---------------------
 
-  public synchronized L getTargetValue(P point) {
+  public synchronized L getTargetValue(SparseVector point) {
     if (booleanExamples.get(point)) {
       return trueLabel;
     } else {
@@ -122,48 +122,41 @@ public class BooleanClassificationProblemImpl<L extends Comparable, P extends Sp
   }
 
   // need to override this because of the examples == null hack
-  public Iterator<BinaryClassificationProblem<L, P>> makeFolds(int numberOfFolds) {
+  public Iterator<BinaryClassificationProblem<L>> makeFolds(int numberOfFolds) {
 //		Set<BinaryClassificationProblem<L, P>> result = new HashSet<BinaryClassificationProblem<L, P>>();
 
-    List<P> points = new ArrayList<P>(getBooleanExamples().keySet());
+    List<SparseVector> points = new ArrayList<>(getBooleanExamples().keySet());
 
     Collections.shuffle(points);
 
     // PERF this is maybe overwrought, but ensures the best possible balance among folds (unlike examples.size() / numberOfFolds)
 
-    List<Set<P>> heldOutPointSets = new ArrayList<Set<P>>();
+    List<Set<SparseVector>> heldOutPointSets = new ArrayList<>();
     for (int i = 0; i < numberOfFolds; i++) {
-      heldOutPointSets.add(new HashSet<P>());
+      heldOutPointSets.add(new HashSet<>());
     }
 
     int f = 0;
-    for (P point : points) {
+    for (SparseVector point : points) {
       heldOutPointSets.get(f).add(point);
       f++;
       f %= numberOfFolds;
     }
 
-    Iterator<BinaryClassificationProblem<L, P>> foldIterator =
-        new MappingIterator<Set<P>, BinaryClassificationProblem<L, P>>(
+    Iterator<BinaryClassificationProblem<L>> foldIterator =
+        new MappingIterator<Set<SparseVector>, BinaryClassificationProblem<L>>(
             heldOutPointSets.iterator()) {
           @NotNull
-          public BinaryClassificationProblem<L, P> function(Set<P> p) {
+          public BinaryClassificationProblem<L> function(Set<SparseVector> p) {
             return makeFold(p);
           }
         };
     return foldIterator;
 
-		/*
-				for (Set<P> heldOutPoints : heldOutPointSets)
-					{
-					result.add(makeFold(heldOutPoints));
-					}
-
-				return result;*/
   }
 
 
-  protected BooleanClassificationProblemImpl<L, P> makeFold(Set<P> heldOutPoints) {
+  protected BooleanClassificationProblemImpl<L> makeFold(Set<SparseVector> heldOutPoints) {
     return new BooleanClassificationProblemImpl(this, heldOutPoints);
   }
 }

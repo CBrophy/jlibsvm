@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SvmMultiClassCrossValidationResults<L extends Comparable, P extends SparseVector> extends
+public class SvmMultiClassCrossValidationResults<L extends Comparable> extends
     MultiClassCrossValidationResults<L> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -20,44 +20,24 @@ public class SvmMultiClassCrossValidationResults<L extends Comparable, P extends
   /**
    * if we did a grid search, keep track of which parameter set was used for these results
    */
-  public ImmutableSvmParameter<L, P> param;
-
-  //private final Multiset<L> unknowns = new HashMultiset<L>();
+  public ImmutableSvmParameter<L> param;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-	/*public CrossValidationResults(int numExamples, int tt, int tf, int ft, int ff)
-		{
-		this.numExamples = numExamples;
-		this.tt = tt;
-		this.tf = tf;
-		this.ft = ft;
-		this.ff = ff;
-		}
-*/
 
-  public SvmMultiClassCrossValidationResults(MultiClassProblem<L, P> problem,
-      Map<P, L> predictions)//, Map<L, String> friendlyLabelMap)
+  public SvmMultiClassCrossValidationResults(MultiClassProblem<L> problem,
+      Map<SparseVector, L> predictions)
   {
     super();
-    //super(friendlyLabelMap);
-    //numExamples = problem.getNumExamples();
 
-    for (Map.Entry<P, L> entry : problem.getExamples().entrySet()) {
-      P point = entry.getKey();
+    for (Map.Entry<SparseVector, L> entry : problem.getExamples().entrySet()) {
+      SparseVector point = entry.getKey();
       L realValue = entry.getValue();
       L predictedValue = predictions.get(point);
 
       // the confusionMatrix should count predictedValue==null (aka unknown) just like any other value
 
-      //if (predictedValue != null)
-      //	{
       addSample(realValue, predictedValue);
-      //	}
-      //else
-      //	{
-      //	unknowns.add(realValue);
-      //	}
     }
 
     sanityCheck();

@@ -10,16 +10,16 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface BinaryClassificationProblem<L extends Comparable, P extends SparseVector>
-    extends SvmProblem<L, P, BinaryClassificationProblem<L, P>> {
+public interface BinaryClassificationProblem<L extends Comparable>
+    extends SvmProblem<L, BinaryClassificationProblem<L>> {
 // -------------------------- OTHER METHODS --------------------------
 
-  Map<P, Boolean> getBooleanExamples();
+  Map<SparseVector, Boolean> getBooleanExamples();
 
   L getFalseLabel();
 
   @NotNull
-  BinaryClassificationProblem<L, P> getScaledCopy(ScalingModelLearner<P> scalingModelLearner);
+  BinaryClassificationProblem<L> getScaledCopy(ScalingModelLearner scalingModelLearner);
 
   L getTrueLabel();
 

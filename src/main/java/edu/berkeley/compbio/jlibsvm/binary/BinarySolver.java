@@ -11,10 +11,10 @@ import java.util.List;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinarySolver<L extends Comparable, P extends SparseVector> extends Solver<L, P> {
+public class BinarySolver<L extends Comparable> extends Solver<L> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double Cp, double Cn,
+  public BinarySolver(List<SolutionVector> solutionVectors, QMatrix Q, double Cp, double Cn,
       double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
@@ -22,10 +22,10 @@ public class BinarySolver<L extends Comparable, P extends SparseVector> extends 
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public BinaryModel<L, P> solve() {
+  public BinaryModel<L> solve() {
     optimize();
 
-    BinaryModel<L, P> model = new BinaryModel<L, P>();
+    BinaryModel<L> model = new BinaryModel<>();
 
     // calculate rho
     calculate_rho(model);
@@ -39,8 +39,8 @@ public class BinarySolver<L extends Comparable, P extends SparseVector> extends 
 
     model.obj = v / 2;
 
-    model.supportVectors = new HashMap<P, Double>();
-    for (SolutionVector<P> svC : allExamples) {
+    model.supportVectors = new HashMap<>();
+    for (SolutionVector svC : allExamples) {
       model.supportVectors.put(svC.point, svC.alpha);
     }
 
@@ -51,9 +51,6 @@ public class BinarySolver<L extends Comparable, P extends SparseVector> extends 
 
     model.upperBoundPositive = Cp;
     model.upperBoundNegative = Cn;
-
-    // ** logging output disabled for now
-    //logger.info("optimization finished, #iter = " + iter);
 
     return model;
   }

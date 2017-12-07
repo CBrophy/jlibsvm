@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 
-public abstract class Solver<L extends Comparable, P extends SparseVector> {
+public abstract class Solver<L extends Comparable> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Solver.class);
@@ -40,7 +40,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
   protected final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
 
 
-  QMatrix<P> Q;
+  QMatrix Q;
   double[] Q_svA;
   double[] Q_svB;
   double[] Q_all;
@@ -49,32 +49,17 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
   boolean unshrink = false;
   boolean shrinking;
 
-  protected final List<SolutionVector<P>> allExamples;
-  protected SolutionVector<P>[] active;
-  protected SolutionVector<P>[] inactive;
+  protected final List<SolutionVector> allExamples;
+  protected SolutionVector[] active;
+  protected SolutionVector[] inactive;
   protected final double Cp, Cn;
   protected final int numExamples;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-/*	protected Solver(QMatrix<P> Q, double Cp, double Cn, double eps, boolean shrinking)
-		{
-		if (eps <= 0)
-			{
-			throw new SvmException("eps <= 0");
-			}
-
-		this.Q = Q;
-		this.Cp = Cp;
-		this.Cn = Cn;
-		this.eps = eps;
-		this.shrinking = shrinking;
-		}*/
-
-  public Solver(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q, double Cp,
+  public Solver(@NotNull List<SolutionVector> solutionVectors, @NotNull QMatrix Q, double Cp,
       double Cn, double eps,
       boolean shrinking) {
-    //this(Q, Cp, Cn, eps, shrinking);
 
     if (eps <= 0) {
       throw new SvmException("eps <= 0");
@@ -94,13 +79,13 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
 // -------------------------- OTHER METHODS --------------------------
 
-  protected void calculate_rho(AlphaModel<L, P> si) {
+  protected void calculate_rho(AlphaModel<L> si) {
     double r;
     int nr_free = 0;
     double ub = Double.POSITIVE_INFINITY, lb = Double.NEGATIVE_INFINITY, sum_free = 0;
 
-    for (SolutionVector<P> sv : active) {
-      double yG = (sv.targetValue ? 1f : -1f) * sv.G;
+    for (SolutionVector sv : active) {
+      double yG = (sv.targetValue ? 1.0 : -1.0) * sv.G;
 
       if (sv.isLowerBound()) {
         if (sv.targetValue) {
@@ -126,15 +111,15 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
       r = (ub + lb) / 2;
     }
 
-    si.rho = (double) r;
+    si.rho = r;
   }
 
   protected int optimize() {
     Q.initRanks(allExamples);
 
-    for (SolutionVector svA : allExamples)      //	for (int i = 0; i < numExamples; i++)
+    for (SolutionVector svA : allExamples)
     {
-      svA.updateAlphaStatus(Cp, Cn);      //update_alpha_status(i);
+      svA.updateAlphaStatus(Cp, Cn);
     }
 
     // initialize active set (for shrinking)
@@ -143,8 +128,6 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
     // initialize gradient
 
-    //	G = new double[numExamples];
-    //	G_bar = new double[numExamples];
     for (SolutionVector svA : allExamples) {
       svA.G = svA.linearTerm;
       svA.G_bar = 0;
@@ -152,26 +135,14 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
     for (SolutionVector svA : allExamples) {
       if (!svA.isLowerBound()) //is_lower_bound(i))
       {
-        //	double[] Q_i = Q.getQ(i, numExamples);
-        // //	double alpha_i = shuffledAlpha[i];
-
-        //double[] Q_svA =
         Q.getQ(svA, active, Q_svA);
         for (SolutionVector svB : allExamples) {
-          //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
           svB.G += svA.alpha * Q_svA[svB.rank];
-          //Q.evaluate(svA, svB);
-          //	svA.wasEvaluated = true;
-          //	svB.wasEvaluated = true;
         }
         if (svA.isUpperBound()) //is_upper_bound(i))
         {
           for (SolutionVector svB : allExamples) {
-            //		assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
             svB.G_bar += svA.getC(Cp, Cn) * Q_svA[svB.rank];
-            //Q.evaluate(svA, svB);
-            //	svA.wasEvaluated = true;
-            //	svB.wasEvaluated = true;
           }
         }
       }
@@ -180,10 +151,10 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
     // optimization step
 
     int iter = 0;
-    int counter = Math.min(numExamples, 1000) + 1;    //int[] working_set = new int[2];
+    int counter = Math.min(numExamples, 1000) + 1;
 
-    SolutionVector<P> svA;
-    SolutionVector<P> svB;
+    SolutionVector svA;
+    SolutionVector svB;
 
     //SolutionVectorPair pair, oldPair;
 
@@ -196,10 +167,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
           do_shrinking();
         }
 
-        // ** logging output disabled for now
-        //logger.debug(".");
       }
-      //oldPair = pair;
       SolutionVectorPair pair = selectWorkingPair();
 
       if (pair.isOptimal) // pair already optimal
@@ -210,28 +178,16 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
         // reset active set size and check
         resetActiveSet();
 
-        // ** logging output disabled for now
-        //logger.debug("*");
-        // 			//svA = pair.svA;
-        // 		//svB = pair.svB;
-
         pair = selectWorkingPair();
         if (pair.isOptimal) // pair already optimal
         {
-          //svA = oldPair.svA;
-          //svB = oldPair.svB;
           break;
         } else {
           counter = 1;
-          // do shrinking next iteration
-          // leave the working pair the same as before
-          // pair = oldPair;
         }
       }
       svA = pair.svA;
       svB = pair.svB;
-      // int i = working_set[0];
-      // int j = working_set[1];
 
       ++iter;
 
@@ -242,26 +198,22 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
       // update alpha[i] and alpha[j], handle bounds carefully
 
-      //double[] Q_svA =
       Q.getQ(svA, active, Q_svA);
-      //double[] Q_svB =
       Q.getQ(svB, active, Q_svB);
 
-      double C_i = svA.getC(Cp, Cn); //getC(i);
-      double C_j = svB.getC(Cp, Cn); //getC(j);
+      double C_i = svA.getC(Cp, Cn);
+      double C_j = svB.getC(Cp, Cn);
 
       double old_alpha_i = svA.alpha;
       double old_alpha_j = svB.alpha;
 
       if (svA.targetValue != svB.targetValue) {
-        //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
+
         double quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
-            + 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
-        //	svA.wasEvaluated = true;
-        //	svB.wasEvaluated = true;
+            + 2 * Q_svA[svB.rank];
 
         if (quad_coef <= 0) {
-          quad_coef = 1e-12f;
+          quad_coef = 1e-12;
         }
         double delta = (-svA.G - svB.G) / quad_coef;
         double diff = svA.alpha - svB.alpha;
@@ -291,14 +243,11 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
           }
         }
       } else {
-        //	assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
         double quad_coef = Q.evaluateDiagonal(svA) + Q.evaluateDiagonal(svB)
-            - 2 * Q_svA[svB.rank]; // Q.evaluate(svA, svB);
-        //	svA.wasEvaluated = true;
-        //	svB.wasEvaluated = true;
+            - 2 * Q_svA[svB.rank];
 
         if (quad_coef <= 0) {
-          quad_coef = 1e-12f;
+          quad_coef = 1e-12;
         }
         double delta = (svA.G - svB.G) / quad_coef;
         double sum = svA.alpha + svB.alpha;
@@ -343,27 +292,9 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
       }
 
       // NO: loop over A first, then B (cache locality)
-      //for (SolutionVector<P> svC : active)
       for (int i = 0; i < active.length; i++) {
-        // i == svC.rank
         active[i].G += Q_svA[i] * delta_alpha_i + Q_svB[i] * delta_alpha_j;
       }
-      // PERF test tradeoff
-
-			/*
-			for (SolutionVector<P> svC : active)
-				{
-				svC.G += Q.evaluate(svA, svC) * delta_alpha_i;
-				svA.wasEvaluated = true;
-				svC.wasEvaluated = true;
-				}
-			for (SolutionVector<P> svC : active)
-				{
-				svC.G += Q.evaluate(svB, svC) * delta_alpha_j;
-				svB.wasEvaluated = true;
-				//svC.wasEvaluated = true;
-				}
-				*/
 
       // update alpha_status and G_bar
 
@@ -374,41 +305,28 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
       if (ui != svA.isUpperBound()) //is_upper_bound(i))
       {
-        //Q_i = Q.getQ(i, numExamples);
         Q.getQ(svA, active, inactive, Q_all);
         if (ui) {
-          for (SolutionVector<P> svC : allExamples) {
-            //		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
+          for (SolutionVector svC : allExamples) {
             svC.G_bar -= C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
-            //		svA.wasEvaluated = true;
-            //		svC.wasEvaluated = true;
           }
         } else {
-          for (SolutionVector<P> svC : allExamples) {
-            //		assert Q_all[svC.rank] == Q.evaluate(svA, svC);
+          for (SolutionVector svC : allExamples) {
             svC.G_bar += C_i * Q_all[svC.rank]; //Q.evaluate(svA, svC);
-            //		svA.wasEvaluated = true;
-            //		svC.wasEvaluated = true;
           }
         }
       }
 
       if (uj != svB.isUpperBound()) //is_upper_bound(j))
-      {        //Q_j = Q.getQ(j, numExamples);
+      {
         Q.getQ(svB, active, inactive, Q_all);
         if (uj) {
-          for (SolutionVector<P> svC : allExamples) {
-            //		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
-            svC.G_bar -= C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
-            //		svB.wasEvaluated = true;
-            //		svC.wasEvaluated = true;
+          for (SolutionVector svC : allExamples) {
+            svC.G_bar -= C_j * Q_all[svC.rank];
           }
         } else {
-          for (SolutionVector<P> svC : allExamples) {
-            //		assert Q_all[svC.rank] == Q.evaluate(svB, svC);
-            svC.G_bar += C_j * Q_all[svC.rank]; //Q.evaluate(svB, svC);
-            //		svB.wasEvaluated = true;
-            //		svC.wasEvaluated = true;
+          for (SolutionVector svC : allExamples) {
+            svC.G_bar += C_j * Q_all[svC.rank];
           }
         }
       }
@@ -435,7 +353,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
     // find maximal violating pair first
 
-    for (SolutionVector<P> sv : active) {
+    for (SolutionVector sv : active) {
       if (sv.targetValue) {
         if (!sv.isUpperBound()) {
           if (-sv.G >= Gmax1) {
@@ -464,7 +382,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
     if (!unshrink && Gmax1 + Gmax2 <= eps * 10) {
       unshrink = true;
       reconstruct_gradient();
-      resetActiveSet();      //activeSize = numExamples;
+      resetActiveSet();
     }
 
     // There was an extremely messy iteration here before, but I think it served only to separate the shrinkable vectors from the unshrinkable ones.
@@ -477,13 +395,13 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
     // Thus, we need to sort the arrays according to the ranks after Q.maintainCache is done with them.
 
-    Collection<SolutionVector<P>> activeList = new ArrayList<SolutionVector<P>>(
+    Collection<SolutionVector> activeList = new ArrayList<>(
         Arrays.asList(active));
 
     // start this off empty, knowing that it will eventually need to contain all the currently inactive elements
-    Collection<SolutionVector<P>> inactiveList = new ArrayList<SolutionVector<P>>(inactive.length);
+    Collection<SolutionVector> inactiveList = new ArrayList<>(inactive.length);
 
-    for (Iterator<SolutionVector<P>> iter = activeList.iterator(); iter.hasNext(); ) {
+    for (Iterator<SolutionVector> iter = activeList.iterator(); iter.hasNext(); ) {
       SolutionVector sv = iter.next();
 
       if (sv.isShrinkable(Gmax1, Gmax2)) {
@@ -497,7 +415,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
     Q_svA = new double[active.length];
     Q_svB = new double[active.length];
 
-    SolutionVector<P>[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
+    SolutionVector[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
     Q.maintainCache(active,
         newlyInactive);  // note maintainCache doesn't need to know about the currently inactive elements
 
@@ -532,25 +450,13 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
     int activeSize = active.length;
 
-    // ** logging output disabled for now
-		/*if (2 * nr_free < activeSize)
-			{
-			logger.info("using -h 0 may be faster");
-			}
-*/
     if (nr_free * numExamples > 2 * activeSize * (numExamples - activeSize)) {
       for (SolutionVector svA : inactive) {
-        //double[] Q_i = Q.getQ(i, activeSize);
         Q.getQ(svA, active, Q_svA);
         for (SolutionVector svB : active) {
           if (svB.isFree()) //is_free(j))
           {
-            //assert Q_svA[svB.rank] == Q.evaluate(svA, svB);
             svA.G += svB.alpha * Q_svA[svB.rank];
-            //[j];
-            //Q.evaluate(svA, svB);
-            //			svA.wasEvaluated = true;
-            //			svB.wasEvaluated = true;
           }
         }
       }
@@ -558,15 +464,9 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
       for (SolutionVector svA : active) {
         if (svA.isFree()) //is_free(i))
         {
-          //	double[] Q_i = Q.getQ(i, numExamples);
-          //	double alpha_i = shuffledAlpha[i];
           Q.getQ(svA, active, inactive, Q_all);
           for (SolutionVector svB : inactive) {
-            //assert Q_all[svB.rank] == Q.evaluate(svA, svB);
             svB.G += svA.alpha * Q_all[svB.rank];
-            //Q.evaluate(svA, svB);
-            //		svA.wasEvaluated = true;
-            //		svB.wasEvaluated = true;
           }
         }
       }
@@ -582,14 +482,6 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
   }
 
   protected SolutionVectorPair selectWorkingPair() {
-		/*
-		  return i,j such that
-		  i: maximizes -y_i * grad(f)_i, i in I_up(\alpha)
-	      j: mimimizes the decrease of obj value
-	      (if quadratic coefficeint <= 0, replace it with tau)
-	      -y_j*grad(f)_j < -y_i*grad(f)_i, j in I_low(\alpha)
-	    */
-
     double Gmax = Double.NEGATIVE_INFINITY;
     double Gmax2 = Double.NEGATIVE_INFINITY;
     SolutionVector GmaxSV = null; //-1;
@@ -598,7 +490,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
 
     int l = active.length;
     for (int i = 0; i < l; i++) {
-      SolutionVector<P> sv = active[i];
+      SolutionVector sv = active[i];
       if (sv.targetValue) {
         if (!sv.isUpperBound()) {
           if (-sv.G >= Gmax) {
@@ -623,7 +515,7 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
     }
 
     for (int i = 0; i < l; i++) {
-      SolutionVector<P> sv = active[i];
+      SolutionVector sv = active[i];
       if (sv.targetValue) {
         if (!sv.isLowerBound()) {
           double grad_diff = Gmax + sv.G;
@@ -633,12 +525,12 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
           if (grad_diff > 0) {
             double obj_diff;
             double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
-                - 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
+                - 2.0 * (GmaxSV.targetValue ? 1.0 : -1.0) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
 
-            if (quad_coef > 0) {
+            if (quad_coef > 0.0) {
               obj_diff = -(grad_diff * grad_diff) / quad_coef;
             } else {
-              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+              obj_diff = -(grad_diff * grad_diff) / 1e-12;
             }
 
             if (obj_diff <= obj_diff_min) {
@@ -653,15 +545,15 @@ public abstract class Solver<L extends Comparable, P extends SparseVector> {
           if (-sv.G >= Gmax2) {
             Gmax2 = -sv.G;
           }
-          if (grad_diff > 0) {
+          if (grad_diff > 0.0) {
             double obj_diff;
             double quad_coef = Q.evaluateDiagonal(GmaxSV) + Q.evaluateDiagonal(sv)
-                + 2.0f * (GmaxSV.targetValue ? 1f : -1f) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
+                + 2.0 * (GmaxSV.targetValue ? 1.0 : -1.0) * Q_svA[sv.rank]; //Q_GmaxSV[sv.rank];
 
-            if (quad_coef > 0) {
+            if (quad_coef > 0.0) {
               obj_diff = -(grad_diff * grad_diff) / quad_coef;
             } else {
-              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+              obj_diff = -(grad_diff * grad_diff) / 1e-12;
             }
 
             if (obj_diff <= obj_diff_min) {

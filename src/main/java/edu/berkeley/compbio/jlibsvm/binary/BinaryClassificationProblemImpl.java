@@ -16,9 +16,9 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinaryClassificationProblemImpl<L extends Comparable, P extends SparseVector>
-    extends ExplicitSvmProblemImpl<L, P, BinaryClassificationProblem<L, P>>
-    implements BinaryClassificationProblem<L, P>, Serializable {
+public class BinaryClassificationProblemImpl<L extends Comparable>
+    extends ExplicitSvmProblemImpl<L, BinaryClassificationProblem<L>>
+    implements BinaryClassificationProblem<L>, Serializable {
 // ------------------------------ FIELDS ------------------------------
 
   Class labelClass;
@@ -29,12 +29,12 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P extends Spa
 
   // cache the scaled copy, taking care that the scalingModelLearner is the same one.
   // only bother keeping one (i.e. don't make a map from learners to scaled copies)
-  private ScalingModelLearner<P> lastScalingModelLearner = null;
-  private BinaryClassificationProblem<L, P> scaledCopy = null;
+  private ScalingModelLearner lastScalingModelLearner = null;
+  private BinaryClassificationProblem<L> scaledCopy = null;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinaryClassificationProblemImpl(Class labelClass, Map<P, L> examples) {
+  public BinaryClassificationProblemImpl(Class labelClass, Map<SparseVector, L> examples) {
     super(examples);
     setupLabels();
     this.labelClass = labelClass;
@@ -49,17 +49,17 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P extends Spa
     }
   }
 
-  public BinaryClassificationProblemImpl(Class labelClass, Map<P, L> examples,
-      @NotNull ScalingModel<P> scalingModel, L trueLabel, L falseLabel) {
+  public BinaryClassificationProblemImpl(Class labelClass, Map<SparseVector, L> examples,
+      @NotNull ScalingModel scalingModel, L trueLabel, L falseLabel) {
     super(examples, scalingModel);
     this.trueLabel = trueLabel;
     this.falseLabel = falseLabel;
     this.labelClass = labelClass;
   }
 
-  public BinaryClassificationProblemImpl(BinaryClassificationProblemImpl<L, P> backingProblem,
-      Set<P> heldOutPoints) {
-    super(new SubtractionMap<P, L>(backingProblem.examples, heldOutPoints),
+  public BinaryClassificationProblemImpl(BinaryClassificationProblemImpl<L> backingProblem,
+      Set<SparseVector> heldOutPoints) {
+    super(new SubtractionMap<>(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
     this.trueLabel = backingProblem.trueLabel;
     this.falseLabel = backingProblem.falseLabel;
@@ -79,22 +79,22 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P extends Spa
 
 // --------------------- Interface BinaryClassificationProblem ---------------------
 
-  public Map<P, Boolean> getBooleanExamples() {
+  public Map<SparseVector, Boolean> getBooleanExamples() {
     if (labelClass.equals(Boolean.class)) {
-      return (Map<P, Boolean>) examples;
+      return (Map<SparseVector, Boolean>) examples;
     }
 
     setupLabels();
 
-    Map<P, Boolean> result = new HashMap<P, Boolean>(examples.size());
-    for (Map.Entry<P, L> entry : examples.entrySet()) {
+    Map<SparseVector, Boolean> result = new HashMap<>(examples.size());
+    for (Map.Entry<SparseVector, L> entry : examples.entrySet()) {
       result.put(entry.getKey(), entry.getValue().equals(trueLabel) ? Boolean.TRUE : Boolean.FALSE);
     }
     return result;
   }
 
-  public BinaryClassificationProblem<L, P> getScaledCopy(
-      @NotNull ScalingModelLearner<P> scalingModelLearner) {
+  public BinaryClassificationProblem<L> getScaledCopy(
+      @NotNull ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;
@@ -102,21 +102,21 @@ public class BinaryClassificationProblemImpl<L extends Comparable, P extends Spa
     return scaledCopy;
   }
 
-  public BinaryClassificationProblem<L, P> createScaledCopy(Map<P, L> scaledExamples,
-      ScalingModel<P> learnedScalingModel) {
-    return new BinaryClassificationProblemImpl<L, P>(labelClass, scaledExamples,
+  public BinaryClassificationProblem<L> createScaledCopy(Map<SparseVector, L> scaledExamples,
+      ScalingModel learnedScalingModel) {
+    return new BinaryClassificationProblemImpl<>(labelClass, scaledExamples,
         learnedScalingModel, trueLabel, falseLabel);
   }
 
 // --------------------- Interface SvmProblem ---------------------
 
-  public L getTargetValue(P point) {
+  public L getTargetValue(SparseVector point) {
     return examples.get(point);
   }
 
 // -------------------------- OTHER METHODS --------------------------
 
-  protected BinaryClassificationProblem<L, P> makeFold(Set<P> heldOutPoints) {
+  protected BinaryClassificationProblem<L> makeFold(Set<SparseVector> heldOutPoints) {
     return new BinaryClassificationProblemImpl(this, heldOutPoints);
   }
 // -------------------------- INNER CLASSES --------------------------

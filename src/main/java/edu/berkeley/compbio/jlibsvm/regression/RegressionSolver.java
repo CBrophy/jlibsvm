@@ -12,35 +12,32 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionSolver<P extends SparseVector> extends Solver<Double, P> {
+public class RegressionSolver extends Solver<Double> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSolver.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolver(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double C, double eps,
+  public RegressionSolver(List<SolutionVector> solutionVectors, QMatrix Q, double C, double eps,
       boolean shrinking) {
     super(solutionVectors, Q, C, C, eps, shrinking);
   }
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public RegressionModel<P> solve() {
+  public RegressionModel solve() {
     optimize();
 
-    RegressionModel<P> model = new RegressionModel<P>();
+    RegressionModel model = new RegressionModel();
 
     // calculate rho
 
     calculate_rho(model);
 
     // calculate objective value
-
-    //double sumAlpha = 0;
-
-    model.supportVectors = new HashMap<P, Double>();
-    for (SolutionVector<P> svC : allExamples) {
+    model.supportVectors = new HashMap<>();
+    for (SolutionVector svC : allExamples) {
       // the examples contain both a true and a false SolutionVector for each P.
       // we want the difference of their alphas
 
@@ -52,25 +49,6 @@ public class RegressionSolver<P extends SparseVector> extends Solver<Double, P> 
 
       model.supportVectors.put(svC.point, alphaDiff);
     }
-
-    //for (Double alphaDiff : model.supportVectors.values())
-    //	{
-    //	sumAlpha += Math.abs(alphaDiff);
-    //	}
-
-    // ** logging output disabled for now
-    //logger.info("nu = " + sumAlpha / (Cp * allExamples.size()));  //Cp == Cn == C
-
-    // note at this point the solution includes _all_ vectors, even if their alphas are zero
-
-    // we can't do this yet because in the regression case there are twice as many alphas as vectors
-    // 	// model.compact();
-
-    //	model.upperBoundPositive = Cp;
-    // //	model.upperBoundNegative = Cn;
-
-    // ** logging output disabled for now
-    //logger.info("optimization finished, #iter = " + iter);
 
     return model;
   }

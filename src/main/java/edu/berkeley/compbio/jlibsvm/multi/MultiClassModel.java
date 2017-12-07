@@ -32,17 +32,13 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class MultiClassModel<L extends Comparable, P extends SparseVector> extends SolutionModel<L, P> implements
-    DiscreteModel<L, P> {
+public class MultiClassModel<L extends Comparable> extends SolutionModel<L> implements
+    DiscreteModel<L> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(MultiClassModel.class);
 
-  private ScalingModel<P> scalingModel = new NoopScalingModel<P>();
-
-  //** add back one-class filter?
-  //	private HashMap<L, OneClassModel<L, P>> oneClassModels;
-
+  private ScalingModel scalingModel = new NoopScalingModel();
 
   private final OneVsAllMode oneVsAllMode;
   private final double oneVsAllThreshold;
@@ -50,15 +46,15 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
   private final AllVsAllMode allVsAllMode;
   private final double minVoteProportion;
 
-  private final Map<BinaryModel<L, P>, int[]> svIndexMaps; // = new HashMap<BinaryModel<L, P>, int[]>();
+  private final Map<BinaryModel<L>, int[]> svIndexMaps; // = new HashMap<BinaryModel<L, P>, int[]>();
 
   private final int numberOfClasses;
 
-  private final SymmetricHashMap2d<L, BinaryModel<L, P>> oneVsOneModels;
-  private final HashMap<L, BinaryModel<L, P>> oneVsAllModels;
+  private final SymmetricHashMap2d<L, BinaryModel<L>> oneVsOneModels;
+  private final HashMap<L, BinaryModel<L>> oneVsAllModels;
 
-  private P[] allSVs;
-  SvmMultiClassCrossValidationResults<L, P> crossValidationResults;
+  private SparseVector[] allSVs;
+  SvmMultiClassCrossValidationResults<L> crossValidationResults;
 
   public MultiClassCrossValidationResults<L> getCrossValidationResults() {
     return crossValidationResults;
@@ -67,8 +63,8 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
   /**
    * Make a derived copy for leave-one-out testing
    */
-  public MultiClassModel(MultiClassModel<L, P> copyFrom, Collection<L> excludeLabels) {
-    //labels = copyFrom.labels;  // note we leave the complete model list intact...
+  public MultiClassModel(MultiClassModel<L> copyFrom, Collection<L> excludeLabels) {
+
     allSVs = copyFrom.allSVs;  // the labels list provides the indexes for this array, which we also don't change
 
     oneVsAllMode = copyFrom.oneVsAllMode;
@@ -82,9 +78,9 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
     // the only thing that does change is that some binary models are excluded
 
-    oneVsOneModels = new SymmetricHashMap2d<L, BinaryModel<L, P>>(copyFrom.oneVsOneModels,
+    oneVsOneModels = new SymmetricHashMap2d<>(copyFrom.oneVsOneModels,
         excludeLabels);
-    oneVsAllModels = new HashMap<L, BinaryModel<L, P>>(copyFrom.oneVsAllModels);
+    oneVsAllModels = new HashMap<>(copyFrom.oneVsAllModels);
     for (L disallowedLabel : excludeLabels) {
       oneVsAllModels.remove(disallowedLabel);
     }
@@ -95,10 +91,10 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
   public MultiClassModel(ImmutableSvmParameter param, int numberOfClasses) {
     //super(param);
     super();
-    svIndexMaps = new HashMap<BinaryModel<L, P>, int[]>();
+    svIndexMaps = new HashMap<>();
     this.numberOfClasses = numberOfClasses;
-    oneVsOneModels = new SymmetricHashMap2d<L, BinaryModel<L, P>>(numberOfClasses);
-    oneVsAllModels = new HashMap<L, BinaryModel<L, P>>(numberOfClasses);
+    oneVsOneModels = new SymmetricHashMap2d<>(numberOfClasses);
+    oneVsAllModels = new HashMap<>(numberOfClasses);
 
     this.oneVsAllThreshold = param.oneVsAllThreshold;
 
@@ -110,11 +106,11 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 // --------------------- GETTER / SETTER METHODS ---------------------
 
   @NotNull
-  public ScalingModel<P> getScalingModel() {
+  public ScalingModel getScalingModel() {
     return scalingModel;
   }
 
-  public void setScalingModel(@NotNull ScalingModel<P> scalingModel) {
+  public void setScalingModel(@NotNull ScalingModel scalingModel) {
     this.scalingModel = scalingModel;
   }
 
@@ -125,7 +121,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
   /**
    * @return null if no good label is found, otherwise the best label.
    */
-  public L predictLabel(P x) {
+  public L predictLabel(SparseVector x) {
     return predictLabelWithQuality(x).getBestLabel();
   }
 
@@ -144,12 +140,11 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
   }
 
   @NotNull
-  public VotingResult<L> predictLabelWithQuality(P x) //, Set<L> disallowedLabels)
+  public VotingResult<L> predictLabelWithQuality(SparseVector x)
   {
-    final P scaledX = scalingModel.scaledCopy(x);
+    final SparseVector scaledX = scalingModel.scaledCopy(x);
 
     L bestLabel = null;
-    // L secondBestLabel = null;
 
     double bestOneClassProbability = 0;
     double secondBestOneClassProbability = 0;
@@ -159,14 +154,13 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
     // stage 0: we're going to need the kernel value for x against each of the SVs, for each of the kernels that was used in a subsidary binary machine
 
-    //	KValueCache kValuesPerKernel = new KValueCache(scaledX);
-    Map<KernelFunction<P>, double[]> kValuesPerKernel =
-        new MapMaker().makeComputingMap(new Function<KernelFunction<P>, double[]>() {
-          public double[] apply(@NotNull KernelFunction<P> kernel) {
+    Map<KernelFunction, double[]> kValuesPerKernel =
+        new MapMaker().makeComputingMap(new Function<KernelFunction, double[]>() {
+          public double[] apply(@NotNull KernelFunction kernel) {
             double[] kvalues = new double[allSVs.length];
             int i = 0;
-            for (P sv : allSVs) {
-              kvalues[i] = (double) kernel.evaluate(scaledX, sv);
+            for (SparseVector sv : allSVs) {
+              kvalues[i] = kernel.evaluate(scaledX, sv);
               i++;
             }
             return kvalues;
@@ -222,7 +216,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       // case we may want to report unknown instead of reporting the best class that does pass.
       // This is what PhyloPythia does.
 
-      for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
+      for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
         double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
         votes.add(binaryModel.predictLabel(kvalues, svIndexMaps.get(binaryModel)));
       }
@@ -244,8 +238,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
             + ((numActive * (numActive - 1)) / 2. - numActive) + " models)");
       }
 
-      // assert requiredActive == 2 ? voteMode = VoteMode.FilteredVsFiltered
-      for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
+      for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
         int activeCount = (activeClasses.contains(binaryModel.getTrueLabel()) ? 1 : 0) + (
             activeClasses.contains(binaryModel.getFalseLabel()) ? 1 : 0);
 
@@ -270,7 +263,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       if (oneVsAllMode == OneVsAllMode.Veto || oneVsAllMode == OneVsAllMode.VetoAndBreakTies) {
         // if this is null it means this label didn't pass the threshold earlier, so it should fail here too
         oneVsAll = oneVsAllProbabilities.get(label);
-        oneVsAll = oneVsAll == null ? 0f : oneVsAll;
+        oneVsAll = oneVsAll == null ? 0.0 : oneVsAll;
       }
 
       // get the oneClass value for this label, if needed
@@ -284,7 +277,6 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       // tertiary sort by one-class probability, if available
 
       if (count > bestCount || (count == bestCount && oneVsAll > bestOneVsAllProbability))
-      //	|| oneClass > bestOneClassProbability)))
       {
         secondBestCount = bestCount;
         secondBestOneVsAllProbability = bestOneVsAllProbability;
@@ -300,44 +292,26 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     double bestVoteProportion = (double) bestCount / (double) countSum;
     double secondBestVoteProportion = (double) secondBestCount / (double) countSum;
     if (bestVoteProportion < minVoteProportion) {
-      return new VotingResult<L>();
+      return new VotingResult<>();
     }
 
     if ((oneVsAllMode == OneVsAllMode.VetoAndBreakTies || oneVsAllMode == OneVsAllMode.Veto)
         && bestOneVsAllProbability < oneVsAllThreshold) {
-      return new VotingResult<L>();
+      return new VotingResult<>();
     }
 
-    return new VotingResult<L>(bestLabel, (double) bestVoteProportion,
-        (double) secondBestVoteProportion,
+    return new VotingResult<>(bestLabel, bestVoteProportion,
+        secondBestVoteProportion,
         bestOneClassProbability, secondBestOneClassProbability, bestOneVsAllProbability,
         secondBestOneVsAllProbability);
   }
 
-    /*	public Map<L, Double> computeOneClassProbabilities(P x)
-        {
-        Map<L, Double> oneClassProbabilities = new HashMap<L, Double>();
-
-        //	boolean oneClassProb = supportsOneClassProbability();
-
-        for (OneClassModel<L, P> oneClassModel : oneClassModels.values())
-            {
-            final double probability = oneClassModel.getProbability(x);
-            if (probability >= oneClassThreshold)
-                {
-                oneClassProbabilities.put(oneClassModel.getLabel(), probability);
-                }
-            }
-        return oneClassProbabilities;
-        }*/
 
   public Map<L, Double> computeOneVsAllProbabilities(
-      Map<KernelFunction<P>, double[]> kValuesPerKernel) {
+      Map<KernelFunction, double[]> kValuesPerKernel) {
     Map<L, Double> oneVsAllProbabilities = new HashMap<L, Double>();
 
-    //	boolean prob = supportsOneVsAllProbability();
-
-    for (BinaryModel<L, P> binaryModel : oneVsAllModels.values()) {
+    for (BinaryModel<L> binaryModel : oneVsAllModels.values()) {
       double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
 
       // if probability info isn't available, just substitute 1 and 0.
@@ -351,27 +325,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     return oneVsAllProbabilities;
   }
 
-/*	public boolean supportsOneVsAllProbability()
-		{
-		if (oneVsAllModels.isEmpty())
-			{
-			throw new SvmException(
-					"Asked for supportsOneVsAllProbability when no oneVsAll models were calculated; likely a bug!");
-			}
-		// just check the first model and assume the rest are the same
-		return oneVsAllModels.values().iterator().next().crossValidationResults != null;  //.getSigmoid()
-		}
-*/
-    /*
-        public boolean supportsOneClassProbability()
-            {
-                // just check the first model and assume the rest are the same
-            return oneClassModels.valueIterator().next().sigmoid != null;
-            }
-    */
-
-
-  public Map<L, Double> predictProbability(P x) {
+  public Map<L, Double> predictProbability(SparseVector x) {
     if (!supportsOneVsOneProbability()) {
       throw new SvmException("Can't make probability predictions");
     }
@@ -379,7 +333,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     //** ugly Map2d vs. array issue etc.; oh well, adapt for now to the old multiclassProbability signature
     // the main thing is just to iterate through the Map2d in the order given by the labels list
 
-    double minimumProbability = 1e-7f;
+    double minimumProbability = 1e-7;
     double[][] pairwiseProbabilities = new double[numberOfClasses][numberOfClasses];
 
     // this is kind of a lame way to do it, but whatever.
@@ -387,7 +341,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     // label of each class, just to maintain a known order for the sake of keeping the decision_values etc. straight
     //** proscribed 1-D order for 2-D decision_values is error-prone
 
-    List<L> labels = new ArrayList<L>(oneVsOneModels.keySet());
+    List<L> labels = new ArrayList<>(oneVsOneModels.keySet());
 
     assert labels.size() == numberOfClasses;
 
@@ -396,7 +350,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       for (int j = i + 1; j < numberOfClasses; j++) {
         L label2 = labels.get(j);
 
-        BinaryModel<L, P> binaryModel = oneVsOneModels.get(label1, label2);
+        BinaryModel<L> binaryModel = oneVsOneModels.get(label1, label2);
 
         if (binaryModel == null) {
           // leave-one-out forbids use of this model, so probability = 0
@@ -405,11 +359,11 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
         } else {
           double prob = binaryModel.crossValidationResults.getSigmoid()
               .predict(binaryModel.predictValue(
-                  x));                //MathSupport.sigmoidPredict(decisionValues[k], probA[k], probB[k])
+                  x));
 
           pairwiseProbabilities[i][j] = Math
               .min(Math.max(prob, minimumProbability), 1 - minimumProbability);
-          pairwiseProbabilities[j][i] = 1 - pairwiseProbabilities[i][j];                //k++;
+          pairwiseProbabilities[j][i] = 1 - pairwiseProbabilities[i][j];
         }
       }
     }
@@ -441,10 +395,10 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     int iter = 0, maximumIterations = Math.max(100, k);
     double[][] Q = new double[k][k];
     double[] Qp = new double[k];
-    double pQp, eps = 0.005f / k;
+    double pQp, eps = 0.005 / k;
 
     for (t = 0; t < k; t++) {
-      p[t] = 1.0f / k;// Valid if k = 1
+      p[t] = 1.0 / k;// Valid if k = 1
       Q[t][t] = 0;
       for (j = 0; j < t; j++) {
         Q[t][t] += r[j][t] * r[j][t];
@@ -494,26 +448,11 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
   public void prepareModelSvMaps() {
     int totalSVs = 0;
-    Map<P, Integer> allSVsMap = new HashMap<P, Integer>();
-    for (BinaryModel<L, P> binaryModel : oneVsAllModels.values()) {
+    Map<SparseVector, Integer> allSVsMap = new HashMap<>();
+    for (BinaryModel<L> binaryModel : oneVsAllModels.values()) {
       int[] svIndexMap = new int[binaryModel.SVs.length];
       int i = 0;
-      for (P p : binaryModel.SVs) {
-        Integer allSVsIndex = allSVsMap.get(p);
-        if (allSVsIndex == null) {
-          allSVsIndex = totalSVs;
-          allSVsMap.put(p, allSVsIndex);
-          totalSVs++;
-        }
-        svIndexMap[i] = allSVsIndex;
-        i++;
-      }
-      svIndexMaps.put(binaryModel, svIndexMap);
-    }
-    for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
-      int[] svIndexMap = new int[binaryModel.SVs.length];
-      int i = 0;
-      for (P p : binaryModel.SVs) {
+      for (SparseVector p : binaryModel.SVs) {
         Integer allSVsIndex = allSVsMap.get(p);
         if (allSVsIndex == null) {
           allSVsIndex = totalSVs;
@@ -526,18 +465,35 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       svIndexMaps.put(binaryModel, svIndexMap);
     }
 
-    allSVs = (P[]) new Object[totalSVs];
+// dupe for-block as above?
+//    for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
+//      int[] svIndexMap = new int[binaryModel.SVs.length];
+//      int i = 0;
+//      for (SparseVector p : binaryModel.SVs) {
+//        Integer allSVsIndex = allSVsMap.get(p);
+//        if (allSVsIndex == null) {
+//          allSVsIndex = totalSVs;
+//          allSVsMap.put(p, allSVsIndex);
+//          totalSVs++;
+//        }
+//        svIndexMap[i] = allSVsIndex;
+//        i++;
+//      }
+//      svIndexMaps.put(binaryModel, svIndexMap);
+//    }
 
-    for (Map.Entry<P, Integer> entry : allSVsMap.entrySet()) {
+    allSVs = new SparseVector[totalSVs];
+
+    for (Map.Entry<SparseVector, Integer> entry : allSVsMap.entrySet()) {
       allSVs[entry.getValue()] = entry.getKey();
     }
   }
 
-  public synchronized void putOneVsAllModel(L label1, BinaryModel<L, P> binaryModel) {
+  public synchronized void putOneVsAllModel(L label1, BinaryModel<L> binaryModel) {
     oneVsAllModels.put(label1, binaryModel);
   }
 
-  public synchronized void putOneVsOneModel(L label1, L label2, BinaryModel<L, P> binaryModel) {
+  public synchronized void putOneVsOneModel(L label1, L label2, BinaryModel<L> binaryModel) {
     oneVsOneModels.put(label1, label2, binaryModel);
   }
 
@@ -567,7 +523,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       if (oneVsAllMode != OneVsAllMode.None) {
         Multiset<Double> cs = HashMultiset.create();
         Multiset<KernelFunction> kernels = HashMultiset.create();
-        for (BinaryModel<L, P> binaryModel : oneVsAllModels.values()) {
+        for (BinaryModel<L> binaryModel : oneVsAllModels.values()) {
           cs.add(binaryModel.param.C);
           kernels.add(binaryModel.param.kernel);
         }
@@ -576,7 +532,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       if (allVsAllMode != AllVsAllMode.None) {
         Multiset<Double> cs = HashMultiset.create();
         Multiset<KernelFunction> kernels = HashMultiset.create();
-        for (BinaryModel<L, P> binaryModel : oneVsOneModels.values()) {
+        for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
           cs.add(binaryModel.param.C);
           kernels.add(binaryModel.param.kernel);
         }
@@ -584,7 +540,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
       }
       return result.toString();
     }
-    //return "";
+
   }
 
 // -------------------------- ENUMERATIONS --------------------------
@@ -600,12 +556,6 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
 // -------------------------- INNER CLASSES --------------------------
 
-    /*	public void putOneClassModel(L label1, OneClassModel<L, P> oneclassModel)
-            {
-            oneClassModels.put(label1, oneclassModel);
-            }
-    */
-
   private class SymmetricHashMap2d<K extends Comparable, V> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -619,8 +569,6 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
     // --------------------------- CONSTRUCTORS ---------------------------
 
     public SymmetricHashMap2d(SymmetricHashMap2d<K, V> copyFrom, Collection<K> excludeKeys) {
-      //sizePerDimension = copyFrom.sizePerDimension;  // overkill since we're removing some
-      //l1Map = new HashMap<K, Map<K, V>>(sizePerDimension);
       this(copyFrom.sizePerDimension);// overkill since we're removing some
 
       for (Map.Entry<K, Map<K, V>> entry : copyFrom.l1Map.entrySet()) {
@@ -642,7 +590,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
     public SymmetricHashMap2d(int sizePerDimension) {
       this.sizePerDimension = sizePerDimension;
-      l1Map = new HashMap<K, Map<K, V>>(sizePerDimension);
+      l1Map = new HashMap<>(sizePerDimension);
     }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -656,7 +604,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
       Map<K, V> l2Map = l1Map.get(k1);
       if (l2Map == null) {
-        l2Map = new HashMap<K, V>(sizePerDimension);
+        l2Map = new HashMap<>(sizePerDimension);
         l1Map.put(k1, l2Map);
       }
 
@@ -665,7 +613,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
     public Set<K> keySet() {
       // not all keys are represented in the l1Map; in particular, the last one is missing since there are no greater elements.
-      Set<K> result = new HashSet<K>();
+      Set<K> result = new HashSet<>();
       result.addAll(l1Map.keySet());
       if (!l1Map.isEmpty()) {
         result.addAll(l1Map.values().iterator().next().keySet());
@@ -682,7 +630,7 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
       Map<K, V> l2Map = l1Map.get(k1);
       if (l2Map == null) {
-        l2Map = new HashMap<K, V>();
+        l2Map = new HashMap<>();
         l1Map.put(k1, l2Map);
       }
 
@@ -727,9 +675,9 @@ public class MultiClassModel<L extends Comparable, P extends SparseVector> exten
 
   public Collection<L> getLabels() {
     if (oneVsOneModels != null && !oneVsOneModels.isEmpty()) {
-      return oneVsOneModels.keySet(); //values().iterator().next().getLabels();
+      return oneVsOneModels.keySet();
     } else if (oneVsAllModels != null && !oneVsAllModels.isEmpty()) {
-      return oneVsAllModels.keySet(); //values().iterator().next().getLabels();
+      return oneVsAllModels.keySet();
     }
     throw new SvmException(
         "Can't get labels from a MultiClassModel with no subsidiary BinaryModels");

@@ -12,14 +12,14 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class BinarySolverNu<L extends Comparable, P  extends SparseVector> extends Solver_NU<L, P> {
+public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(BinarySolverNu.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double Cp, double Cn,
+  public BinarySolverNu(List<SolutionVector> solutionVectors, QMatrix Q, double Cp, double Cn,
       double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
@@ -27,11 +27,11 @@ public class BinarySolverNu<L extends Comparable, P  extends SparseVector> exten
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public BinaryModel<L, P> solve() //ImmutableSvmParameter<L, P> param)
+  public BinaryModel<L> solve()
   {
     int iter = optimize();
 
-    BinaryModel<L, P> model = new BinaryModel<L, P>();
+    BinaryModel<L> model = new BinaryModel<>();
 
     // calculate rho
 
@@ -48,8 +48,8 @@ public class BinarySolverNu<L extends Comparable, P  extends SparseVector> exten
 
     // put the solution, mapping the alphas back to their original order
 
-    model.supportVectors = new HashMap<P, Double>();
-    for (SolutionVector<P> svC : allExamples) {
+    model.supportVectors = new HashMap<SparseVector, Double>();
+    for (SolutionVector svC : allExamples) {
       model.supportVectors.put(svC.point, svC.alpha);
     }
 

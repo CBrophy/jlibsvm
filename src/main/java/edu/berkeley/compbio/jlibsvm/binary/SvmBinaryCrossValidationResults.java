@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SvmBinaryCrossValidationResults<L extends Comparable, P extends SparseVector> extends
+public class SvmBinaryCrossValidationResults<L extends Comparable> extends
     BinaryCrossValidationResults {
 // ------------------------------ FIELDS ------------------------------
 
@@ -18,8 +18,8 @@ public class SvmBinaryCrossValidationResults<L extends Comparable, P extends Spa
 
   SigmoidProbabilityModel sigmoid;
 
-  public SvmBinaryCrossValidationResults(BinaryClassificationProblem<L, P> problem,
-      final Map<P, Double> decisionValues, boolean probability) {
+  public SvmBinaryCrossValidationResults(BinaryClassificationProblem<L> problem,
+      final Map<SparseVector, Double> decisionValues, boolean probability) {
     // convert to arrays
 
     int totalExamples = decisionValues.size();
@@ -31,7 +31,7 @@ public class SvmBinaryCrossValidationResults<L extends Comparable, P extends Spa
 
     L trueLabel = problem.getTrueLabel();
 
-    for (Map.Entry<P, Double> entry : decisionValues.entrySet()) {
+    for (Map.Entry<SparseVector, Double> entry : decisionValues.entrySet()) {
       decisionValueArray[numExamples] = entry.getValue();
       labelArray[numExamples] = problem.getTargetValue(entry.getKey()).equals(trueLabel);
       numExamples++;
@@ -39,7 +39,6 @@ public class SvmBinaryCrossValidationResults<L extends Comparable, P extends Spa
 
     // do this here so that we can forget the arrays
     if (probability) {
-      //sigmoid = new SigmoidProbabilityModel(decisionValues, trueLabel);
       sigmoid = new SigmoidProbabilityModel(decisionValueArray, labelArray);
     }
 

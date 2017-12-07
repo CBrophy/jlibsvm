@@ -10,7 +10,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class LinearScalingModelLearner implements ScalingModelLearner<SparseVector> {
+public class LinearScalingModelLearner implements ScalingModelLearner {
 // ------------------------------ FIELDS ------------------------------
 
   //ImmutableSvmParameter param;
@@ -28,7 +28,7 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 
 // --------------------- Interface ScalingModelLearner ---------------------
 
-  public ScalingModel<SparseVector> learnScaling(Iterable<SparseVector> examples) {
+  public ScalingModel learnScaling(Iterable<SparseVector> examples) {
     double[] minima = null;
     double[] sizes = null;
 
@@ -59,11 +59,10 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
 
 // -------------------------- INNER CLASSES --------------------------
 
-  public class LinearScalingModel implements ScalingModel<SparseVector> {
+  public class LinearScalingModel implements ScalingModel {
 // ------------------------------ FIELDS ------------------------------
 
     double[] minima;
-    //double[] maxima;
     double[] sizes;
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -88,8 +87,8 @@ public class LinearScalingModelLearner implements ScalingModelLearner<SparseVect
         double min = minima[index];
 
         // if this dimension was never seen in the training set, then we can't scale it
-        if (sizes[index] > 0.0f) {
-          result.getValues()[i] = (2F * (v - min) / sizes[index]) - 1F;
+        if (sizes[index] > 0.0) {
+          result.getValues()[i] = (2.0 * (v - min) / sizes[index]) - 1.0;
         }
 
       }

@@ -12,14 +12,14 @@ import org.apache.log4j.Logger;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class RegressionSolverNu<P extends SparseVector> extends Solver_NU<Double, P> {
+public class RegressionSolverNu extends Solver_NU<Double> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(RegressionSolverNu.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolverNu(List<SolutionVector<P>> solutionVectors, QMatrix<P> Q, double C,
+  public RegressionSolverNu(List<SolutionVector> solutionVectors, QMatrix Q, double C,
       double eps,
       boolean shrinking) {
     super(solutionVectors, Q, C, C, eps, shrinking);
@@ -27,20 +27,17 @@ public class RegressionSolverNu<P extends SparseVector> extends Solver_NU<Double
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public RegressionModel<P> solve() {
+  public RegressionModel solve() {
     int iter = optimize();
 
-    RegressionModel<P> model = new RegressionModel<P>();
+    RegressionModel model = new RegressionModel();
 
     // calculate rho
 
-    //		si.rho =
     calculate_rho(model);
 
-    //double sumAlpha = 0;
-
-    model.supportVectors = new HashMap<P, Double>();
-    for (SolutionVector<P> svC : allExamples) {      // the examples contain both a true and a false SolutionVector for each P.			// we want the difference of their alphas
+    model.supportVectors = new HashMap<>();
+    for (SolutionVector svC : allExamples) {      // the examples contain both a true and a false SolutionVector for each P.			// we want the difference of their alphas
       Double alphaDiff = model.supportVectors.get(svC.point);
       if (alphaDiff == null) {
         alphaDiff = 0.;
@@ -50,12 +47,7 @@ public class RegressionSolverNu<P extends SparseVector> extends Solver_NU<Double
       model.supportVectors.put(svC.point, alphaDiff);
     }
 
-		/*for (Double alphaDiff : model.supportVectors.values())
-			{
-			sumAlpha += Math.abs(alphaDiff);
-			}
-		logger.info("nu = " + sumAlpha / (Cp * allExamples.size()));  //Cp == Cn == C
-*/
+
 
     // note at this point the solution includes _all_ vectors, even if their alphas are zero
 

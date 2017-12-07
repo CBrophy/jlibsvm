@@ -19,15 +19,10 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Solver_NU<L extends Comparable, P extends SparseVector> extends Solver<L, P> {
+public class Solver_NU<L extends Comparable> extends Solver<L> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  /*	protected Solver_NU(QMatrix<P> Q, double Cp, double Cn, double eps, boolean shrinking)
-      {
-      super(Q, Cp, Cn, eps, shrinking);
-      }
-  */
-  public Solver_NU(@NotNull List<SolutionVector<P>> solutionVectors, @NotNull QMatrix<P> Q,
+  public Solver_NU(@NotNull List<SolutionVector> solutionVectors, @NotNull QMatrix Q,
       double Cp, double Cn, double eps,
       boolean shrinking) {
     super(solutionVectors, Q, Cp, Cn, eps, shrinking);
@@ -36,13 +31,13 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
-  protected void calculate_rho(AlphaModel<L, P> model) {
+  protected void calculate_rho(AlphaModel<L> model) {
     int nr_free1 = 0, nr_free2 = 0;
     double ub1 = Double.POSITIVE_INFINITY, ub2 = Double.POSITIVE_INFINITY;
     double lb1 = Double.NEGATIVE_INFINITY, lb2 = Double.NEGATIVE_INFINITY;
     double sum_free1 = 0, sum_free2 = 0;
 
-    for (SolutionVector<P> sv : allExamples) {
+    for (SolutionVector sv : allExamples) {
       if (sv.targetValue) {
         if (sv.isLowerBound()) {
           ub1 = Math.min(ub1, sv.G);
@@ -77,8 +72,8 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
       r2 = (ub2 + lb2) / 2;
     }
 
-    ((BinaryModel) model).r = (double) ((r1 + r2) / 2);
-    model.rho = (double) ((r1 - r2) / 2);
+    ((BinaryModel) model).r = ((r1 + r2) / 2);
+    model.rho = ((r1 - r2) / 2);
   }
 
   void do_shrinking() {
@@ -88,7 +83,7 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
     double Gmax4 = Double.NEGATIVE_INFINITY;// max { y_i * grad(f)_i | y_i = -1, i in I_low(\alpha) }
 
     // find maximal violating pair first
-    for (SolutionVector<P> sv : active) {
+    for (SolutionVector sv : active) {
       if (!sv.isUpperBound()) {
         if (sv.targetValue) {
           if (-sv.G > Gmax1) {
@@ -117,13 +112,13 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
 
     // There was an extremely messy iteration here before, but I think it served only to separate the shrinkable vectors from the unshrinkable ones.
 
-    Collection<SolutionVector<P>> activeList =
-        new ArrayList<SolutionVector<P>>(Arrays.asList(active)); //Arrays.asList(active);
-    Collection<SolutionVector<P>> inactiveList = new ArrayList<SolutionVector<P>>();
+    Collection<SolutionVector> activeList =
+        new ArrayList<>(Arrays.asList(active));
+    Collection<SolutionVector> inactiveList = new ArrayList<>();
 
     // note the ordering: newly inactive SVs go at the beginning of the inactive list, maintaining order
 
-    for (Iterator<SolutionVector<P>> iter = activeList.iterator(); iter.hasNext(); ) {
+    for (Iterator<SolutionVector> iter = activeList.iterator(); iter.hasNext(); ) {
       SolutionVector sv = iter.next();
 
       if (sv.isShrinkable(Gmax1, Gmax2, Gmax3, Gmax4)) {
@@ -133,7 +128,7 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
     }
 
     active = activeList.toArray(EMPTY_SV_ARRAY);
-    SolutionVector<P>[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
+    SolutionVector[] newlyInactive = inactiveList.toArray(EMPTY_SV_ARRAY);
     Q.maintainCache(active, newlyInactive);
 
     // previously inactive SVs come after that
@@ -195,11 +190,11 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
           if (grad_diff > 0) {
             double obj_diff;
             double quad_coef = Q.evaluateDiagonal(GmaxpSV) + Q.evaluateDiagonal(sv)
-                - 2.0f * Q_svA[sv.rank]; //Q_GmaxpSV[sv.rank];
+                - 2.0 * Q_svA[sv.rank];
             if (quad_coef > 0) {
               obj_diff = -(grad_diff * grad_diff) / quad_coef;
             } else {
-              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+              obj_diff = -(grad_diff * grad_diff) / 1e-12;
             }
 
             if (obj_diff <= obj_diff_min) {
@@ -218,12 +213,12 @@ public class Solver_NU<L extends Comparable, P extends SparseVector> extends Sol
             double obj_diff;
 
             double quad_coef = Q.evaluateDiagonal(GmaxnSV) + Q.evaluateDiagonal(sv)
-                - 2.0f * Q_svB[sv.rank]; //Q_GmaxnSV[sv.rank];
+                - 2.0 * Q_svB[sv.rank];
 
             if (quad_coef > 0) {
               obj_diff = -(grad_diff * grad_diff) / quad_coef;
             } else {
-              obj_diff = -(grad_diff * grad_diff) / 1e-12f;
+              obj_diff = -(grad_diff * grad_diff) / 1e-12;
             }
 
             if (obj_diff <= obj_diff_min) {

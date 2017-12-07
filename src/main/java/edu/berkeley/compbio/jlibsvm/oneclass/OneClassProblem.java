@@ -8,10 +8,10 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface OneClassProblem<L, P extends SparseVector> extends RegressionProblem<P, OneClassProblem<L, P>> {
+public interface OneClassProblem<L> extends RegressionProblem<OneClassProblem<L>> {
 // -------------------------- OTHER METHODS --------------------------
 
   L getLabel();
 
-  OneClassProblem<L, P> getScaledCopy(ScalingModelLearner<P> scalingModelLearner);
+  OneClassProblem<L> getScaledCopy(ScalingModelLearner scalingModelLearner);
 }

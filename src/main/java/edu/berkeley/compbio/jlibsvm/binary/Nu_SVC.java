@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class Nu_SVC<L extends Comparable, P extends SparseVector> extends BinaryClassificationSVM<L, P> {
+public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
 // ------------------------------ FIELDS ------------------------------
 
   private static final Logger logger = Logger.getLogger(Nu_SVC.class);
@@ -26,9 +26,9 @@ public class Nu_SVC<L extends Comparable, P extends SparseVector> extends Binary
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
-  public BinaryModel<L, P> trainOne(BinaryClassificationProblem<L, P> problem, double Cp, double Cn,
-      @NotNull ImmutableSvmParameterPoint<L, P> param) {
-    if (Cp != 1f || Cn != 1f) {
+  public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
+      @NotNull ImmutableSvmParameterPoint<L> param) {
+    if (Cp != 1.0 || Cn != 1.0) {
       logger.warn("Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
     }
 
@@ -43,37 +43,36 @@ public class Nu_SVC<L extends Comparable, P extends SparseVector> extends Binary
     double sumPos = nu * l / 2;
     double sumNeg = nu * l / 2;
 
-    Map<P, Boolean> examples = problem.getBooleanExamples();
+    Map<SparseVector, Boolean> examples = problem.getBooleanExamples();
 
-    double linearTerm = 0f;
-    List<SolutionVector<P>> solutionVectors = new ArrayList<SolutionVector<P>>();
+    double linearTerm = 0.0;
+    List<SolutionVector> solutionVectors = new ArrayList<>();
 
-    for (Map.Entry<P, Boolean> entry : examples.entrySet()) {
+    for (Map.Entry<SparseVector, Boolean> entry : examples.entrySet()) {
       double initAlpha;
       if (entry.getValue()) {
-        initAlpha = Math.min(1.0f, sumPos);
+        initAlpha = Math.min(1.0, sumPos);
         sumPos -= initAlpha;
       } else {
-        initAlpha = Math.min(1.0f, sumNeg);
+        initAlpha = Math.min(1.0, sumNeg);
         sumNeg -= initAlpha;
       }
-      SolutionVector<P> sv =
-          new SolutionVector<>(problem.getId(entry.getKey()), entry.getKey(), entry.getValue(),
+      SolutionVector sv =
+          new SolutionVector(entry.getKey().getId(), entry.getKey(), entry.getValue(),
               linearTerm,
               initAlpha);
-      //sv.id = problem.getId(entry.getKey());
 
       solutionVectors.add(sv);
     }
 
-    QMatrix<P> qMatrix =
-        new BooleanInvertingKernelQMatrix<P>(param.kernel, problem.getNumExamples(),
+    QMatrix qMatrix =
+        new BooleanInvertingKernelQMatrix(param.kernel, problem.getNumExamples(),
             param.getCacheRows());
-    BinarySolverNu<L, P> s =
-        new BinarySolverNu<L, P>(solutionVectors, qMatrix, 1.0f, 1.0f, param.eps, param.shrinking);
+    BinarySolverNu<L> s =
+        new BinarySolverNu<>(solutionVectors, qMatrix, 1.0, 1.0, param.eps, param.shrinking);
 
-    BinaryModel<L, P> model = s.solve();
-    //model.kernel = kernel;
+    BinaryModel<L> model = s.solve();
+
     model.param = param;
     model.trueLabel = problem.getTrueLabel();
     model.falseLabel = problem.getFalseLabel();
@@ -83,7 +82,7 @@ public class Nu_SVC<L extends Comparable, P extends SparseVector> extends Binary
 
     logger.info("C = " + 1 / r);
 
-    for (Map.Entry<P, Double> entry : model.supportVectors.entrySet()) {
+    for (Map.Entry<SparseVector, Double> entry : model.supportVectors.entrySet()) {
       entry.setValue((examples.get(entry.getKey()) ? 1. : -1.) / r);
     }
 
@@ -98,7 +97,7 @@ public class Nu_SVC<L extends Comparable, P extends SparseVector> extends Binary
   }
 
   public boolean isFeasible(BinaryClassificationProblem problem,
-      @NotNull ImmutableSvmParameter<L, P> param) {
+      @NotNull ImmutableSvmParameter<L> param) {
     Multiset<Boolean> counts = problem.getExampleCounts();
 
     int n1 = counts.count(problem.getTrueLabel());
@@ -115,7 +114,7 @@ public class Nu_SVC<L extends Comparable, P extends SparseVector> extends Binary
     return "nu_svc";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameter<L, P> param) {
+  public void validateParam(@NotNull ImmutableSvmParameter<L> param) {
     super.validateParam(param);
     if (param.nu <= 0 || param.nu > 1) {
       throw new SvmException("nu <= 0 or nu > 1");

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class GaussianRBFKernel extends GammaKernel<SparseVector> {
+public class GaussianRBFKernel extends GammaKernel {
 
 
 // --------------------------- CONSTRUCTORS ---------------------------

@@ -8,7 +8,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class OneClassModel<L, P extends SparseVector> extends RegressionModel<P> implements DiscreteModel<Boolean, P> {
+public class OneClassModel<L> extends RegressionModel implements DiscreteModel<Boolean> {
 // ------------------------------ FIELDS ------------------------------
 
   L label;
@@ -32,13 +32,13 @@ public class OneClassModel<L, P extends SparseVector> extends RegressionModel<P>
 
   //** Hmmm does this make sense?
 
-  public Double predictValue(P x) {
+  public double predictValue(SparseVector x) {
     return predictLabel(x) ? 1.0 : -1.0;
   }
 
 // --------------------- Interface DiscreteModel ---------------------
 
-  public Boolean predictLabel(P x) {
+  public Boolean predictLabel(SparseVector x) {
     return super.predictValue(x) > 0;
   }
 
@@ -49,12 +49,12 @@ public class OneClassModel<L, P extends SparseVector> extends RegressionModel<P>
    * thing, and take the laplace parameter into account, etc.  Is it valid to do cross-validation and train a sigmoid
    * model just like in C-SVC?
    */
-  public double getProbability(P x) {
+  public double getProbability(SparseVector x) {
     // REVIEW one-class probability hack
     // at least the logistic function is monotonic
     double v = super.predictValue(x);
     double result = 1 / (1 + Math.exp(-v));
-    return (double) result;
+    return result;
 
   }
 }

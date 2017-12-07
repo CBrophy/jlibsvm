@@ -18,21 +18,21 @@ import java.util.Collection;
  * @version $Id$
  */
 
-public interface QMatrix<P extends SparseVector> {
+public interface QMatrix {
 // -------------------------- OTHER METHODS --------------------------
 
-  double evaluateDiagonal(SolutionVector<P> a);
+  double evaluateDiagonal(SolutionVector a);
 
-  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, double[] buf);
+  void getQ(SolutionVector svA, SolutionVector[] active, double[] buf);
 
-  void getQ(SolutionVector<P> svA, SolutionVector<P>[] active, SolutionVector<P>[] inactive,
+  void getQ(SolutionVector svA, SolutionVector[] active, SolutionVector[] inactive,
       double[] buf);
 
 //	void storeRanks(Collection<SolutionVector<P>> allExamples);
 
-  void initRanks(Collection<SolutionVector<P>> allExamples);
+  void initRanks(Collection<SolutionVector> allExamples);
 
-  void maintainCache(SolutionVector<P>[] active, SolutionVector<P>[] newlyInactive);
+  void maintainCache(SolutionVector[] active, SolutionVector[] newlyInactive);
 
   public String perfString();
 }
