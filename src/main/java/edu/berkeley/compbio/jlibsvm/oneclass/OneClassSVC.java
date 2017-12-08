@@ -74,8 +74,13 @@ public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassPro
     QMatrix qMatrix =
         new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
-    OneClassSolver<L> s = new OneClassSolver<>(solutionVectors, qMatrix, 1.0, param.eps,
-        param.shrinking);
+    OneClassSolver<L> s = new OneClassSolver<>(
+        solutionVectors,
+        qMatrix,
+        1.0,
+        param.eps,
+        param.shrinking,
+        param.maxIterations);
 
     OneClassModel<L> model = s.solve();
 

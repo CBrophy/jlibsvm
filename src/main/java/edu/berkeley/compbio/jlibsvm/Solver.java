@@ -35,10 +35,7 @@ public abstract class Solver<L extends Comparable> {
 
   private static final Logger logger = Logger.getLogger(Solver.class);
 
-  private static final int MAXITER = 50000;
-
   protected final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
-
 
   QMatrix Q;
   double[] Q_svA;
@@ -54,12 +51,18 @@ public abstract class Solver<L extends Comparable> {
   protected SolutionVector[] inactive;
   protected final double Cp, Cn;
   protected final int numExamples;
+  private int maxIterations;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public Solver(@NotNull List<SolutionVector> solutionVectors, @NotNull QMatrix Q, double Cp,
-      double Cn, double eps,
-      boolean shrinking) {
+  public Solver(
+      @NotNull List<SolutionVector> solutionVectors,
+      @NotNull QMatrix Q,
+      double Cp,
+      double Cn,
+      double eps,
+      boolean shrinking,
+      int maxIterations) {
 
     if (eps <= 0) {
       throw new SvmException("eps <= 0");
@@ -75,6 +78,7 @@ public abstract class Solver<L extends Comparable> {
 
     this.numExamples = allExamples.size();
     Q_all = new double[numExamples];
+    this.maxIterations = maxIterations;
   }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -191,7 +195,7 @@ public abstract class Solver<L extends Comparable> {
 
       ++iter;
 
-      if (iter > MAXITER) {
+      if (iter > maxIterations) {
         logger.warn("Solver reached maximum iterations, aborting");
         break;
       }

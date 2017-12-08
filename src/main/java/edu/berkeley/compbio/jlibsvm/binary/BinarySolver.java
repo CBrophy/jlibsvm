@@ -14,10 +14,15 @@ import java.util.List;
 public class BinarySolver<L extends Comparable> extends Solver<L> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolver(List<SolutionVector> solutionVectors, QMatrix Q, double Cp, double Cn,
+  public BinarySolver(
+      List<SolutionVector> solutionVectors,
+      QMatrix Q,
+      double Cp,
+      double Cn,
       double eps,
-      boolean shrinking) {
-    super(solutionVectors, Q, Cp, Cn, eps, shrinking);
+      boolean shrinking,
+      int maxIterations) {
+    super(solutionVectors, Q, Cp, Cn, eps, shrinking, maxIterations);
   }
 
 // -------------------------- OTHER METHODS --------------------------

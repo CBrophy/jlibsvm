@@ -43,12 +43,7 @@ public abstract class AlphaModel<L extends Comparable> extends SolutionModel<L> 
    */
   public void compact() {
     // do this first so as to make the arrays the right size below
-    for (Iterator<Map.Entry<SparseVector, Double>> i = supportVectors.entrySet().iterator(); i.hasNext(); ) {
-      Map.Entry<SparseVector, Double> entry = i.next();
-      if (entry.getValue() == 0) {
-        i.remove();
-      }
-    }
+    supportVectors.entrySet().removeIf(entry -> entry.getValue() == 0);
 
     // put the keys and values in parallel arrays, to free memory and maybe make things a bit faster (?)
 

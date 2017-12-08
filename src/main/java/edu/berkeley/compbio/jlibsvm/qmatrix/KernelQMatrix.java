@@ -190,7 +190,6 @@ public abstract class KernelQMatrix implements QMatrix {
           data[b.rank][a.rank] = row[i];
           misses++;
         } else {
-          SolutionVector b = active[i];
           hits++;
         }
       }

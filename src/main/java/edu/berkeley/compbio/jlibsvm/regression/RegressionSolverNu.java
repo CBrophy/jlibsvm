@@ -19,10 +19,14 @@ public class RegressionSolverNu extends Solver_NU<Double> {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolverNu(List<SolutionVector> solutionVectors, QMatrix Q, double C,
+  public RegressionSolverNu(
+      List<SolutionVector> solutionVectors,
+      QMatrix Q,
+      double C,
       double eps,
-      boolean shrinking) {
-    super(solutionVectors, Q, C, C, eps, shrinking);
+      boolean shrinking,
+      int maxIterations) {
+    super(solutionVectors, Q, C, C, eps, shrinking, maxIterations);
   }
 
 // -------------------------- OTHER METHODS --------------------------

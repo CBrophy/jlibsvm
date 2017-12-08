@@ -28,8 +28,6 @@ public interface QMatrix {
   void getQ(SolutionVector svA, SolutionVector[] active, SolutionVector[] inactive,
       double[] buf);
 
-//	void storeRanks(Collection<SolutionVector<P>> allExamples);
-
   void initRanks(Collection<SolutionVector> allExamples);
 
   void maintainCache(SolutionVector[] active, SolutionVector[] newlyInactive);

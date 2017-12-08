@@ -69,7 +69,7 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
         new BooleanInvertingKernelQMatrix(param.kernel, problem.getNumExamples(),
             param.getCacheRows());
     BinarySolverNu<L> s =
-        new BinarySolverNu<>(solutionVectors, qMatrix, 1.0, 1.0, param.eps, param.shrinking);
+        new BinarySolverNu<>(solutionVectors, qMatrix, 1.0, 1.0, param.eps, param.shrinking, param.maxIterations);
 
     BinaryModel<L> model = s.solve();
 

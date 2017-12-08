@@ -22,10 +22,15 @@ import org.jetbrains.annotations.NotNull;
 public class Solver_NU<L extends Comparable> extends Solver<L> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public Solver_NU(@NotNull List<SolutionVector> solutionVectors, @NotNull QMatrix Q,
-      double Cp, double Cn, double eps,
-      boolean shrinking) {
-    super(solutionVectors, Q, Cp, Cn, eps, shrinking);
+  public Solver_NU(
+      @NotNull List<SolutionVector> solutionVectors,
+      @NotNull QMatrix Q,
+      double Cp,
+      double Cn,
+      double eps,
+      boolean shrinking,
+      int maxIterations) {
+    super(solutionVectors, Q, Cp, Cn, eps, shrinking, maxIterations);
   }
 
 // -------------------------- OTHER METHODS --------------------------

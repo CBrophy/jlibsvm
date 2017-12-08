@@ -18,7 +18,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
   // these are for training only
   public final double cache_size;// in MB
   public final double eps;// stopping criteria
-
+  public final int maxIterations;
   public final double nu;// for NU_SVC, ONE_CLASS, and NU_SVR
   public final double p;// for EPSILON_SVR
   public final boolean shrinking;// use the shrinking heuristics
@@ -42,29 +42,20 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
   public final boolean normalizeL2;
 
   public final int crossValidationFolds;
-//	public final boolean crossValidation;
-  // do a performance report at the multiclass level even if grid search is at the binary level
-
-  /**
-   * When learning scaling, only bother with this many examples, assuming they're in random order.
-   */
-  //public final int scalingExamples;
 
   public final ScalingModelLearner scalingModelLearner;
 
-  // these params are most likely to change in a copy
-
-
   public final boolean probability;// do probability estimates
   // We need to maintain the labels (the key on this map) in insertion order
-  private final LinkedHashMap<L, Double> weights;// = new LinkedHashMap<L, Double>();
+  private final LinkedHashMap<L, Double> weights;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   protected ImmutableSvmParameter(Builder<L> copyFrom) {
     cache_size = copyFrom.cache_size;
     eps = copyFrom.eps;
-    weights = new LinkedHashMap<>(copyFrom.weights); //.clone();
+    weights = new LinkedHashMap<>(copyFrom.weights);
+    maxIterations = copyFrom.maxIterations;
     nu = copyFrom.nu;
     p = copyFrom.p;
     shrinking = copyFrom.shrinking;
@@ -116,7 +107,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
     // these are for training only
     public double cache_size;// in MB
     public double eps;// stopping criteria
-
+    public int maxIterations = 50000; // cap the iterations to shrink runtime
     public double nu;// for NU_SVC, ONE_CLASS, and NU_SVR
     public double p;// for EPSILON_SVR
     public boolean shrinking;// use the shrinking heuristics
@@ -165,6 +156,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
       weights = new LinkedHashMap<>(copyFrom.weights);
       nu = copyFrom.nu;
       p = copyFrom.p;
+      maxIterations = copyFrom.maxIterations;
       shrinking = copyFrom.shrinking;
       probability = copyFrom.probability;
       oneVsAllThreshold = copyFrom.oneVsAllThreshold;
@@ -186,6 +178,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
       weights = new LinkedHashMap<>(copyFrom.weights);
       nu = copyFrom.nu;
       p = copyFrom.p;
+      maxIterations = copyFrom.maxIterations;
       shrinking = copyFrom.shrinking;
       probability = copyFrom.probability;
       oneVsAllThreshold = copyFrom.oneVsAllThreshold;

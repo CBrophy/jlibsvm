@@ -82,7 +82,13 @@ public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
         new BooleanInvertingKernelQMatrix(param.kernel, solutionVectors.size(),
             param.getCacheRows());
     RegressionSolverNu s =
-        new RegressionSolverNu(solutionVectors, qMatrix, param.C, param.eps, param.shrinking);
+        new RegressionSolverNu(
+            solutionVectors,
+            qMatrix,
+            param.C,
+            param.eps,
+            param.shrinking,
+            param.maxIterations);
 
     RegressionModel model = s.solve();
 

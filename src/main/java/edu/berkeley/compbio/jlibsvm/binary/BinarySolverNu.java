@@ -19,10 +19,15 @@ public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BinarySolverNu(List<SolutionVector> solutionVectors, QMatrix Q, double Cp, double Cn,
+  public BinarySolverNu(
+      List<SolutionVector> solutionVectors,
+      QMatrix Q,
+      double Cp,
+      double Cn,
       double eps,
-      boolean shrinking) {
-    super(solutionVectors, Q, Cp, Cn, eps, shrinking);
+      boolean shrinking,
+      int maxIterations) {
+    super(solutionVectors, Q, Cp, Cn, eps, shrinking, maxIterations);
   }
 
 // -------------------------- OTHER METHODS --------------------------

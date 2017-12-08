@@ -19,9 +19,14 @@ public class RegressionSolver extends Solver<Double> {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public RegressionSolver(List<SolutionVector> solutionVectors, QMatrix Q, double C, double eps,
-      boolean shrinking) {
-    super(solutionVectors, Q, C, C, eps, shrinking);
+  public RegressionSolver(
+      List<SolutionVector> solutionVectors,
+      QMatrix Q,
+      double C,
+      double eps,
+      boolean shrinking,
+      int maxIterations) {
+    super(solutionVectors, Q, C, C, eps, shrinking, maxIterations);
   }
 
 // -------------------------- OTHER METHODS --------------------------
