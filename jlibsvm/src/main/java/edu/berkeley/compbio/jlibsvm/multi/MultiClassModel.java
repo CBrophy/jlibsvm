@@ -1,6 +1,9 @@
 package edu.berkeley.compbio.jlibsvm.multi;
 
 import com.google.common.base.Function;
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multiset;
@@ -154,18 +157,18 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
 
     // stage 0: we're going to need the kernel value for x against each of the SVs, for each of the kernels that was used in a subsidary binary machine
 
-    Map<KernelFunction, double[]> kValuesPerKernel =
-        new MapMaker().makeComputingMap(new Function<KernelFunction, double[]>() {
-          public double[] apply(@NotNull KernelFunction kernel) {
-            double[] kvalues = new double[allSVs.length];
-            int i = 0;
-            for (SparseVector sv : allSVs) {
-              kvalues[i] = kernel.evaluate(scaledX, sv);
-              i++;
-            }
-            return kvalues;
-          }
-        });
+    CacheLoader<KernelFunction, double[]> cacheLoader = new CacheLoader<KernelFunction, double[]>(){
+      @Override
+      public double[] load(KernelFunction kernel) {
+        double[] kvalues = new double[allSVs.length];
+        int i = 0;
+        for (SparseVector sv : allSVs) {
+          kvalues[i] = kernel.evaluate(scaledX, sv);
+          i++;
+        }
+        return kvalues;
+      }
+    };
 
     // we don't want to consider any models that mention a disallowed label
     // (i.e., not only should such a prediction be rejected after the fact, but
@@ -174,7 +177,7 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
     // stage 2: one vs all
 
     Map<L, Double> oneVsAllProbabilities =
-        oneVsAllMode == OneVsAllMode.None ? null : computeOneVsAllProbabilities(kValuesPerKernel);
+        oneVsAllMode == OneVsAllMode.None ? null : computeOneVsAllProbabilities(cacheLoader);
 
     // now oneVsAllProbabilities is populated with all of the classes that pass the threshold (maybe all of them).
 
@@ -217,7 +220,14 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
       // This is what PhyloPythia does.
 
       for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
-        double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
+
+        double[] kvalues;
+        try {
+          kvalues = cacheLoader.load(binaryModel.param.kernel);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+
         votes.add(binaryModel.predictLabel(kvalues, svIndexMaps.get(binaryModel)));
       }
     } else {
@@ -308,11 +318,17 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
 
 
   public Map<L, Double> computeOneVsAllProbabilities(
-      Map<KernelFunction, double[]> kValuesPerKernel) {
+      CacheLoader<KernelFunction, double[]> kValuesPerKernel) {
     Map<L, Double> oneVsAllProbabilities = new HashMap<L, Double>();
 
     for (BinaryModel<L> binaryModel : oneVsAllModels.values()) {
-      double[] kvalues = kValuesPerKernel.get(binaryModel.param.kernel);
+      double[] kvalues;
+
+      try {
+        kvalues = kValuesPerKernel.load(binaryModel.param.kernel);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
 
       // if probability info isn't available, just substitute 1 and 0.
       final double probability = binaryModel

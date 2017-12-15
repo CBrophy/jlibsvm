@@ -1,13 +1,11 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
-import com.davidsoergel.dsutils.DSArrayUtils;
 import edu.berkeley.compbio.jlibsvm.SolutionModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -86,7 +84,12 @@ public abstract class AlphaModel<L extends Comparable> extends SolutionModel<L> 
       }
     }
 
-    alphas = DSArrayUtils.toPrimitiveDoubleArray(alphaList);
+    alphas = new double[alphaList.size()];
+
+    for(int index = 0; index < alphaList.size(); index++){
+      alphas[index] = alphaList.get(index);
+    }
+
     SVs = svList.toArray(new SparseVector[0]);
 
     numSVs = SVs.length;

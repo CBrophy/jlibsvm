@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * An SVM problem consisting of a mapping of training examples to labels.
@@ -33,7 +34,7 @@ public interface SvmProblem<L extends Comparable, R> {
 
   L getTargetValue(SparseVector point);
 
-  Iterator<R> makeFolds(int numberOfFolds);
+  Stream<R> makeFolds(int numberOfFolds);
 
   Set<SparseVector> getHeldOutPoints();
 }

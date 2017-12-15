@@ -11,7 +11,7 @@ public class SparseVectorTest {
     final SparseVector vector = new SparseVector(
         25,
         new int[]{4, 10, 19},
-        new double[]{4.5f, 3.4f, 9.0f}
+        new double[]{4.5, 3.4, 9.0}
     );
 
     String value = vector.toString();

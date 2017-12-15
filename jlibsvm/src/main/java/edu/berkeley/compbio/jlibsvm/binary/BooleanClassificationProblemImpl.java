@@ -1,6 +1,5 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
-import com.davidsoergel.dsutils.collections.MappingIterator;
 import com.google.common.collect.HashMultiset;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
@@ -8,10 +7,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -122,7 +121,7 @@ public class BooleanClassificationProblemImpl<L extends Comparable> extends
   }
 
   // need to override this because of the examples == null hack
-  public Iterator<BinaryClassificationProblem<L>> makeFolds(int numberOfFolds) {
+  public Stream<BinaryClassificationProblem<L>> makeFolds(int numberOfFolds) {
 //		Set<BinaryClassificationProblem<L, P>> result = new HashSet<BinaryClassificationProblem<L, P>>();
 
     List<SparseVector> points = new ArrayList<>(getBooleanExamples().keySet());
@@ -143,15 +142,9 @@ public class BooleanClassificationProblemImpl<L extends Comparable> extends
       f %= numberOfFolds;
     }
 
-    Iterator<BinaryClassificationProblem<L>> foldIterator =
-        new MappingIterator<Set<SparseVector>, BinaryClassificationProblem<L>>(
-            heldOutPointSets.iterator()) {
-          @NotNull
-          public BinaryClassificationProblem<L> function(Set<SparseVector> p) {
-            return makeFold(p);
-          }
-        };
-    return foldIterator;
+    return heldOutPointSets
+        .stream()
+        .map(this::makeFold);
 
   }
 

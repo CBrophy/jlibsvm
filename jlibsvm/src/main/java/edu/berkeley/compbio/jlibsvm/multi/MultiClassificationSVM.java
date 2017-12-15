@@ -1,12 +1,7 @@
 package edu.berkeley.compbio.jlibsvm.multi;
 
-import com.davidsoergel.conja.Function;
-import com.davidsoergel.conja.Parallel;
-import com.davidsoergel.dsutils.collections.UnorderedPair;
-import com.davidsoergel.dsutils.collections.UnorderedPairIterator;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterGrid;
-import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
 import edu.berkeley.compbio.jlibsvm.SVM;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryClassificationProblem;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryClassificationSVM;
@@ -51,8 +46,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
 
   public SvmMultiClassCrossValidationResults<L> performCrossValidation(
       @NotNull MultiClassProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param)
-  {
+      @NotNull ImmutableSvmParameter<L> param) {
     Map<SparseVector, L> predictions = discreteCrossValidation(problem, param);
 
     SvmMultiClassCrossValidationResults<L> cv =
@@ -62,8 +56,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
   }
 
   public MultiClassModel<L> train(@NotNull MultiClassProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param)
-  {
+      @NotNull ImmutableSvmParameter<L> param) {
     validateParam(param);
 
     MultiClassModel<L> result;
@@ -82,22 +75,21 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
   }
 
   public MultiClassModel<L> trainGrid(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameterGrid<L> param)
-  {
+      @NotNull final ImmutableSvmParameterGrid<L> param) {
     final GridTrainingResult gtresult = new GridTrainingResult();
 
-    Collection<ImmutableSvmParameterPoint<L>> parameterPoints = param.getGridParams();
+    param
+        .getGridParams()
+        .stream()
+        .parallel()
+        .forEach(point -> {
+          // note we must use the CV variant in order to know which parameter set is best
+          SvmMultiClassCrossValidationResults<L> crossValidationResults =
+              performCrossValidation(problem, point); //, execService);
+          gtresult.update(crossValidationResults); //
+          // if we did a grid search, keep track of which parameter set was used for these results
 
-    Parallel.forEach(parameterPoints, new Function<ImmutableSvmParameterPoint<L>, Void>() {
-      public Void apply(
-          final ImmutableSvmParameterPoint<L> gridParam) {// note we must use the CV variant in order to know which parameter set is best
-        SvmMultiClassCrossValidationResults<L> crossValidationResults =
-            performCrossValidation(problem, gridParam); //, execService);
-        gtresult.update(crossValidationResults); //
-        // if we did a grid search, keep track of which parameter set was used for these results
-        return null;
-      }
-    });
+        });
 
     logger.info("Chose grid point: " + gtresult.bestCrossValidationResults.param);
 
@@ -130,8 +122,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
    */
 
   public MultiClassModel<L> trainScaled(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameter<L> param)
-  {
+      @NotNull final ImmutableSvmParameter<L> param) {
     if (param.scalingModelLearner != null && !param.scaleBinaryMachinesIndependently) {
       return trainWithoutScaling(problem.getScaledCopy(param.scalingModelLearner),
           param);
@@ -141,8 +132,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
   }
 
   private MultiClassModel<L> trainWithoutScaling(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameter<L> param)
-  {
+      @NotNull final ImmutableSvmParameter<L> param) {
     int numLabels = problem.getLabels().size();
 
     final MultiClassModel<L> model = new MultiClassModel<>(param, numLabels);
@@ -164,37 +154,38 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
 
       final LabelInverter<L> labelInverter = problem.getLabelInverter();
 
-      Parallel.forEach(problem.getLabels(), new Function<L, Void>() {
-        public Void apply(final L label) {
-          final L notLabel = labelInverter.invert(label);
+      problem
+          .getLabels()
+          .parallelStream()
+          .forEach(label -> {
+            final L notLabel = labelInverter.invert(label);
 
-          final Set<SparseVector> labelExamples = examplesByLabel.get(label);
+            final Set<SparseVector> labelExamples = examplesByLabel.get(label);
 
-          Collection<Map.Entry<SparseVector, L>> entries = problem.getExamples().entrySet();
-          if (param.falseClassSVlimit != Integer.MAX_VALUE) {
-            // guarantee entries in random order if limiting the number of false examples
-            List<Map.Entry<SparseVector, L>> entryList = new ArrayList<>(entries);
-            Collections.shuffle(entryList);
-            int toIndex = param.falseClassSVlimit + labelExamples.size();
-            toIndex = Math.min(toIndex, entryList.size());
-            entries = entryList.subList(0, toIndex);
-          }
+            Collection<Map.Entry<SparseVector, L>> entries = problem.getExamples().entrySet();
+            if (param.falseClassSVlimit != Integer.MAX_VALUE) {
+              // guarantee entries in random order if limiting the number of false examples
+              List<Map.Entry<SparseVector, L>> entryList = new ArrayList<>(entries);
+              Collections.shuffle(entryList);
+              int toIndex = param.falseClassSVlimit + labelExamples.size();
+              toIndex = Math.min(toIndex, entryList.size());
+              entries = entryList.subList(0, toIndex);
+            }
 
-          final Set<SparseVector> notlabelExamples =
-              new SubtractionMap<>(entries, labelExamples, param.falseClassSVlimit).keySet();
+            final Set<SparseVector> notlabelExamples =
+                new SubtractionMap<>(entries, labelExamples, param.falseClassSVlimit).keySet();
 
-          final BinaryClassificationProblem<L> subProblem =
-              new BooleanClassificationProblemImpl<>(problem.getLabelClass(), label,
-                  labelExamples,
-                  notLabel, notlabelExamples);
-          // Unbalanced data: see prepareWeights
-          // since these will be extremely unbalanced, this should nearly guarantee that no positive examples are misclassified.
+            final BinaryClassificationProblem<L> subProblem =
+                new BooleanClassificationProblemImpl<>(problem.getLabelClass(), label,
+                    labelExamples,
+                    notLabel, notlabelExamples);
+            // Unbalanced data: see prepareWeights
+            // since these will be extremely unbalanced, this should nearly guarantee that no positive examples are misclassified.
 
-          BinaryModel<L> result = binarySvm.train(subProblem, probParam); //, execService);
-          model.putOneVsAllModel(label, result);
-          return null;
-        }
-      });
+            BinaryModel<L> result = binarySvm.train(subProblem, probParam); //, execService);
+            model.putOneVsAllModel(label, result);
+          });
+
 
     }
 
@@ -208,28 +199,31 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
           "Training " + numClassifiers + " one-vs-one classifiers for " + numLabels + " labels");
       int c = 0;
 
-      UnorderedPairIterator<L> labelPairIterator =
-          new UnorderedPairIterator<L>(problem.getLabels(), problem.getLabels());
+      problem
+          .getLabels()
+          .stream()
+          .flatMap(label ->
+              problem
+                  .getLabels()
+                  .stream()
+                  .map(label2 -> new Object[]{label, label2})
+          )
+          .parallel()
+          .forEach(pair -> {
+            final L label1 = (L) pair[0];
+            final L label2 = (L) pair[1];
 
-      Parallel.forEach(labelPairIterator, new Function<UnorderedPair<L>, Void>() {
-        public Void apply(final UnorderedPair<L> from) {
-          final L label1 = from.getKey1();
-          final L label2 = from.getKey2();
+            final Set<SparseVector> label1Examples = examplesByLabel.get(label1);
+            final Set<SparseVector> label2Examples = examplesByLabel.get(label2);
 
-          final Set<SparseVector> label1Examples = examplesByLabel.get(label1);
-          final Set<SparseVector> label2Examples = examplesByLabel.get(label2);
+            final BinaryClassificationProblem<L> subProblem =
+                new BooleanClassificationProblemImpl<>(problem.getLabelClass(), label1,
+                    label1Examples,
+                    label2, label2Examples);
 
-          final BinaryClassificationProblem<L> subProblem =
-              new BooleanClassificationProblemImpl<>(problem.getLabelClass(), label1,
-                  label1Examples,
-                  label2, label2Examples);
-
-          BinaryModel<L> result = binarySvm.train(subProblem, param);
-          model.putOneVsOneModel(label1, label2, result);
-
-          return null;
-        }
-      });
+            BinaryModel<L> result = binarySvm.train(subProblem, param);
+            model.putOneVsOneModel(label1, label2, result);
+          });
 
     }
 

@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.7.2'
+    id 'java'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0'
+}
+
+scmVersion {
+    tag {
+        prefix = 'jlibsvm'
+    }
+
+    versionCreator 'versionWithBranch'
+
+    repository {
+        type = 'git'
+        directory = project.rootProject.file('.') // repository location
+    }
+}
+
+subprojects {
+
+    group 'edu.berkeley.compbio'
+
+    version = scmVersion.version
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+	mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        compile 'com.google.guava:guava:21.0'
+        testCompile 'junit:junit:4.12'
+    }
+
+}
+
+project(':jlibsvm') {
+    dependencies {
+        compile 'edu.berkeley.compbio:ml:0.921'
+    }
+}

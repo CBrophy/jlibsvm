@@ -1,15 +1,13 @@
 package edu.berkeley.compbio.jlibsvm;
 
-import com.davidsoergel.conja.Function;
-import com.davidsoergel.conja.Parallel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,8 +25,7 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> {
 // -------------------------- OTHER METHODS --------------------------
 
   public Map<SparseVector, Double> continuousCrossValidation(SvmProblem<L, R> problem,
-      final ImmutableSvmParameter<L> param)
-  {
+      final ImmutableSvmParameter<L> param) {
 
     final Map<SparseVector, Double> predictions = new ConcurrentHashMap<>();
 
@@ -37,20 +34,17 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> {
       throw new SvmException("Can't have more cross-validation folds than there are examples");
     }
 
-    Iterator<R> foldIterator = problem.makeFolds(param.crossValidationFolds);
+    final Stream<R> foldStream = problem.makeFolds(param.crossValidationFolds);
 
-    Parallel.forEach(foldIterator, new Function<R, Void>() {
-      public Void apply(
-          final R f) {// this will throw ClassCastException if you try cross-validation on a discrete-only model (e.g. MultiClassModel)
-        final ContinuousModel model = (ContinuousModel) train(f, param); //, execService);
+    foldStream
+        .parallel()
+        .forEach(fold -> {
+          final ContinuousModel model = (ContinuousModel) train(fold, param);
 
-        for (final SparseVector p : f.getHeldOutPoints()) {
-          predictions.put(p, model.predictValue(p));
-        }
-        return null;
-      }
-    });
-
+          for (final SparseVector p : fold.getHeldOutPoints()) {
+            predictions.put(p, model.predictValue(p));
+          }
+        });
 
     // now predictions contains the prediction for each point based on training with e.g. 80% of the other points (for 5-fold).
     return predictions;
@@ -71,32 +65,29 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> {
       throw new SvmException("Can't have more cross-validation folds than there are examples");
     }
 
-    Iterator<R> foldIterator = problem.makeFolds(param.crossValidationFolds);
+    final Stream<R> foldStream = problem.makeFolds(param.crossValidationFolds);
 
+    foldStream
+        .parallel()
+        .forEach(fold -> {
+          // this will throw ClassCastException if you try cross-validation on a continuous-only model (e.g. RegressionModel)
+          final DiscreteModel<L> model = (DiscreteModel<L>) train(fold,
+              param);
 
-    Parallel.forEach(foldIterator, new Function<R, Void>() {
-      public Void apply(
-          final R f) {// this will throw ClassCastException if you try cross-validation on a continuous-only model (e.g. RegressionModel)
-        final DiscreteModel<L> model = (DiscreteModel<L>) train(f,
-            param);
+          // note the param has not changed here, so if the method includes oneVsAll models with a
+          // probability threshold, those will be independently computed for each fold and so play
+          // into the predictLabel
 
-        // note the param has not changed here, so if the method includes oneVsAll models with a
-        // probability threshold, those will be independently computed for each fold and so play
-        // into the predictLabel
-
-        for (final SparseVector p : f.getHeldOutPoints()) {
-          L prediction = model.predictLabel(p);
-          if (prediction == null) {
-            nullPredictionPoints.add(p);
-          } else {
-            predictions.put(p, prediction);
+          for (final SparseVector p : fold.getHeldOutPoints()) {
+            L prediction = model.predictLabel(p);
+            if (prediction == null) {
+              nullPredictionPoints.add(p);
+            } else {
+              predictions.put(p, prediction);
+            }
           }
-        }
 
-        return null;
-      }
-    });
-
+        });
 
     // collapse into non-concurrent map that supports null values
     Map<SparseVector, L> result = new HashMap<>(predictions);

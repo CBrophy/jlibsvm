@@ -1,7 +1,5 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
-import com.davidsoergel.conja.Function;
-import com.davidsoergel.conja.Parallel;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterGrid;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
@@ -54,16 +52,17 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
   {
     final GridTrainingResult gtresult = new GridTrainingResult();
 
-    Parallel.forEach(param.getGridParams(), new Function<ImmutableSvmParameterPoint<L>, Void>() {
-      public Void apply(
-          final ImmutableSvmParameterPoint<L> gridParam) {// note we must use the CV variant in order to know which parameter set is best
-        SvmBinaryCrossValidationResults<L> crossValidationResults =
-            performCrossValidation(problem, gridParam);
-        logger.info("CV results for grid point " + gridParam + ": " + crossValidationResults);
-        gtresult.update(gridParam, crossValidationResults);
-        return null;
-      }
-    });
+    param
+        .getGridParams()
+        .parallelStream()
+        .forEach(point -> {
+          // note we must use the CV variant in order to know which parameter set is best
+          SvmBinaryCrossValidationResults<L> crossValidationResults =
+              performCrossValidation(problem, point);
+          logger.info("CV results for grid point " + point + ": " + crossValidationResults);
+          gtresult.update(point, crossValidationResults);
+
+        });
 
     // no need for the iterator version here; the set of params doesn't require too much memory
     logger.info("Chose grid point: " + gtresult.bestParam);

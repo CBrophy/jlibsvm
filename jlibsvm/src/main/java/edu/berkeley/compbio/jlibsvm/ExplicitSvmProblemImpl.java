@@ -1,16 +1,15 @@
 package edu.berkeley.compbio.jlibsvm;
 
-import com.davidsoergel.dsutils.collections.MappingIterator;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -78,7 +77,7 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
 
 // --------------------- Interface ExplicitSvmProblem ---------------------
 
-  public Iterator<R> makeFolds(int numberOfFolds) {
+  public Stream<R> makeFolds(int numberOfFolds) {
 
     List<SparseVector> points = new ArrayList<>(getExamples().keySet());
 
@@ -98,13 +97,17 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
       f %= numberOfFolds;
     }
 
-    Iterator<R> foldIterator = new MappingIterator<Set<SparseVector>, R>(heldOutPointSets.iterator()) {
-      @NotNull
-      public R function(Set<SparseVector> p) {
-        return makeFold(p);
-      }
-    };
-    return foldIterator;
+    return heldOutPointSets
+        .stream()
+        .map(this::makeFold);
+//
+//    Iterator<R> foldIterator = new MappingIterator<Set<SparseVector>, R>(heldOutPointSets.iterator()) {
+//      @NotNull
+//      public R function(Set<SparseVector> p) {
+//        return makeFold(p);
+//      }
+//    };
+//    return foldIterator;
 
   }
 

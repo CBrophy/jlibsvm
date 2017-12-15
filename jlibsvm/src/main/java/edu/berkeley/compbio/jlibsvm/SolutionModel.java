@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;

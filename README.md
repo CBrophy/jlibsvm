@@ -18,6 +18,19 @@ _Efficient training of Support Vector Machines in Java_
 Status
 ------
 
+[cbrophy]
+
+Lots of updates for a production environment.
+* Removed commented code, added some tests and removed extra templating
+* Updates to SparseVector to make computations easier to read and test
+* float -> double
+* Updated to java 8 spec
+* Removed dependencies that were replicating java 8 functionality
+* Updated dependencies (moved from google collections to guava)
+* Moved from maven to gradle
+* Other bug fixes, changes, and tweaks (check the comment history)
+
+[davidsoergel]
 This is beta code.  While LIBSVM is stable, it's possible that I broke something in the process of refactoring it.  I've done ad-hoc testing primarily with the C_SVC machine and an RBF kernel, and got results that were identical to LIBSVM as far as I could tell.  There are not (yet?) any unit tests.  I'm running some automated verifications that jlibsvm behaves identically to LIBSVM for a number of input datasets and parameter choices; results will be available here soon.  Please [let me know](mailto:dev@davidsoergel.com) if you find a situation in which the two packages give different results.
 
 Documentation
