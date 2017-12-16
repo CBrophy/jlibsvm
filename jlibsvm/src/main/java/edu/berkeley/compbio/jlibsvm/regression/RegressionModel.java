@@ -6,8 +6,6 @@ import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.CrossValidationResults;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -72,15 +70,5 @@ public class RegressionModel extends AlphaModel<Double> implements ContinuousMod
 
   public boolean supportsLaplace() {
     return laplaceParameter != NO_LAPLACE_PARAMETER;
-  }
-
-  public void writeToStream(DataOutputStream fp) throws IOException {
-    super.writeToStream(fp);
-    fp.writeBytes("probA " + laplaceParameter + "\n");
-
-    //these must come after everything else
-    writeSupportVectors(fp);
-
-    fp.close();
   }
 }
