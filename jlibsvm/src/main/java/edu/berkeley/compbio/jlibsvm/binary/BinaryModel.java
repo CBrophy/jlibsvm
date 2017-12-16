@@ -9,12 +9,11 @@ import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,19 +21,17 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public class BinaryModel<L extends Comparable> extends AlphaModel<L>
-    implements DiscreteModel<L>, ContinuousModel {
+    implements DiscreteModel<L>, ContinuousModel, Serializable {
   // protected final would be nice, but the Solver constructs the Model without knowing about param so we have to set it afterwards.
   /**
    * a thing that is confusing here: if a grid search was done, then the specific point that was the optimum should be
    * recorded here.  That works for binary and multiclass models when the grid search is done at the top level.  But when
-   * param.gridsearchBinaryMachinesIndependently, there is no one point that makes sense.  Really we should just leave it
+   * param.gridSearchBinaryMachinesIndependently, there is no one point that makes sense.  Really we should just leave it
    * null and refer to the subsidiary BinaryModels.
    */
   public ImmutableSvmParameterPoint<L> param;
 
 // ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(BinaryModel.class);
 
   public double obj;
   public double upperBoundPositive;
@@ -169,10 +166,10 @@ public class BinaryModel<L extends Comparable> extends AlphaModel<L>
   public double getTrueProbability(double[] kvalues, int[] svIndexMap) {
     double pv = predictValue(kvalues, svIndexMap);
     if (crossValidationResults == null) {
-      logger.error("Can't compute probability in binary model without crossvalidationresults");
+      Logger.getGlobal().severe("Can't compute probability in binary model without crossvalidationresults");
       return pv > 0. ? 1.0 : 0.0;
     } else if (crossValidationResults.sigmoid == null) {
-      logger.error("Can't compute probability in binary model without sigmoid");
+      Logger.getGlobal().severe("Can't compute probability in binary model without sigmoid");
       return pv > 0. ? 1.0 : 0.0;
     } else {
       return crossValidationResults.sigmoid.predict(pv);  // NPE if no sigmoid
@@ -194,41 +191,4 @@ public class BinaryModel<L extends Comparable> extends AlphaModel<L>
     return predictValue(kvalues, svIndexMap) > 0 ? trueLabel : falseLabel;
   }
 
-  public void printSolutionInfo(BinaryClassificationProblem<L> problem) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("obj = " + obj + ", rho = " + rho);
-
-      // output SVs
-
-      int nBSV = 0;
-      for (int i = 0; i < numSVs; i++) {
-        Double alpha = alphas[i];
-        SparseVector point = SVs[i];
-        if (Math.abs(alpha) > 0) {
-          if (problem.getTargetValue(point).equals(trueLabel)) {
-            if (Math.abs(alpha) >= upperBoundPositive) {
-              ++nBSV;
-            }
-          } else {
-            if (Math.abs(alpha) >= upperBoundNegative) {
-              ++nBSV;
-            }
-          }
-        }
-      }
-
-      logger.debug("nSV = " + SVs.length + ", nBSV = " + nBSV);
-    }
-  }
-
-  public void writeToStream(DataOutputStream fp) throws IOException {
-    super.writeToStream(fp);
-
-    fp.writeBytes("nr_class 2\n");
-
-    //these must come after everything else
-    writeSupportVectors(fp);
-
-    fp.close();
-  }
 }

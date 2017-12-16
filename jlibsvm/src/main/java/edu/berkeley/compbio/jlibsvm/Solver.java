@@ -2,13 +2,13 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -30,12 +30,10 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 
-public abstract class Solver<L extends Comparable> {
+public abstract class Solver<L extends Comparable> implements Serializable {
 // ------------------------------ FIELDS ------------------------------
 
-  private static final Logger logger = Logger.getLogger(Solver.class);
-
-  protected final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
+  final static SolutionVector[] EMPTY_SV_ARRAY = new SolutionVector[0];
 
   QMatrix Q;
   double[] Q_svA;
@@ -196,7 +194,7 @@ public abstract class Solver<L extends Comparable> {
       ++iter;
 
       if (iter > maxIterations) {
-        logger.warn("Solver reached maximum iterations, aborting");
+        Logger.getGlobal().warning("Solver reached maximum iterations, aborting");
         break;
       }
 
@@ -289,7 +287,7 @@ public abstract class Solver<L extends Comparable> {
 
       if (delta_alpha_i == 0 && delta_alpha_j == 0) {
         // pair was already optimal, but selectWorkingPair() didn't realize it because the numeric precision of double is insufficient with respect to eps
-        logger.error(
+        Logger.getGlobal().severe(
             "Pair is optimal within available numeric precision, but this is still larger than requested eps = "
                 + eps + ".");
         break;
@@ -336,9 +334,9 @@ public abstract class Solver<L extends Comparable> {
       }
     }
 
-    logger.debug(Q.perfString());
+    Logger.getGlobal().info(Q.perfString());
 
-    logger.debug("optimization finished, #iter = " + iter);
+    Logger.getGlobal().info("optimization finished, #iter = " + iter);
     return iter;    // activeSet;
   }
 

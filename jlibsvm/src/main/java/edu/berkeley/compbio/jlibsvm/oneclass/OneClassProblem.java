@@ -2,7 +2,6 @@ package edu.berkeley.compbio.jlibsvm.oneclass;
 
 import edu.berkeley.compbio.jlibsvm.regression.RegressionProblem;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>

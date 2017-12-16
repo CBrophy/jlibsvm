@@ -1,6 +1,8 @@
 package edu.berkeley.compbio.jlibsvm.util;
 
-public class MathSupport {
+import java.io.Serializable;
+
+public class MathSupport implements Serializable {
 // -------------------------- STATIC METHODS --------------------------
 
   public static double powi(double base, int times) {

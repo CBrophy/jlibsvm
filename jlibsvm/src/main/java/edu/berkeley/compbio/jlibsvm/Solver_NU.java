@@ -3,7 +3,6 @@ package edu.berkeley.compbio.jlibsvm;
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

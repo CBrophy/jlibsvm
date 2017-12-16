@@ -11,7 +11,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,9 +19,6 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(Nu_SVR.class);
 
 // -------------------------- OTHER METHODS --------------------------
 
@@ -93,10 +90,9 @@ public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
     RegressionModel model = s.solve();
 
     model.param = param;
-    model.setSvmType(getSvmType());
     model.laplaceParameter = laplaceParameter;
 
-    logger.info("epsilon = " + (-model.r));
+    Logger.getGlobal().info("epsilon = " + (-model.r));
 
     model.compact();
 

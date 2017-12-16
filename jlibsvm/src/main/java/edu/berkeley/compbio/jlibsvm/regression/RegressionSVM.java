@@ -4,7 +4,7 @@ import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.SVM;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -12,9 +12,6 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<Double, R> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(RegressionSVM.class);
 
   private final double SQRT_2 = (double) Math.sqrt(2);
 
@@ -51,8 +48,8 @@ public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<
       }
     }
     mae /= (problem.getNumExamples() - count);
-    logger.info("Prob. model for test data: target value = predicted value + z");
-    logger.info("z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + mae);
+    Logger.getGlobal().info("Prob. model for test data: target value = predicted value + z");
+    Logger.getGlobal().info("z: Laplace distribution e^(-|z|/sigma)/(2sigma),sigma=" + mae);
     return mae;
   }
 

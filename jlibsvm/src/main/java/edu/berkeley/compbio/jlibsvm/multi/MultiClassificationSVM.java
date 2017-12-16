@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -25,9 +25,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MultiClassificationSVM<L extends Comparable<L>> extends
     SVM<L, MultiClassProblem<L>> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(MultiClassificationSVM.class);
 
   private BinaryClassificationSVM<L> binarySvm;
 
@@ -50,7 +47,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
     Map<SparseVector, L> predictions = discreteCrossValidation(problem, param);
 
     SvmMultiClassCrossValidationResults<L> cv =
-        new SvmMultiClassCrossValidationResults<L>(problem, predictions);
+        new SvmMultiClassCrossValidationResults<>(problem, predictions);
     cv.param = param;
     return cv;
   }
@@ -91,7 +88,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
 
         });
 
-    logger.info("Chose grid point: " + gtresult.bestCrossValidationResults.param);
+    Logger.getGlobal().info("Chose grid point: " + gtresult.bestCrossValidationResults.param);
 
     // finally train once on all the data (including rescaling)
     MultiClassModel<L> result =
@@ -150,7 +147,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
 
       // first queue up all the training tasks and submit them to the thread pool
 
-      logger.info("Training one-vs-all classifiers for " + numLabels + " labels");
+      Logger.getGlobal().info("Training one-vs-all classifiers for " + numLabels + " labels");
 
       final LabelInverter<L> labelInverter = problem.getLabelInverter();
 
@@ -195,7 +192,7 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
 
       // first queue up all the training tasks and submit them to the thread pool
 
-      logger.info(
+      Logger.getGlobal().info(
           "Training " + numClassifiers + " one-vs-one classifiers for " + numLabels + " labels");
       int c = 0;
 

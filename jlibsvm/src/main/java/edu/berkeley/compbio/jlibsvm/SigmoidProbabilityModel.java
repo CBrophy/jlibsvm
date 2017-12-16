@@ -1,6 +1,7 @@
 package edu.berkeley.compbio.jlibsvm;
 
-import org.apache.log4j.Logger;
+
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -9,7 +10,6 @@ import org.apache.log4j.Logger;
 public class SigmoidProbabilityModel {
 // ------------------------------ FIELDS ------------------------------
 
-  private static final Logger logger = Logger.getLogger(SigmoidProbabilityModel.class);
   double A, B;
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -131,13 +131,13 @@ public class SigmoidProbabilityModel {
       }
 
       if (stepsize < minStep) {
-        logger.error("Line search fails in two-class probability estimates");
+        Logger.getGlobal().severe("Line search fails in two-class probability estimates");
         break;
       }
     }
 
     if (iter >= maximumIterations) {
-      logger.error("Reaching maximal iterations in two-class probability estimates");
+      Logger.getGlobal().severe("Reaching maximal iterations in two-class probability estimates");
     }
   }
 

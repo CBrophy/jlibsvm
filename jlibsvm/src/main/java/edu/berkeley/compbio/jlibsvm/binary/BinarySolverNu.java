@@ -6,16 +6,14 @@ import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
 public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
-// ------------------------------ FIELDS ------------------------------
 
-  private static final Logger logger = Logger.getLogger(BinarySolverNu.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -66,7 +64,7 @@ public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
     model.upperBoundPositive = Cp;
     model.upperBoundNegative = Cn;
 
-    logger.info("optimization finished, #iter = " + iter);
+    Logger.getGlobal().info("optimization finished, #iter = " + iter);
 
     return model;
   }

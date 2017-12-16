@@ -3,6 +3,7 @@ package edu.berkeley.compbio.jlibsvm;
 import com.google.common.collect.Multiset;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;

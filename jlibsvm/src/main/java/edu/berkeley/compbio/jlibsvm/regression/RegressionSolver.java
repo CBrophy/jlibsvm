@@ -3,19 +3,14 @@ package edu.berkeley.compbio.jlibsvm.regression;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.log4j.Logger;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
 public class RegressionSolver extends Solver<Double> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(RegressionSolver.class);
 
 // --------------------------- CONSTRUCTORS ---------------------------
 

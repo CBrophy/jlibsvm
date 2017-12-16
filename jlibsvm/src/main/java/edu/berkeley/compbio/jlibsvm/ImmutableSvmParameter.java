@@ -2,7 +2,7 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.multi.MultiClassModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 
@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class ImmutableSvmParameter<L extends Comparable> {
+public abstract class ImmutableSvmParameter<L extends Comparable> implements Serializable {
 // ------------------------------ FIELDS ------------------------------
 
   // these are for training only
@@ -68,7 +68,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
     scaleBinaryMachinesIndependently = copyFrom.scaleBinaryMachinesIndependently;
     normalizeL2 = copyFrom.normalizeL2;
     redistributeUnbalancedC = copyFrom.redistributeUnbalancedC;
-    gridsearchBinaryMachinesIndependently = copyFrom.gridsearchBinaryMachinesIndependently;
+    gridsearchBinaryMachinesIndependently = copyFrom.gridSearchBinaryMachinesIndependently;
 
     scalingModelLearner = copyFrom.scalingModelLearner;
     crossValidationFolds = copyFrom.crossValidationFolds;
@@ -127,7 +127,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
 
 
     public boolean scaleBinaryMachinesIndependently = false;
-    public boolean gridsearchBinaryMachinesIndependently = false;
+    public boolean gridSearchBinaryMachinesIndependently = false;
     public boolean normalizeL2 = false;
 
     /**
@@ -167,7 +167,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
       scaleBinaryMachinesIndependently = copyFrom.scaleBinaryMachinesIndependently;
       normalizeL2 = copyFrom.normalizeL2;
       redistributeUnbalancedC = copyFrom.redistributeUnbalancedC;
-      gridsearchBinaryMachinesIndependently = copyFrom.gridsearchBinaryMachinesIndependently;
+      gridSearchBinaryMachinesIndependently = copyFrom.gridsearchBinaryMachinesIndependently;
       crossValidationFolds = copyFrom.crossValidationFolds;
       scalingModelLearner = copyFrom.scalingModelLearner;
     }
@@ -189,7 +189,7 @@ public abstract class ImmutableSvmParameter<L extends Comparable> {
       scaleBinaryMachinesIndependently = copyFrom.scaleBinaryMachinesIndependently;
       normalizeL2 = copyFrom.normalizeL2;
       redistributeUnbalancedC = copyFrom.redistributeUnbalancedC;
-      gridsearchBinaryMachinesIndependently = copyFrom.gridsearchBinaryMachinesIndependently;
+      gridSearchBinaryMachinesIndependently = copyFrom.gridSearchBinaryMachinesIndependently;
       crossValidationFolds = copyFrom.crossValidationFolds;
       scalingModelLearner = copyFrom.scalingModelLearner;
     }

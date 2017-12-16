@@ -2,7 +2,6 @@ package edu.berkeley.compbio.jlibsvm.qmatrix;
 
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import org.jetbrains.annotations.NotNull;
 
 /**

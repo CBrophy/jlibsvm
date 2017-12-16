@@ -16,13 +16,6 @@ public class PolynomialKernel extends GammaKernel {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-/*	public PolynomialKernel(Properties props)
-		{
-		this(Integer.parseInt(props.getProperty("degree")), Double.parseDouble(props.getProperty("gamma")),
-		     Double.parseDouble(props.getProperty("coef0")));
-		}
-*/
-
   public PolynomialKernel(int degree, double gamma, double coef0) {
     super(gamma);
     if (degree < 0) {

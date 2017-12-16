@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -81,7 +80,7 @@ public class ImmutableSvmParameterGrid<L extends Comparable> extends
         for (KernelFunction gridKernel : kernelSet) {
           builder.C = gridC;
           builder.kernel = gridKernel;
-          builder.gridsearchBinaryMachinesIndependently = false;
+          builder.gridSearchBinaryMachinesIndependently = false;
 
           // this copies all the params so we can safely continue modifying the builder
           gridParams.add(builder.build());

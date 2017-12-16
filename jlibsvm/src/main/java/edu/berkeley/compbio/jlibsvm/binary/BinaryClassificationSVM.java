@@ -1,13 +1,15 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
+import com.google.common.base.Throwables;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterGrid;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
 import edu.berkeley.compbio.jlibsvm.SVM;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+import java.io.Serializable;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public abstract class BinaryClassificationSVM<L extends Comparable>
-    extends SVM<L, BinaryClassificationProblem<L>> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(BinaryClassificationSVM.class);
+    extends SVM<L, BinaryClassificationProblem<L>> implements Serializable {
 
 // -------------------------- OTHER METHODS --------------------------
 
@@ -28,7 +27,7 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
   {
     validateParam(param);
     BinaryModel<L> result;
-    if (param instanceof ImmutableSvmParameterGrid)  //  either the problem was binary to start with, or param.gridsearchBinaryMachinesIndependently
+    if (param instanceof ImmutableSvmParameterGrid)  //  either the problem was binary to start with, or param.gridSearchBinaryMachinesIndependently
     {
       result = trainGrid(problem, (ImmutableSvmParameterGrid<L>) param);
     } else if (param.probability)  // this may already be a fold, but we have to sub-fold it to get probabilities
@@ -59,13 +58,13 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
           // note we must use the CV variant in order to know which parameter set is best
           SvmBinaryCrossValidationResults<L> crossValidationResults =
               performCrossValidation(problem, point);
-          logger.info("CV results for grid point " + point + ": " + crossValidationResults);
+          Logger.getGlobal().info("CV results for grid point " + point + ": " + crossValidationResults);
           gtresult.update(point, crossValidationResults);
 
         });
 
     // no need for the iterator version here; the set of params doesn't require too much memory
-    logger.info("Chose grid point: " + gtresult.bestParam);
+    Logger.getGlobal().info("Chose grid point: " + gtresult.bestParam);
 
     // finally train once on all the data (including rescaling)
     BinaryModel<L> result = trainScaled(problem, gtresult.bestParam);
@@ -105,14 +104,13 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
       cv = performCrossValidation(problem, param);
     } catch (SvmException e) {
       //ignore, probably there weren't enough points to make folds
-      logger.debug("Could not perform cross-validation", e);
+      Logger.getGlobal().info("Could not perform cross-validation\n" + Throwables.getStackTraceAsString(e));
     }
 
     // finally train once on all the data (including rescaling)
     BinaryModel<L> result = trainScaled(problem, param);
     result.crossValidationResults = cv;  // careful later: this might be null
 
-    result.printSolutionInfo(problem);
     return result;
   }
 
@@ -154,7 +152,6 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 
     BinaryModel<L> result = trainWeighted(problem, param);
 
-    result.printSolutionInfo(problem);
     return result;
   }
 

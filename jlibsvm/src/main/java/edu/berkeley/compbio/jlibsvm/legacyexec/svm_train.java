@@ -259,7 +259,7 @@ public class svm_train {
           }
           break;
         case 'y':
-          builder.gridsearchBinaryMachinesIndependently =
+          builder.gridSearchBinaryMachinesIndependently =
               argv[i].equals("1") || Boolean.parseBoolean(argv[i]);
           break;
         case 'z':

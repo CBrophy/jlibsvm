@@ -11,7 +11,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,9 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
-// ------------------------------ FIELDS ------------------------------
 
-  private static final Logger logger = Logger.getLogger(Nu_SVC.class);
 
 // -------------------------- OTHER METHODS --------------------------
 
@@ -29,7 +27,7 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
   public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
       @NotNull ImmutableSvmParameterPoint<L> param) {
     if (Cp != 1.0 || Cn != 1.0) {
-      logger.warn("Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
+      Logger.getGlobal().warning("Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
     }
 
     if (!isFeasible(problem, param)) {
@@ -76,11 +74,10 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
     model.param = param;
     model.trueLabel = problem.getTrueLabel();
     model.falseLabel = problem.getFalseLabel();
-    model.setSvmType(getSvmType());
 
     double r = model.r;
 
-    logger.info("C = " + 1 / r);
+    Logger.getGlobal().info("C = " + 1 / r);
 
     for (Map.Entry<SparseVector, Double> entry : model.supportVectors.entrySet()) {
       entry.setValue((examples.get(entry.getKey()) ? 1. : -1.) / r);

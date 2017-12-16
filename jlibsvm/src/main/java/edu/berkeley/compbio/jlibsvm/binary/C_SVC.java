@@ -10,7 +10,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -18,10 +18,6 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public class C_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
-// ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(C_SVC.class);
-
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
@@ -58,11 +54,10 @@ public class C_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
     model.param = param;
     model.trueLabel = problem.getTrueLabel();
     model.falseLabel = problem.getFalseLabel();
-    model.setSvmType(getSvmType());
     model.setScalingModel(problem.getScalingModel());
 
     if (Cp == Cn) {
-      logger.debug("nu = " + model.getSumAlpha() / (Cp * problem.getNumExamples()));
+      Logger.getGlobal().info("nu = " + model.getSumAlpha() / (Cp * problem.getNumExamples()));
     }
 
     for (Map.Entry<SparseVector, Double> entry : model.supportVectors.entrySet()) {

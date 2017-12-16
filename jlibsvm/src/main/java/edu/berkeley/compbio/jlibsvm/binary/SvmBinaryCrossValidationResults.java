@@ -4,7 +4,7 @@ import edu.berkeley.compbio.jlibsvm.SigmoidProbabilityModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import edu.berkeley.compbio.ml.BinaryCrossValidationResults;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -13,9 +13,6 @@ import org.apache.log4j.Logger;
 public class SvmBinaryCrossValidationResults<L extends Comparable> extends
     BinaryCrossValidationResults {
 // ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(SvmBinaryCrossValidationResults.class);
-
   SigmoidProbabilityModel sigmoid;
 
   public SvmBinaryCrossValidationResults(BinaryClassificationProblem<L> problem,
@@ -27,7 +24,7 @@ public class SvmBinaryCrossValidationResults<L extends Comparable> extends
     final double[] decisionValueArray = new double[totalExamples];
     final boolean[] labelArray = new boolean[totalExamples];
 
-    logger.debug("Collecting binary cross-validation results for " + totalExamples + " points");
+    Logger.getGlobal().info("Collecting binary cross-validation results for " + totalExamples + " points");
 
     L trueLabel = problem.getTrueLabel();
 

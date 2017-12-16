@@ -13,7 +13,7 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,9 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * @version $Id$
  */
 public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassProblem<L>> {
-// ------------------------------ FIELDS ------------------------------
 
-  private static final Logger logger = Logger.getLogger(OneClassSVC.class);
 
 // -------------------------- OTHER METHODS --------------------------
 
@@ -86,7 +84,6 @@ public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassPro
 
     model.param = param;
     model.label = problem.getLabel();
-    model.setSvmType(getSvmType());
     model.compact();
 
     return model;
@@ -100,7 +97,7 @@ public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassPro
     super.validateParam(param);
 
     if (param.C != 1.0) {
-      logger.warn("OneClassSVC ignores param.C, provided value " + param.C + " + not used");
+      Logger.getGlobal().warning("OneClassSVC ignores param.C, provided value " + param.C + " + not used");
     }
     if (param.probability) {
       throw new SvmException("one-class SVM probability output not supported yet");

@@ -1,12 +1,25 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Files;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.StringBufferInputStream;
 import java.util.Collection;
 import java.util.Properties;
@@ -16,97 +29,64 @@ import java.util.Properties;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public abstract class SolutionModel<L extends Comparable> {
+public abstract class SolutionModel<L extends Comparable> implements Serializable {
 // ------------------------------ FIELDS ------------------------------
-
-
-  /**
-   * names the SVM that was used to produce this model; used only for writeToStream
-   */
-  public String svmType;
-
 
   public abstract CrossValidationResults getCrossValidationResults();
 
 // -------------------------- STATIC METHODS --------------------------
 
-  public static SolutionModel identifyTypeAndLoad(String model_file_name) {
-    try {
-      BufferedReader fp = new BufferedReader(new FileReader(model_file_name));
-      Properties props = new Properties();
-      props.load(new StringBufferInputStream(readUpToSVs(fp)));
+  public static <L extends Comparable, T extends SolutionModel<L>> T load(String modelFileName, Class<T> modelType) {
+    checkNotNull(modelFileName, "modelFileName");
+    checkNotNull(modelType, "modelType");
 
-      // first figure out which model type it is
+    File file = new File(modelFileName);
 
-      // BAD quick hack
-      Class c = BinaryModel.class;
-      LabelParser<String> labelParser = new LabelParser<String>() {
-        public String parse(final String s) {
-          return s;
-        }
-      };
+    checkArgument(file.exists(), "Model file not found: %s", file.getAbsolutePath());
 
-      SolutionModel model =
-          (SolutionModel) (c.getConstructor(Properties.class, LabelParser.class).newInstance(props,
-              labelParser));
+    T result = null;
+    ObjectMapper objectMapper = new ObjectMapper();
 
-      model.readSupportVectors(fp);
-      fp.close();
-      return model;
-    } catch (Throwable e) {
-      throw new SvmException("Unable to load file " + model_file_name, e);
-    }
-  }
+    try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))){
+      String line = null;
+      while((line = reader.readLine()) != null){
+        checkState(result == null, "Model file expected to contain only one model");
 
-  private static String readUpToSVs(BufferedReader reader) throws IOException {
-    StringBuffer sb = new StringBuffer();
-    while (true) {
-      String l = reader.readLine();
-      if (l.startsWith("SV")) {
-        break;
+        result = objectMapper.readValue(line, modelType);
       }
-      sb.append(l).append("\n");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    return sb.toString();
-  }
 
-  protected abstract void readSupportVectors(BufferedReader fp) throws IOException;
+    return result;
+  }
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public SolutionModel() {
   }
 
-// --------------------- GETTER / SETTER METHODS ---------------------
-
-  public void setSvmType(String svmType) {
-    this.svmType = svmType;
-  }
-
 // -------------------------- OTHER METHODS --------------------------
 
-  public void save(String model_file_name) throws IOException {
-    DataOutputStream fp = new DataOutputStream(new FileOutputStream(model_file_name));
-    writeToStream(fp);
-  }
+  public void save(String modelFileName) throws IOException {
+    checkNotNull(modelFileName,"modelFileName");
+    ObjectMapper objectMapper = new ObjectMapper();
 
-  /**
-   * This really should be addToProps, for symmetry
-   */
-  public void writeToStream(DataOutputStream fp) throws IOException {
-    // BAD broken with respect to grid search etc.
+    File file = new File(modelFileName);
 
-    fp.writeBytes("svm_type " + svmType + "\n");
+    Files.createParentDirs(file);
 
-    fp.writeBytes(getKernelName()); //param.kernel.toString());
-
-    fp.writeBytes("label");
-    for (L i : getLabels()) //getWeights().keySet())  // note these are in insertion order
-    {
-      fp.writeBytes(" " + i);
+    if(file.exists()){
+      checkState(file.delete(), "Failed to delete existing file: %s", file.getAbsolutePath());
     }
-    fp.writeBytes("\n");
+
+    try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))){
+      writer.write(objectMapper.writeValueAsString(this));
+    }
+
   }
+
+
 
   public String getKernelName() {
     throw new RuntimeException("Not implemented");

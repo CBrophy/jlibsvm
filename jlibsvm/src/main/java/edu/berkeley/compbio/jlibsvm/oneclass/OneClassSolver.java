@@ -3,7 +3,6 @@ package edu.berkeley.compbio.jlibsvm.oneclass;
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.Solver;
 import edu.berkeley.compbio.jlibsvm.qmatrix.QMatrix;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
 import java.util.List;
 

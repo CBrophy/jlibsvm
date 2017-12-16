@@ -29,7 +29,7 @@ public class EpsilonSVR<R extends RegressionProblem<R>> extends RegressionSVM<R>
       throw new SvmException(
           "Can't do grid search without cross-validation, which is not implemented for regression SVMs.");
     } else {
-      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double>) param); //, execService);
+      result = trainScaled(problem, (ImmutableSvmParameterPoint<Double>) param);
     }
     return result;
   }
@@ -82,7 +82,6 @@ public class EpsilonSVR<R extends RegressionProblem<R>> extends RegressionSVM<R>
     RegressionModel model = s.solve();
 
     model.param = param;
-    model.setSvmType(getSvmType());
     model.laplaceParameter = laplaceParameter;
 
     model.compact();

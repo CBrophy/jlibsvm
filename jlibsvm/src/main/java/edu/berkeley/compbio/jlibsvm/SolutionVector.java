@@ -1,13 +1,14 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
+import java.io.Serializable;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SolutionVector implements Comparable<SolutionVector> {
+public class SolutionVector implements Comparable<SolutionVector>, Serializable{
 // ------------------------------ FIELDS ------------------------------
 
   /**
@@ -79,7 +80,6 @@ public class SolutionVector implements Comparable<SolutionVector> {
   }
 
   public boolean isShrinkable(double Gmax1, double Gmax2) {
-    //return isShrinkable(Gmax1,Gmax2,Gmax1,Gmax2);
 
     if (isUpperBound()) {
       if (targetValue) {

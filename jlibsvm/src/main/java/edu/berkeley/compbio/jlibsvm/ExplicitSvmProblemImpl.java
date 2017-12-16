@@ -1,5 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
+import com.google.common.collect.Ordering;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
@@ -63,7 +64,7 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
       }
       Set<L> uniq = new HashSet<>(examples.values());
       labels = new ArrayList<>(uniq);
-      Collections.sort(labels);
+      labels.sort(Ordering.natural());
     }
     return labels;
   }
@@ -100,15 +101,6 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
     return heldOutPointSets
         .stream()
         .map(this::makeFold);
-//
-//    Iterator<R> foldIterator = new MappingIterator<Set<SparseVector>, R>(heldOutPointSets.iterator()) {
-//      @NotNull
-//      public R function(Set<SparseVector> p) {
-//        return makeFold(p);
-//      }
-//    };
-//    return foldIterator;
-
   }
 
 // --------------------- Interface SvmProblem ---------------------
