@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class GaussianRBFKernel extends GammaKernel {
 
 
-// --------------------------- CONSTRUCTORS ---------------------------
+  // --------------------------- CONSTRUCTORS ---------------------------
   public GaussianRBFKernel(Properties props) {
     this(Double.parseDouble(props.getProperty("gamma")));
   }

@@ -119,8 +119,7 @@ public abstract class Solver<L extends Comparable> implements Serializable {
   protected int optimize() {
     Q.initRanks(allExamples);
 
-    for (SolutionVector svA : allExamples)
-    {
+    for (SolutionVector svA : allExamples) {
       svA.updateAlphaStatus(Cp, Cn);
     }
 

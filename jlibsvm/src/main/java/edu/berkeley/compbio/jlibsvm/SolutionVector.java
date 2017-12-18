@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public class SolutionVector implements Comparable<SolutionVector>, Serializable{
+public class SolutionVector implements Comparable<SolutionVector>, Serializable {
 // ------------------------------ FIELDS ------------------------------
 
   /**
@@ -30,14 +30,16 @@ public class SolutionVector implements Comparable<SolutionVector>, Serializable{
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SolutionVector(long id, @NotNull SparseVector key, Boolean targetValue, double linearTerm) {
+  public SolutionVector(long id, @NotNull SparseVector key, Boolean targetValue,
+      double linearTerm) {
     this.id = id;
     point = key;
     this.linearTerm = linearTerm;
     this.targetValue = targetValue;
   }
 
-  public SolutionVector(long id, @NotNull SparseVector key, Boolean value, double linearTerm, double alpha) {
+  public SolutionVector(long id, @NotNull SparseVector key, Boolean value, double linearTerm,
+      double alpha) {
     this(id, key, value, linearTerm);
     this.alpha = alpha;
   }

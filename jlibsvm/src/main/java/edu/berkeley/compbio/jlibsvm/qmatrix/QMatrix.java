@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.qmatrix;
 
 import edu.berkeley.compbio.jlibsvm.SolutionVector;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Collection;
 
 

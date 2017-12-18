@@ -1,11 +1,7 @@
 package edu.berkeley.compbio.jlibsvm.multi;
 
-import com.google.common.base.Function;
-import com.google.common.base.Throwables;
 import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Multiset;
 import edu.berkeley.compbio.jlibsvm.DiscreteModel;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
@@ -143,8 +139,7 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
   }
 
   @NotNull
-  public VotingResult<L> predictLabelWithQuality(SparseVector x)
-  {
+  public VotingResult<L> predictLabelWithQuality(SparseVector x) {
     final SparseVector scaledX = scalingModel.scaledCopy(x);
 
     L bestLabel = null;
@@ -157,7 +152,7 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
 
     // stage 0: we're going to need the kernel value for x against each of the SVs, for each of the kernels that was used in a subsidary binary machine
 
-    CacheLoader<KernelFunction, double[]> cacheLoader = new CacheLoader<KernelFunction, double[]>(){
+    CacheLoader<KernelFunction, double[]> cacheLoader = new CacheLoader<KernelFunction, double[]>() {
       @Override
       public double[] load(KernelFunction kernel) {
         double[] kvalues = new double[allSVs.length];
@@ -286,8 +281,7 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
       // secondary sort by one-vs-all probability, if available
       // tertiary sort by one-class probability, if available
 
-      if (count > bestCount || (count == bestCount && oneVsAll > bestOneVsAllProbability))
-      {
+      if (count > bestCount || (count == bestCount && oneVsAll > bestOneVsAllProbability)) {
         secondBestCount = bestCount;
         secondBestOneVsAllProbability = bestOneVsAllProbability;
 

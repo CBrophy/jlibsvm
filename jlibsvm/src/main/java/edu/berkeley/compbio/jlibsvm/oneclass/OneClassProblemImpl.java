@@ -39,8 +39,7 @@ public class OneClassProblemImpl<L> extends RegressionProblemImpl<OneClassProble
 
 
   public OneClassProblemImpl(Map<SparseVector, Double> examples, L label,
-      ScalingModel learnedScalingModel)
-  {
+      ScalingModel learnedScalingModel) {
     super(examples, learnedScalingModel);
     this.label = label;
   }

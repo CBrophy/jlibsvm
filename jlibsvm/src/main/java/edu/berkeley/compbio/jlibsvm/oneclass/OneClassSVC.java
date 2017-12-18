@@ -22,13 +22,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassProblem<L>> {
 
-
 // -------------------------- OTHER METHODS --------------------------
 
 
   public RegressionModel train(OneClassProblem<L> problem,
-      @NotNull ImmutableSvmParameter<Double> param)
-  {
+      @NotNull ImmutableSvmParameter<Double> param) {
     validateParam(param);
     RegressionModel result;
     if (param instanceof ImmutableSvmParameterGrid && param.gridsearchBinaryMachinesIndependently) {
@@ -42,8 +40,7 @@ public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassPro
 
 
   private RegressionModel trainScaled(OneClassProblem<L> problem,
-      @NotNull ImmutableSvmParameterPoint<Double> param)
-  {
+      @NotNull ImmutableSvmParameterPoint<Double> param) {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
       // the examples are copied before scaling, not scaled in place
       // that way we don't need to worry that the same examples are being used in another thread, or scaled differently in different contexts, etc.
@@ -97,7 +94,8 @@ public class OneClassSVC<L extends Comparable> extends RegressionSVM<OneClassPro
     super.validateParam(param);
 
     if (param.C != 1.0) {
-      Logger.getGlobal().warning("OneClassSVC ignores param.C, provided value " + param.C + " + not used");
+      Logger.getGlobal()
+          .warning("OneClassSVC ignores param.C, provided value " + param.C + " + not used");
     }
     if (param.probability) {
       throw new SvmException("one-class SVM probability output not supported yet");

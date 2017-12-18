@@ -20,8 +20,7 @@ public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<
   // Return parameter of a Laplace distribution
 
   protected double laplaceParameter(RegressionProblem<R> problem,
-      @NotNull ImmutableSvmParameter<Double> param)
-  {
+      @NotNull ImmutableSvmParameter<Double> param) {
     int i;
     double mae = 0;
 
@@ -63,8 +62,7 @@ public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<
 
 
   public RegressionCrossValidationResults<R> performCrossValidation(R problem,
-      @NotNull ImmutableSvmParameter<Double> param)
-  {
+      @NotNull ImmutableSvmParameter<Double> param) {
     Map<SparseVector, Double> decisionValues = continuousCrossValidation(problem, param);
 
     RegressionCrossValidationResults<R> cv = new RegressionCrossValidationResults<>(problem,

@@ -23,8 +23,7 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 
 
   public BinaryModel<L> train(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param)
-  {
+      @NotNull ImmutableSvmParameter<L> param) {
     validateParam(param);
     BinaryModel<L> result;
     if (param instanceof ImmutableSvmParameterGrid)  //  either the problem was binary to start with, or param.gridSearchBinaryMachinesIndependently
@@ -47,8 +46,7 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 
 
   private BinaryModel<L> trainGrid(@NotNull final BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterGrid<L> param)
-  {
+      @NotNull ImmutableSvmParameterGrid<L> param) {
     final GridTrainingResult gtresult = new GridTrainingResult();
 
     param
@@ -58,7 +56,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
           // note we must use the CV variant in order to know which parameter set is best
           SvmBinaryCrossValidationResults<L> crossValidationResults =
               performCrossValidation(problem, point);
-          Logger.getGlobal().info("CV results for grid point " + point + ": " + crossValidationResults);
+          Logger.getGlobal()
+              .info("CV results for grid point " + point + ": " + crossValidationResults);
           gtresult.update(point, crossValidationResults);
 
         });
@@ -95,8 +94,7 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
    * Train the classifier, and also prepare the probability sigmoid thing if requested.
    */
   private BinaryModel<L> trainScaledWithCV(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterPoint<L> param)
-  {
+      @NotNull ImmutableSvmParameterPoint<L> param) {
     // if scaling each binary machine is enabled, then each fold will be independently scaled also; so we don't need to scale the whole dataset prior to CV
 
     SvmBinaryCrossValidationResults<L> cv = null;
@@ -104,7 +102,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
       cv = performCrossValidation(problem, param);
     } catch (SvmException e) {
       //ignore, probably there weren't enough points to make folds
-      Logger.getGlobal().info("Could not perform cross-validation\n" + Throwables.getStackTraceAsString(e));
+      Logger.getGlobal()
+          .info("Could not perform cross-validation\n" + Throwables.getStackTraceAsString(e));
     }
 
     // finally train once on all the data (including rescaling)
@@ -117,8 +116,7 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 
   public SvmBinaryCrossValidationResults<L> performCrossValidation(
       @NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param)
-  {
+      @NotNull ImmutableSvmParameter<L> param) {
     //there is no point in computing probabilities on these submodels (and that produces infinite recursion)
     ImmutableSvmParameterPoint<L> noProbParam = (ImmutableSvmParameterPoint<L>) param
         .noProbabilityCopy();

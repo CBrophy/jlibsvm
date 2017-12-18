@@ -31,7 +31,8 @@ public class RegressionProblemImpl<R extends RegressionProblem<R>> extends
     super(examples, scalingModel, heldOutPoints);
   }
 
-  public RegressionProblemImpl(RegressionProblemImpl<R> backingProblem, Set<SparseVector> heldOutPoints) {
+  public RegressionProblemImpl(RegressionProblemImpl<R> backingProblem,
+      Set<SparseVector> heldOutPoints) {
     super(new SubtractionMap<>(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
   }

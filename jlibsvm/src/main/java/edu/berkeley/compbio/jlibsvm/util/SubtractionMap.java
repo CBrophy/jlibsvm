@@ -31,7 +31,8 @@ public class SubtractionMap<L> extends AbstractMap<SparseVector, L> {
     this(orig.entrySet(), except, maxSize);
   }
 
-  public SubtractionMap(Collection<Entry<SparseVector, L>> origEntries, Set<SparseVector> except, int maxSize) {
+  public SubtractionMap(Collection<Entry<SparseVector, L>> origEntries, Set<SparseVector> except,
+      int maxSize) {
     entries = new SubtractionEntrySet<>(origEntries, except, maxSize);
   }
 

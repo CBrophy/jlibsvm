@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
-import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>

@@ -251,8 +251,7 @@ public abstract class KernelQMatrix implements QMatrix {
      * according to the new ranking. The provided arrays are in the correct rank order already.
      */
     public void maintainCache(SolutionVector[] active,
-        SolutionVector[] newlyInactive)
-    {
+        SolutionVector[] newlyInactive) {
       // the desired partitioning is provided by the arguments; the current partitioning is buried inside each element as SV.rank.
 
       // note the ranks of the previously inactive SVs don't change, so we don't have to touch them or their cache entries at all

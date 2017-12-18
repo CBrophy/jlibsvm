@@ -35,7 +35,8 @@ public class GaussianRBFKernelTest {
       // those vectors are likely far apart, and the RBF is always near zero for those.  Interpolate to test closer distances.
 
       for (int j = 0; j < 100; j++) {
-        SparseVector sv3 = SparseVector.mergeScaleVectors(sv1, 1.0 - (j / 1000.0), sv2, (j / 1000.0));
+        SparseVector sv3 = SparseVector
+            .mergeScaleVectors(sv1, 1.0 - (j / 1000.0), sv2, (j / 1000.0));
         final double compositeResult = composite.evaluate(sv1, sv3);
         final double explicitResult = explicit.evaluate(sv1, sv3);
         final double diff = Math.abs(explicitResult - compositeResult);

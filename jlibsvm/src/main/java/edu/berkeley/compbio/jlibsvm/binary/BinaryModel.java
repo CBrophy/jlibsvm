@@ -166,7 +166,8 @@ public class BinaryModel<L extends Comparable> extends AlphaModel<L>
   public double getTrueProbability(double[] kvalues, int[] svIndexMap) {
     double pv = predictValue(kvalues, svIndexMap);
     if (crossValidationResults == null) {
-      Logger.getGlobal().severe("Can't compute probability in binary model without crossvalidationresults");
+      Logger.getGlobal()
+          .severe("Can't compute probability in binary model without crossvalidationresults");
       return pv > 0. ? 1.0 : 0.0;
     } else if (crossValidationResults.sigmoid == null) {
       Logger.getGlobal().severe("Can't compute probability in binary model without sigmoid");

@@ -47,8 +47,6 @@ public class RegressionSolverNu extends Solver_NU<Double> {
       model.supportVectors.put(svC.point, alphaDiff);
     }
 
-
-
     // note at this point the solution includes _all_ vectors, even if their alphas are zero
 
     // we can't do this yet because in the regression case there are twice as many alphas as vectors		// model.compact();

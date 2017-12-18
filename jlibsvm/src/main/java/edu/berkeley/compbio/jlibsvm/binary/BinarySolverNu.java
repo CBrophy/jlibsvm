@@ -14,7 +14,6 @@ import java.util.logging.Logger;
  */
 public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
 
-
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public BinarySolverNu(
@@ -30,8 +29,7 @@ public class BinarySolverNu<L extends Comparable> extends Solver_NU<L> {
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public BinaryModel<L> solve()
-  {
+  public BinaryModel<L> solve() {
     int iter = optimize();
 
     BinaryModel<L> model = new BinaryModel<>();

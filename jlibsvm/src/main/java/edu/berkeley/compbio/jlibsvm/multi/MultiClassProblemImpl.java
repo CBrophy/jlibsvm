@@ -18,8 +18,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MultiClassProblemImpl<L extends Comparable>
     extends ExplicitSvmProblemImpl<L, MultiClassProblem<L>>
-    implements MultiClassProblem<L>
-{
+    implements MultiClassProblem<L> {
 // ------------------------------ FIELDS ------------------------------
 
   Class labelClass;
@@ -41,14 +40,16 @@ public class MultiClassProblemImpl<L extends Comparable>
    * alone, so we need to provide the class object (e.g., String.class or whatever) for the label type used.  Of course
    * this should match the generics used on SvmProblem, etc.
    */
-  public MultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter, Map<SparseVector, L> examples,
+  public MultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter,
+      Map<SparseVector, L> examples,
       ScalingModel scalingModel) {
     super(examples, scalingModel);
     this.labelClass = labelClass;
     this.labelInverter = labelInverter;
   }
 
-  public MultiClassProblemImpl(MultiClassProblemImpl<L> backingProblem, Set<SparseVector> heldOutPoints) {
+  public MultiClassProblemImpl(MultiClassProblemImpl<L> backingProblem,
+      Set<SparseVector> heldOutPoints) {
     super(new SubtractionMap(backingProblem.examples, heldOutPoints),
         backingProblem.scalingModel, heldOutPoints);
     this.labelClass = backingProblem.labelClass;

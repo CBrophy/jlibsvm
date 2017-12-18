@@ -19,7 +19,6 @@ public class OneClassModel<L> extends RegressionModel implements DiscreteModel<B
     super();
   }
 
-
 // --------------------- GETTER / SETTER METHODS ---------------------
 
   public L getLabel() {

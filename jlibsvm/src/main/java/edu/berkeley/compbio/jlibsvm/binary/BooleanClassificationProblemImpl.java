@@ -28,7 +28,8 @@ public class BooleanClassificationProblemImpl<L extends Comparable> extends
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public BooleanClassificationProblemImpl(Class labelClass, L trueLabel, Set<SparseVector> trueExamples,
+  public BooleanClassificationProblemImpl(Class labelClass, L trueLabel,
+      Set<SparseVector> trueExamples,
       L falseLabel,
       Set<SparseVector> falseExamples) {
     // this is a hack: we leave examples==null and just deal with booleanExamples directly

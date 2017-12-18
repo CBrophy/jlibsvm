@@ -21,8 +21,7 @@ public class EpsilonSVR<R extends RegressionProblem<R>> extends RegressionSVM<R>
 // -------------------------- OTHER METHODS --------------------------
 
 
-  public RegressionModel train(R problem, @NotNull ImmutableSvmParameter<Double> param)
-  {
+  public RegressionModel train(R problem, @NotNull ImmutableSvmParameter<Double> param) {
     validateParam(param);
     RegressionModel result;
     if (param instanceof ImmutableSvmParameterGrid && param.gridsearchBinaryMachinesIndependently) {
@@ -36,8 +35,7 @@ public class EpsilonSVR<R extends RegressionProblem<R>> extends RegressionSVM<R>
 
 
   private RegressionModel trainScaled(R problem,
-      @NotNull ImmutableSvmParameterPoint<Double> param)
-  {
+      @NotNull ImmutableSvmParameterPoint<Double> param) {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
       // the examples are copied before scaling, not scaled in place
       // that way we don't need to worry that the same examples are being used in another thread, or scaled differently in different contexts, etc.

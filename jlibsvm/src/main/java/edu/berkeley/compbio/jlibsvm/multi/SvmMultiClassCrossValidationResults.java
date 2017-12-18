@@ -26,8 +26,7 @@ public class SvmMultiClassCrossValidationResults<L extends Comparable> extends
 
 
   public SvmMultiClassCrossValidationResults(MultiClassProblem<L> problem,
-      Map<SparseVector, L> predictions)
-  {
+      Map<SparseVector, L> predictions) {
     super();
 
     for (Map.Entry<SparseVector, L> entry : problem.getExamples().entrySet()) {

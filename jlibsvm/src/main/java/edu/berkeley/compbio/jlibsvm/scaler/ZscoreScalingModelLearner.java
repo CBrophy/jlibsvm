@@ -21,7 +21,8 @@ public class ZscoreScalingModelLearner implements ScalingModelLearner {
     return priorMean + (value - priorMean) / d;
   }
 
-  public static double runningStddevQ(int sampleCount, double priorMean, double priorQ, double value) {
+  public static double runningStddevQ(int sampleCount, double priorMean, double priorQ,
+      double value) {
     double d = value - priorMean;
     double result = priorQ + ((sampleCount - 1) * d * d / sampleCount);
     //	assert result < 1000;  // temporary test

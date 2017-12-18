@@ -20,14 +20,14 @@ import org.jetbrains.annotations.NotNull;
  */
 public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
 
-
 // -------------------------- OTHER METHODS --------------------------
 
   @Override
   public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
       @NotNull ImmutableSvmParameterPoint<L> param) {
     if (Cp != 1.0 || Cn != 1.0) {
-      Logger.getGlobal().warning("Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
+      Logger.getGlobal().warning(
+          "Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
     }
 
     if (!isFeasible(problem, param)) {
@@ -67,7 +67,8 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
         new BooleanInvertingKernelQMatrix(param.kernel, problem.getNumExamples(),
             param.getCacheRows());
     BinarySolverNu<L> s =
-        new BinarySolverNu<>(solutionVectors, qMatrix, 1.0, 1.0, param.eps, param.shrinking, param.maxIterations);
+        new BinarySolverNu<>(solutionVectors, qMatrix, 1.0, 1.0, param.eps, param.shrinking,
+            param.maxIterations);
 
     BinaryModel<L> model = s.solve();
 

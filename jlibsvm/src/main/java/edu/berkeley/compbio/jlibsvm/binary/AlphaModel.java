@@ -29,8 +29,6 @@ public abstract class AlphaModel<L extends Comparable> extends SolutionModel<L> 
     super();
   }
 
-
-
 // -------------------------- OTHER METHODS --------------------------
 
   /**

@@ -11,7 +11,8 @@ import java.util.Set;
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
  */
-public interface MultiClassProblem<L extends Comparable> extends SvmProblem<L, MultiClassProblem<L>> {
+public interface MultiClassProblem<L extends Comparable> extends
+    SvmProblem<L, MultiClassProblem<L>> {
 // -------------------------- OTHER METHODS --------------------------
 
   Map<L, Set<SparseVector>> getExamplesByLabel();

@@ -9,7 +9,7 @@ import java.util.HashMap;
  * @version $Id$
  */
 public class MutableOneClassProblemImpl<L> extends OneClassProblemImpl<L>
-    implements MutableSvmProblem<Double,OneClassProblem<L>> {
+    implements MutableSvmProblem<Double, OneClassProblem<L>> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public MutableOneClassProblemImpl(int numExamples, L label) {

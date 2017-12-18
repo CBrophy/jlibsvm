@@ -6,23 +6,17 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
 import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.StringBufferInputStream;
 import java.util.Collection;
-import java.util.Properties;
 
 
 /**
@@ -36,7 +30,8 @@ public abstract class SolutionModel<L extends Comparable> implements Serializabl
 
 // -------------------------- STATIC METHODS --------------------------
 
-  public static <L extends Comparable, T extends SolutionModel<L>> T load(String modelFileName, Class<T> modelType) {
+  public static <L extends Comparable, T extends SolutionModel<L>> T load(String modelFileName,
+      Class<T> modelType) {
     checkNotNull(modelFileName, "modelFileName");
     checkNotNull(modelType, "modelType");
 
@@ -47,9 +42,10 @@ public abstract class SolutionModel<L extends Comparable> implements Serializabl
     T result = null;
     ObjectMapper objectMapper = new ObjectMapper();
 
-    try(BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))){
+    try (BufferedReader reader = new BufferedReader(
+        new InputStreamReader(new FileInputStream(file)))) {
       String line = null;
-      while((line = reader.readLine()) != null){
+      while ((line = reader.readLine()) != null) {
         checkState(result == null, "Model file expected to contain only one model");
 
         result = objectMapper.readValue(line, modelType);
@@ -69,23 +65,23 @@ public abstract class SolutionModel<L extends Comparable> implements Serializabl
 // -------------------------- OTHER METHODS --------------------------
 
   public void save(String modelFileName) throws IOException {
-    checkNotNull(modelFileName,"modelFileName");
+    checkNotNull(modelFileName, "modelFileName");
     ObjectMapper objectMapper = new ObjectMapper();
 
     File file = new File(modelFileName);
 
     Files.createParentDirs(file);
 
-    if(file.exists()){
+    if (file.exists()) {
       checkState(file.delete(), "Failed to delete existing file: %s", file.getAbsolutePath());
     }
 
-    try(BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)))){
+    try (BufferedWriter writer = new BufferedWriter(
+        new OutputStreamWriter(new FileOutputStream(file)))) {
       writer.write(objectMapper.writeValueAsString(this));
     }
 
   }
-
 
 
   public String getKernelName() {

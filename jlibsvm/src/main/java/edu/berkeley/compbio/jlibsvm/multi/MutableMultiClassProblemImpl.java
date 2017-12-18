@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MutableMultiClassProblemImpl<L extends Comparable> extends
     MultiClassProblemImpl<L>
-    implements MutableSvmProblem<L,MultiClassProblem<L>> {
+    implements MutableSvmProblem<L, MultiClassProblem<L>> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   /**

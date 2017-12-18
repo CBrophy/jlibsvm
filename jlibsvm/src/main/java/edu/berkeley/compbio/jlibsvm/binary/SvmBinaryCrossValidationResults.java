@@ -12,7 +12,8 @@ import java.util.logging.Logger;
  */
 public class SvmBinaryCrossValidationResults<L extends Comparable> extends
     BinaryCrossValidationResults {
-// ------------------------------ FIELDS ------------------------------
+
+  // ------------------------------ FIELDS ------------------------------
   SigmoidProbabilityModel sigmoid;
 
   public SvmBinaryCrossValidationResults(BinaryClassificationProblem<L> problem,
@@ -24,7 +25,8 @@ public class SvmBinaryCrossValidationResults<L extends Comparable> extends
     final double[] decisionValueArray = new double[totalExamples];
     final boolean[] labelArray = new boolean[totalExamples];
 
-    Logger.getGlobal().info("Collecting binary cross-validation results for " + totalExamples + " points");
+    Logger.getGlobal()
+        .info("Collecting binary cross-validation results for " + totalExamples + " points");
 
     L trueLabel = problem.getTrueLabel();
 

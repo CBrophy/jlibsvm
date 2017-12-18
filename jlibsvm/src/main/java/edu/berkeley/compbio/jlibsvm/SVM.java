@@ -51,8 +51,7 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> impl
   public abstract SolutionModel<L> train(R problem, ImmutableSvmParameter<L> param);
 
   public Map<SparseVector, L> discreteCrossValidation(SvmProblem<L, R> problem,
-      final ImmutableSvmParameter<L> param)
-  {
+      final ImmutableSvmParameter<L> param) {
     final Map<SparseVector, L> predictions = new ConcurrentHashMap<>();
     final Set<SparseVector> nullPredictionPoints =
         new ConcurrentSkipListSet<>(); // necessary because ConcurrentHashMap doesn't support null values
@@ -69,14 +68,15 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> impl
           final SolutionModel<L> model = train(fold,
               param);
 
-          checkState(model instanceof DiscreteModel, "train() must return an instance of DiscreteModel");
+          checkState(model instanceof DiscreteModel,
+              "train() must return an instance of DiscreteModel");
 
           // note the param has not changed here, so if the method includes oneVsAll models with a
           // probability threshold, those will be independently computed for each fold and so play
           // into the predictLabel
 
           for (final SparseVector p : fold.getHeldOutPoints()) {
-            L prediction = ((DiscreteModel<L>)model).predictLabel(p);
+            L prediction = ((DiscreteModel<L>) model).predictLabel(p);
             if (prediction == null) {
               nullPredictionPoints.add(p);
             } else {
