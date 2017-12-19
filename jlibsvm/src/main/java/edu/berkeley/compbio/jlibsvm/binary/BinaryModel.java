@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -101,12 +100,12 @@ public class BinaryModel<L extends Comparable> extends AlphaModel<L>
     return falseLabel;
   }
 
-  @NotNull
+
   public ScalingModel getScalingModel() {
     return scalingModel;
   }
 
-  public void setScalingModel(@NotNull ScalingModel scalingModel) {
+  public void setScalingModel( ScalingModel scalingModel) {
     this.scalingModel = scalingModel;
   }
 

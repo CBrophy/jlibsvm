@@ -5,7 +5,6 @@ import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -46,7 +45,7 @@ public class OneClassProblemImpl<L> extends RegressionProblemImpl<OneClassProble
 
 
   public OneClassProblemImpl<L> getScaledCopy(
-      @NotNull ScalingModelLearner scalingModelLearner) {
+       ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = (OneClassProblemImpl<L>) learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;

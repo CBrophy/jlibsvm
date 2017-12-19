@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -92,7 +91,7 @@ public class MultiClassProblemImpl<L extends Comparable>
 
 
   public MultiClassProblem<L> getScaledCopy(
-      @NotNull ScalingModelLearner scalingModelLearner) {
+       ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;

@@ -10,7 +10,6 @@ import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -22,8 +21,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 // -------------------------- OTHER METHODS --------------------------
 
 
-  public BinaryModel<L> train(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param) {
+  public BinaryModel<L> train( BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameter<L> param) {
     validateParam(param);
     BinaryModel<L> result;
     if (param instanceof ImmutableSvmParameterGrid)  //  either the problem was binary to start with, or param.gridSearchBinaryMachinesIndependently
@@ -45,8 +44,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
    */
 
 
-  private BinaryModel<L> trainGrid(@NotNull final BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterGrid<L> param) {
+  private BinaryModel<L> trainGrid( final BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameterGrid<L> param) {
     final GridTrainingResult gtresult = new GridTrainingResult();
 
     param
@@ -93,8 +92,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
   /**
    * Train the classifier, and also prepare the probability sigmoid thing if requested.
    */
-  private BinaryModel<L> trainScaledWithCV(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterPoint<L> param) {
+  private BinaryModel<L> trainScaledWithCV( BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameterPoint<L> param) {
     // if scaling each binary machine is enabled, then each fold will be independently scaled also; so we don't need to scale the whole dataset prior to CV
 
     SvmBinaryCrossValidationResults<L> cv = null;
@@ -115,8 +114,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
 
 
   public SvmBinaryCrossValidationResults<L> performCrossValidation(
-      @NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param) {
+       BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameter<L> param) {
     //there is no point in computing probabilities on these submodels (and that produces infinite recursion)
     ImmutableSvmParameterPoint<L> noProbParam = (ImmutableSvmParameterPoint<L>) param
         .noProbabilityCopy();
@@ -133,13 +132,13 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
   /**
    * Normal training on the entire problem, with no scaling and no cross-validation-based probability measure.
    */
-  protected abstract BinaryModel<L> trainOne(@NotNull BinaryClassificationProblem<L> problem,
+  protected abstract BinaryModel<L> trainOne( BinaryClassificationProblem<L> problem,
       double Cp,
-      double Cn, @NotNull ImmutableSvmParameterPoint<L> param);
+      double Cn,  ImmutableSvmParameterPoint<L> param);
 
 
-  private BinaryModel<L> trainScaled(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterPoint<L> param) {
+  private BinaryModel<L> trainScaled( BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameterPoint<L> param) {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
       // the examples are copied before scaling, not scaled in place
       // that way we don't need to worry that the same examples are being used in another thread, or scaled differently in different contexts, etc.
@@ -153,8 +152,8 @@ public abstract class BinaryClassificationSVM<L extends Comparable>
     return result;
   }
 
-  private BinaryModel<L> trainWeighted(@NotNull BinaryClassificationProblem<L> problem,
-      @NotNull ImmutableSvmParameterPoint<L> param) {
+  private BinaryModel<L> trainWeighted( BinaryClassificationProblem<L> problem,
+       ImmutableSvmParameterPoint<L> param) {
     // calculate weighted C
 
     double weightedCp = param.C;

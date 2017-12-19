@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -22,7 +21,7 @@ public class C_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
 
   @Override
   public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
-      @NotNull ImmutableSvmParameterPoint<L> param) {
+       ImmutableSvmParameterPoint<L> param) {
     double linearTerm = -1.0;
     Map<SparseVector, Boolean> examples = problem.getBooleanExamples();
 
@@ -78,7 +77,7 @@ public class C_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
   }
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<L> param) {
+  public void validateParam( ImmutableSvmParameter<L> param) {
     super.validateParam(param);
     if (param instanceof ImmutableSvmParameterPoint) {
       if (((ImmutableSvmParameterPoint) param).C <= 0) {

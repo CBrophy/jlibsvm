@@ -1,10 +1,9 @@
 package edu.berkeley.compbio.jlibsvm.multi;
 
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
+import edu.berkeley.compbio.jlibsvm.crossvalidation.MultiClassCrossValidationResults;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import edu.berkeley.compbio.ml.MultiClassCrossValidationResults;
 import java.util.Map;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -14,8 +13,6 @@ import org.apache.log4j.Logger;
 public class SvmMultiClassCrossValidationResults<L extends Comparable> extends
     MultiClassCrossValidationResults<L> {
 // ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(SvmMultiClassCrossValidationResults.class);
 
   /**
    * if we did a grid search, keep track of which parameter set was used for these results

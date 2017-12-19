@@ -4,8 +4,8 @@ import edu.berkeley.compbio.jlibsvm.ContinuousModel;
 import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameterPoint;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.binary.AlphaModel;
+import edu.berkeley.compbio.jlibsvm.crossvalidation.CrossValidationResults;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.util.Collection;
 
 /**

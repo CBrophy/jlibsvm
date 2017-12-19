@@ -4,7 +4,6 @@ import edu.berkeley.compbio.jlibsvm.SvmProblem;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModelLearner;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -18,7 +17,7 @@ public interface BinaryClassificationProblem<L extends Comparable>
 
   L getFalseLabel();
 
-  @NotNull
+
   BinaryClassificationProblem<L> getScaledCopy(ScalingModelLearner scalingModelLearner);
 
   L getTrueLabel();

@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -54,8 +53,8 @@ public abstract class Solver<L extends Comparable> implements Serializable {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public Solver(
-      @NotNull List<SolutionVector> solutionVectors,
-      @NotNull QMatrix Q,
+       List<SolutionVector> solutionVectors,
+       QMatrix Q,
       double Cp,
       double Cn,
       double eps,

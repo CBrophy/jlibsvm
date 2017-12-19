@@ -5,7 +5,6 @@ import edu.berkeley.compbio.jlibsvm.SVM;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -20,7 +19,7 @@ public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<
   // Return parameter of a Laplace distribution
 
   protected double laplaceParameter(RegressionProblem<R> problem,
-      @NotNull ImmutableSvmParameter<Double> param) {
+       ImmutableSvmParameter<Double> param) {
     int i;
     double mae = 0;
 
@@ -53,16 +52,16 @@ public abstract class RegressionSVM<R extends RegressionProblem<R>> extends SVM<
   }
 
   public abstract RegressionModel train(R problem,
-      @NotNull ImmutableSvmParameter<Double> param);
+       ImmutableSvmParameter<Double> param);
 
   @Override
-  public void validateParam(@NotNull ImmutableSvmParameter<Double> param) {
+  public void validateParam( ImmutableSvmParameter<Double> param) {
     super.validateParam(param);
   }
 
 
   public RegressionCrossValidationResults<R> performCrossValidation(R problem,
-      @NotNull ImmutableSvmParameter<Double> param) {
+       ImmutableSvmParameter<Double> param) {
     Map<SparseVector, Double> decisionValues = continuousCrossValidation(problem, param);
 
     RegressionCrossValidationResults<R> cv = new RegressionCrossValidationResults<>(problem,

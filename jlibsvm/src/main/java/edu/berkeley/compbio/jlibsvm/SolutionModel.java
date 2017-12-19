@@ -6,7 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import edu.berkeley.compbio.ml.CrossValidationResults;
+import edu.berkeley.compbio.jlibsvm.crossvalidation.CrossValidationResults;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

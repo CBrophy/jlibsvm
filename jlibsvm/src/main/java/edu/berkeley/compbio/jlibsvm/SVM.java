@@ -2,8 +2,8 @@ package edu.berkeley.compbio.jlibsvm;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import edu.berkeley.compbio.jlibsvm.crossvalidation.CrossValidationResults;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import edu.berkeley.compbio.ml.CrossValidationResults;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -98,7 +97,7 @@ public abstract class SVM<L extends Comparable, R extends SvmProblem<L, R>> impl
   public abstract String getSvmType();
 
 
-  public void validateParam(@NotNull ImmutableSvmParameter<L> param) {
+  public void validateParam( ImmutableSvmParameter<L> param) {
     if (param.eps < 0) {
       throw new SvmException("eps < 0");
     }

@@ -9,7 +9,6 @@ import edu.berkeley.compbio.jlibsvm.util.SubtractionMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -60,7 +59,7 @@ public class RegressionProblemImpl<R extends RegressionProblem<R>> extends
     return (R) new RegressionProblemImpl(this, heldOutPoints);
   }
 
-  public R getScaledCopy(@NotNull ScalingModelLearner scalingModelLearner) {
+  public R getScaledCopy( ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;

@@ -4,7 +4,6 @@ import edu.berkeley.compbio.jlibsvm.SolutionVector;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
 import java.util.Arrays;
 import java.util.Collection;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -19,7 +18,7 @@ public abstract class KernelQMatrix implements QMatrix {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  KernelQMatrix(@NotNull KernelFunction kernel, int numExamples, int cacheRows) {
+  KernelQMatrix( KernelFunction kernel, int numExamples, int cacheRows) {
     this.kernel = kernel;
     this.cache = new RecentActivitySquareCache(numExamples, cacheRows);
   }

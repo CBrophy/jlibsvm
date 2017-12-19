@@ -1,8 +1,8 @@
 package edu.berkeley.compbio.jlibsvm.binary;
 
 import edu.berkeley.compbio.jlibsvm.SigmoidProbabilityModel;
+import edu.berkeley.compbio.jlibsvm.crossvalidation.BinaryCrossValidationResults;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import edu.berkeley.compbio.ml.BinaryCrossValidationResults;
 import java.util.Map;
 import java.util.logging.Logger;
 

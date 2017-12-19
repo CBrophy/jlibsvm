@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Solver for nu-svm classification and regression
@@ -22,8 +21,8 @@ public class Solver_NU<L extends Comparable> extends Solver<L> {
 // --------------------------- CONSTRUCTORS ---------------------------
 
   public Solver_NU(
-      @NotNull List<SolutionVector> solutionVectors,
-      @NotNull QMatrix Q,
+       List<SolutionVector> solutionVectors,
+       QMatrix Q,
       double Cp,
       double Cn,
       double eps,

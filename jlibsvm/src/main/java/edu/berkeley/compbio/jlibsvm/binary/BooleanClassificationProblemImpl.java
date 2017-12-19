@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -99,7 +98,7 @@ public class BooleanClassificationProblemImpl<L extends Comparable> extends
    * There's no sense in scaling Boolean values, so this is a noop.  note we don't make a copy for efficiency.
    */
   public BinaryClassificationProblem<L> getScaledCopy(
-      @NotNull ScalingModelLearner scalingModelLearner) {
+       ScalingModelLearner scalingModelLearner) {
     return this;
   }
 

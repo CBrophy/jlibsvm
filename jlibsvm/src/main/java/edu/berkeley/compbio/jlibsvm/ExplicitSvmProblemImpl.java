@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -38,13 +37,13 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
   }
 
   protected ExplicitSvmProblemImpl(Map<SparseVector, L> examples,
-      @NotNull ScalingModel scalingModel) {
+       ScalingModel scalingModel) {
     this.examples = examples;
     this.scalingModel = scalingModel;
   }
 
   protected ExplicitSvmProblemImpl(Map<SparseVector, L> examples,
-      @NotNull ScalingModel scalingModel, Set<SparseVector> heldOutPoints) {
+       ScalingModel scalingModel, Set<SparseVector> heldOutPoints) {
     this.examples = examples;
     this.scalingModel = scalingModel;
     this.heldOutPoints = heldOutPoints;
@@ -52,7 +51,7 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
-  @NotNull
+
   public Map<SparseVector, L> getExamples() {
     return examples;
   }
@@ -69,7 +68,7 @@ public abstract class ExplicitSvmProblemImpl<L extends Comparable, R extends Svm
     return labels;
   }
 
-  @NotNull
+
   public ScalingModel getScalingModel() {
     return scalingModel;
   }

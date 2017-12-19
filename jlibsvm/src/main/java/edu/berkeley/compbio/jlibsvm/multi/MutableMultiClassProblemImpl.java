@@ -6,7 +6,6 @@ import edu.berkeley.compbio.jlibsvm.labelinverter.LabelInverter;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.HashMap;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -24,7 +23,7 @@ public class MutableMultiClassProblemImpl<L extends Comparable> extends
    */
   public MutableMultiClassProblemImpl(Class labelClass, LabelInverter<L> labelInverter,
       int numExamples,
-      @NotNull ScalingModel scalingModel) {
+       ScalingModel scalingModel) {
     super(labelClass, labelInverter, new HashMap<>(numExamples),
         scalingModel);
   }

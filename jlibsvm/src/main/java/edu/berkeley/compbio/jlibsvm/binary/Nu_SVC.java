@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -24,7 +23,7 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
 
   @Override
   public BinaryModel<L> trainOne(BinaryClassificationProblem<L> problem, double Cp, double Cn,
-      @NotNull ImmutableSvmParameterPoint<L> param) {
+       ImmutableSvmParameterPoint<L> param) {
     if (Cp != 1.0 || Cn != 1.0) {
       Logger.getGlobal().warning(
           "Nu_SVC ignores Cp and Cn, provided values " + Cp + " and " + Cn + " + not used");
@@ -95,7 +94,7 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
   }
 
   public boolean isFeasible(BinaryClassificationProblem problem,
-      @NotNull ImmutableSvmParameter<L> param) {
+       ImmutableSvmParameter<L> param) {
     Multiset<Boolean> counts = problem.getExampleCounts();
 
     int n1 = counts.count(problem.getTrueLabel());
@@ -112,7 +111,7 @@ public class Nu_SVC<L extends Comparable> extends BinaryClassificationSVM<L> {
     return "nu_svc";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameter<L> param) {
+  public void validateParam( ImmutableSvmParameter<L> param) {
     super.validateParam(param);
     if (param.nu <= 0 || param.nu > 1) {
       throw new SvmException("nu <= 0 or nu > 1");

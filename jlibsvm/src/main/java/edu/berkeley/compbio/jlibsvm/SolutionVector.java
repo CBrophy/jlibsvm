@@ -2,7 +2,6 @@ package edu.berkeley.compbio.jlibsvm;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.io.Serializable;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -30,7 +29,7 @@ public class SolutionVector implements Comparable<SolutionVector>, Serializable 
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-  public SolutionVector(long id, @NotNull SparseVector key, Boolean targetValue,
+  public SolutionVector(long id,  SparseVector key, Boolean targetValue,
       double linearTerm) {
     this.id = id;
     point = key;
@@ -38,7 +37,7 @@ public class SolutionVector implements Comparable<SolutionVector>, Serializable 
     this.targetValue = targetValue;
   }
 
-  public SolutionVector(long id, @NotNull SparseVector key, Boolean value, double linearTerm,
+  public SolutionVector(long id,  SparseVector key, Boolean value, double linearTerm,
       double alpha) {
     this(id, key, value, linearTerm);
     this.alpha = alpha;

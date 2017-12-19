@@ -8,11 +8,11 @@ import edu.berkeley.compbio.jlibsvm.ImmutableSvmParameter;
 import edu.berkeley.compbio.jlibsvm.SolutionModel;
 import edu.berkeley.compbio.jlibsvm.SvmException;
 import edu.berkeley.compbio.jlibsvm.binary.BinaryModel;
+import edu.berkeley.compbio.jlibsvm.crossvalidation.MultiClassCrossValidationResults;
 import edu.berkeley.compbio.jlibsvm.kernel.KernelFunction;
 import edu.berkeley.compbio.jlibsvm.scaler.NoopScalingModel;
 import edu.berkeley.compbio.jlibsvm.scaler.ScalingModel;
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import edu.berkeley.compbio.ml.MultiClassCrossValidationResults;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,9 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-
+import java.util.logging.Logger;
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
  * @version $Id$
@@ -34,8 +32,6 @@ import org.jetbrains.annotations.NotNull;
 public class MultiClassModel<L extends Comparable> extends SolutionModel<L> implements
     DiscreteModel<L> {
 // ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(MultiClassModel.class);
 
   private ScalingModel scalingModel = new NoopScalingModel();
 
@@ -104,12 +100,11 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
 
 // --------------------- GETTER / SETTER METHODS ---------------------
 
-  @NotNull
   public ScalingModel getScalingModel() {
     return scalingModel;
   }
 
-  public void setScalingModel(@NotNull ScalingModel scalingModel) {
+  public void setScalingModel(ScalingModel scalingModel) {
     this.scalingModel = scalingModel;
   }
 
@@ -138,7 +133,6 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
     return bestLabel;
   }
 
-  @NotNull
   public VotingResult<L> predictLabelWithQuality(SparseVector x) {
     final SparseVector scaledX = scalingModel.scaledCopy(x);
 
@@ -205,7 +199,7 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
     if (allVsAllMode == AllVsAllMode.AllVsAll) {
       // vote using all models
 
-      logger.debug("Sample voting using all pairs of " + numLabels + " labels ("
+      Logger.getGlobal().info("Sample voting using all pairs of " + numLabels + " labels ("
           + ((numLabels * (numLabels - 1)) / 2. - numLabels) + " models)");
 
       // How AllVsAll with Veto differs from FilteredVsAll, etc.:
@@ -235,11 +229,12 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
 
       int numActive = oneVsAllProbabilities != null ? oneVsAllProbabilities.size() : numLabels;
       if (requiredActive == 1) {
-        logger
-            .debug("Sample voting with all " + numLabels + " vs. " + numActive + " active labels ("
+        Logger.getGlobal()
+            .info("Sample voting with all " + numLabels + " vs. " + numActive + " active labels ("
                 + ((numLabels * (numActive - 1)) / 2. - numActive) + " models)");
       } else {
-        logger.debug("Sample voting using pairs of only " + numActive + " active labels ("
+        Logger.getGlobal()
+            .info("Sample voting using pairs of only " + numActive + " active labels ("
             + ((numActive * (numActive - 1)) / 2. - numActive) + " models)");
       }
 
@@ -451,7 +446,8 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
       }
     }
     if (iter >= maximumIterations) {
-      logger.error("Multiclass probability attempted too many iterations");
+      Logger.getGlobal()
+          .severe("Multiclass probability attempted too many iterations");
     }
     return p;
   }
@@ -474,23 +470,6 @@ public class MultiClassModel<L extends Comparable> extends SolutionModel<L> impl
       }
       svIndexMaps.put(binaryModel, svIndexMap);
     }
-
-// dupe for-block as above?
-//    for (BinaryModel<L> binaryModel : oneVsOneModels.values()) {
-//      int[] svIndexMap = new int[binaryModel.SVs.length];
-//      int i = 0;
-//      for (SparseVector p : binaryModel.SVs) {
-//        Integer allSVsIndex = allSVsMap.get(p);
-//        if (allSVsIndex == null) {
-//          allSVsIndex = totalSVs;
-//          allSVsMap.put(p, allSVsIndex);
-//          totalSVs++;
-//        }
-//        svIndexMap[i] = allSVsIndex;
-//        i++;
-//      }
-//      svIndexMaps.put(binaryModel, svIndexMap);
-//    }
 
     allSVs = new SparseVector[totalSVs];
 

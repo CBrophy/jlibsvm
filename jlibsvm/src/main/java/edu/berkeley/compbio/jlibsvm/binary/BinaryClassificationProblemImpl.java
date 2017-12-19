@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -50,7 +49,7 @@ public class BinaryClassificationProblemImpl<L extends Comparable>
   }
 
   public BinaryClassificationProblemImpl(Class labelClass, Map<SparseVector, L> examples,
-      @NotNull ScalingModel scalingModel, L trueLabel, L falseLabel) {
+       ScalingModel scalingModel, L trueLabel, L falseLabel) {
     super(examples, scalingModel);
     this.trueLabel = trueLabel;
     this.falseLabel = falseLabel;
@@ -94,7 +93,7 @@ public class BinaryClassificationProblemImpl<L extends Comparable>
   }
 
   public BinaryClassificationProblem<L> getScaledCopy(
-      @NotNull ScalingModelLearner scalingModelLearner) {
+       ScalingModelLearner scalingModelLearner) {
     if (!scalingModelLearner.equals(lastScalingModelLearner)) {
       scaledCopy = learnScaling(scalingModelLearner);
       lastScalingModelLearner = scalingModelLearner;

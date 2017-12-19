@@ -2,7 +2,6 @@ package edu.berkeley.compbio.jlibsvm.kernel;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
 import java.util.Properties;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -40,7 +39,7 @@ public class GaussianRBFKernel extends GammaKernel {
 
 // --------------------- Interface KernelFunction ---------------------
 
-  public double evaluate(@NotNull SparseVector x, @NotNull SparseVector y) {
+  public double evaluate( SparseVector x,  SparseVector y) {
     // try doing the internal stuff at double precision
 
     return Math.exp(-gamma * SparseVector.squareNorm(x, y));

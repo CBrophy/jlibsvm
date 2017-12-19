@@ -1,7 +1,6 @@
 package edu.berkeley.compbio.jlibsvm.kernel;
 
 import edu.berkeley.compbio.jlibsvm.util.SparseVector;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,10 +11,6 @@ import org.junit.Test;
  */
 public class GaussianRBFKernelTest {
 // ------------------------------ FIELDS ------------------------------
-
-  private static final Logger logger = Logger.getLogger(GaussianRBFKernelTest.class);
-
-// -------------------------- OTHER METHODS --------------------------
 
   @Test
   public void explicitAndCompositeKernelsAreEqual() {

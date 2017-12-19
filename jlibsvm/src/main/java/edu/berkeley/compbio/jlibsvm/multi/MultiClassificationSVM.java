@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -42,8 +41,8 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
   }
 
   public SvmMultiClassCrossValidationResults<L> performCrossValidation(
-      @NotNull MultiClassProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param) {
+       MultiClassProblem<L> problem,
+       ImmutableSvmParameter<L> param) {
     Map<SparseVector, L> predictions = discreteCrossValidation(problem, param);
 
     SvmMultiClassCrossValidationResults<L> cv =
@@ -52,8 +51,8 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
     return cv;
   }
 
-  public MultiClassModel<L> train(@NotNull MultiClassProblem<L> problem,
-      @NotNull ImmutableSvmParameter<L> param) {
+  public MultiClassModel<L> train( MultiClassProblem<L> problem,
+       ImmutableSvmParameter<L> param) {
     validateParam(param);
 
     MultiClassModel<L> result;
@@ -71,8 +70,8 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
     return result;
   }
 
-  public MultiClassModel<L> trainGrid(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameterGrid<L> param) {
+  public MultiClassModel<L> trainGrid( final MultiClassProblem<L> problem,
+       final ImmutableSvmParameterGrid<L> param) {
     final GridTrainingResult gtresult = new GridTrainingResult();
 
     param
@@ -118,8 +117,8 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
    * Train the classifier, and also prepare the probability sigmoid thing if requested.
    */
 
-  public MultiClassModel<L> trainScaled(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameter<L> param) {
+  public MultiClassModel<L> trainScaled( final MultiClassProblem<L> problem,
+       final ImmutableSvmParameter<L> param) {
     if (param.scalingModelLearner != null && !param.scaleBinaryMachinesIndependently) {
       return trainWithoutScaling(problem.getScaledCopy(param.scalingModelLearner),
           param);
@@ -128,8 +127,8 @@ public class MultiClassificationSVM<L extends Comparable<L>> extends
     }
   }
 
-  private MultiClassModel<L> trainWithoutScaling(@NotNull final MultiClassProblem<L> problem,
-      @NotNull final ImmutableSvmParameter<L> param) {
+  private MultiClassModel<L> trainWithoutScaling( final MultiClassProblem<L> problem,
+       final ImmutableSvmParameter<L> param) {
     int numLabels = problem.getLabels().size();
 
     final MultiClassModel<L> model = new MultiClassModel<>(param, numLabels);

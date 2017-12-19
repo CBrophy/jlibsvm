@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:dev@davidsoergel.com">David Soergel</a>
@@ -22,7 +21,7 @@ public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
 
 // -------------------------- OTHER METHODS --------------------------
 
-  public RegressionModel train(R problem, @NotNull ImmutableSvmParameter<Double> param)
+  public RegressionModel train(R problem,  ImmutableSvmParameter<Double> param)
   //,final TreeExecutorService execService)
   {
     validateParam(param);
@@ -38,7 +37,7 @@ public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
 
 
   private RegressionModel trainScaled(R problem,
-      @NotNull ImmutableSvmParameterPoint<Double> param)
+       ImmutableSvmParameterPoint<Double> param)
   //, final TreeExecutorService execService)
   {
     if (param.scalingModelLearner != null && param.scaleBinaryMachinesIndependently) {
@@ -103,7 +102,7 @@ public class Nu_SVR<R extends RegressionProblem<R>> extends RegressionSVM<R> {
     return "nu_svr";
   }
 
-  public void validateParam(@NotNull ImmutableSvmParameterPoint<Double> param) {
+  public void validateParam( ImmutableSvmParameterPoint<Double> param) {
     super.validateParam(param);
     if (param.nu <= 0 || param.nu > 1) {
       throw new SvmException("nu <= 0 or nu > 1");
