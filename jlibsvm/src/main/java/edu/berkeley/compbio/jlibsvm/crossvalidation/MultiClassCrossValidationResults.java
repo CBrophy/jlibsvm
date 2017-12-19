@@ -12,6 +12,12 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
+/**
+ * Imported from https://github.com/davidsoergel/ml
+ *
+ * LICENSE
+ * https://github.com/davidsoergel/ml/blob/master/LICENSE
+ */
 public class MultiClassCrossValidationResults<L extends Comparable> extends CrossValidationResults
 {
   private static final String[] EMPTY_STRING_ARRAY = new String[0];

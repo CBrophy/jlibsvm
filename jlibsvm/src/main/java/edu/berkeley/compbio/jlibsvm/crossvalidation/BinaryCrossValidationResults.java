@@ -1,5 +1,11 @@
 package edu.berkeley.compbio.jlibsvm.crossvalidation;
 
+/**
+ * Imported from https://github.com/davidsoergel/ml
+ *
+ * LICENSE
+ * https://github.com/davidsoergel/ml/blob/master/LICENSE
+ */
 public class BinaryCrossValidationResults extends CrossValidationResults
 {
   protected int numExamples;
