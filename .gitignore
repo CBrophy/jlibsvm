@@ -18,7 +18,7 @@ unpack
 *-tmp
 tmp-*
 *.orig
-
+.gradle
 
 ## CVS, SVN, HG
 
@@ -55,13 +55,13 @@ project/plugins/src_managed/
 .distfiles
 .scala_dependencies
 
-
 # Intellij IDEA files
 .idea
 *.iml
 *.ipr
 *.iws
-
+build
+out
 
 # ensime (emacs scala mode)
 .ensime*
